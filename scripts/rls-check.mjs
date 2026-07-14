@@ -13,16 +13,12 @@
 // Assertion 2 (self-join must be DENIED): an unrelated user (attacker) must
 // NOT be able to insert themselves into someone else's workspace.
 //
-//
-// Note: the workspace id used for assertion 1 is generated client-side
-// (rather than via `insert ... returning id`). Under RLS, an INSERT's
-// RETURNING output is also filtered through the table's SELECT policy, and
-// `workspaces`' own SELECT policy ("members read workspace", using
-// is_workspace_member(id)) excludes a brand-new owner who is not yet a
-// member -- an unrelated, pre-existing quirk of INSERT+RETURNING under RLS,
-// not the self-join defect this test targets. Supplying the id up front
-// avoids that quirk while still fully exercising the INSERT WITH CHECK
-// policies under test.
+// Assertion 3 (owner RETURNING must SUCCEED): the "members read workspace"
+// SELECT policy now also allows owner_id = auth.uid(), so a brand-new
+// owner's `insert ... returning id` on `workspaces` must return their own
+// row immediately, even before they have a workspace_members row. This is
+// what Task 5's bootstrap (`insert into workspaces(...).select().single()`)
+// relies on.
 //
 // Usage: node scripts/rls-check.mjs
 import { randomUUID } from "node:crypto";
@@ -149,6 +145,34 @@ async function main() {
             `unexpected error: ${msg}`
           );
         }
+      }
+
+      // --- Assertion 3: owner can read their own brand-new workspace via
+      // INSERT ... RETURNING (needed by Task 5's bootstrap) ---
+      await client.query("savepoint sp3");
+      try {
+        await actAs(client, ownerId);
+
+        const res = await client.query(
+          "insert into public.workspaces (name, owner_id) values ($1, $2) returning id",
+          ["T2", ownerId]
+        );
+
+        if (res.rows.length === 1) {
+          pass("bootstrap: owner can SELECT their own just-created workspace via RETURNING");
+        } else {
+          await client.query("rollback to savepoint sp3");
+          fail(
+            "bootstrap: owner can SELECT their own just-created workspace via RETURNING",
+            `expected 1 row, got ${res.rows.length}`
+          );
+        }
+      } catch (err) {
+        await client.query("rollback to savepoint sp3").catch(() => {});
+        fail(
+          "bootstrap: owner can SELECT their own just-created workspace via RETURNING",
+          err.message
+        );
       }
     } finally {
       // Always return to postgres and roll back, leaving the DB unchanged.

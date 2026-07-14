@@ -76,7 +76,7 @@ create policy "update own profile" on public.profiles
 
 -- workspaces: members can read; any authed user can create; owner can update
 create policy "members read workspace" on public.workspaces
-  for select using (public.is_workspace_member(id));
+  for select using (public.is_workspace_member(id) or owner_id = auth.uid());
 create policy "authed create workspace" on public.workspaces
   for insert with check (owner_id = auth.uid());
 create policy "owner update workspace" on public.workspaces
