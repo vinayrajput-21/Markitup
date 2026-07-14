@@ -1,25 +1,34 @@
 import { signUp } from "@/app/auth/actions";
-import Link from "next/link";
+import { AuthShell, AuthLink } from "@/components/auth/AuthShell";
 
 export default function SignupPage() {
   return (
-    <main className="mx-auto max-w-sm p-8">
-      <h1 className="mb-4 text-xl font-semibold">Sign up</h1>
+    <AuthShell
+      title="Create your account"
+      subtitle="Set up a workspace and start collecting feedback in minutes."
+      footer={<>Already have an account? <AuthLink href="/login">Log in</AuthLink></>}
+    >
       <form
         action={async (formData: FormData) => {
           "use server";
           await signUp(formData);
         }}
-        className="flex flex-col gap-3"
+        className="flex flex-col gap-4"
       >
-        <input name="name" type="text" placeholder="Name" required className="border p-2" />
-        <input name="email" type="email" placeholder="Email" required className="border p-2" />
-        <input name="password" type="password" placeholder="Password" required minLength={6} className="border p-2" />
-        <button type="submit" className="bg-black p-2 text-white">Sign up</button>
+        <div>
+          <label htmlFor="name" className="field-label">Full name</label>
+          <input id="name" name="name" type="text" autoComplete="name" placeholder="Jane Designer" required className="field" />
+        </div>
+        <div>
+          <label htmlFor="email" className="field-label">Email</label>
+          <input id="email" name="email" type="email" autoComplete="email" placeholder="you@agency.com" required className="field" />
+        </div>
+        <div>
+          <label htmlFor="password" className="field-label">Password</label>
+          <input id="password" name="password" type="password" autoComplete="new-password" placeholder="At least 6 characters" required minLength={6} className="field" />
+        </div>
+        <button type="submit" className="btn-primary mt-1 w-full">Create account</button>
       </form>
-      <p className="mt-4 text-sm">
-        Have an account? <Link href="/login" className="underline">Log in</Link>
-      </p>
-    </main>
+    </AuthShell>
   );
 }

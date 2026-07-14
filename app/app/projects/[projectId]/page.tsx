@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { UploadDropzone } from "@/components/viewer/UploadDropzone";
+import { timeAgo, plural } from "@/lib/format";
 
 export default async function ProjectPage({
   params,
@@ -9,25 +10,71 @@ export default async function ProjectPage({
 }) {
   const { projectId } = await params;
   const supabase = await createServerSupabase();
+
+  const { data: project } = await supabase
+    .from("projects")
+    .select("name")
+    .eq("id", projectId)
+    .maybeSingle();
+
   const { data: mockups } = await supabase
     .from("mockups")
-    .select("id, name")
+    .select("id, name, file_path, created_at")
     .eq("project_id", projectId)
     .order("created_at", { ascending: false });
 
+  const rows = mockups ?? [];
+  const signed = new Map<string, string>();
+  if (rows.length) {
+    const { data: urls } = await supabase.storage
+      .from("mockups")
+      .createSignedUrls(rows.map((m) => m.file_path), 60 * 60);
+    for (const u of urls ?? []) if (u.signedUrl && u.path) signed.set(u.path, u.signedUrl);
+  }
+
   return (
-    <div className="mx-auto max-w-2xl">
-      <h1 className="mb-4 text-lg font-semibold">Mockups</h1>
-      <UploadDropzone projectId={projectId} />
-      <ul className="grid grid-cols-2 gap-3">
-        {(mockups ?? []).map((m) => (
-          <li key={m.id}>
-            <Link href={`/app/mockups/${m.id}`} className="block border p-3 hover:bg-gray-50">
-              {m.name}
-            </Link>
-          </li>
-        ))}
-      </ul>
+    <div className="mx-auto max-w-6xl px-8 py-8">
+      <Link
+        href="/app"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-brand-ink"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path d="M14 6l-6 6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        Projects
+      </Link>
+
+      <div className="mb-7">
+        <h1 className="text-2xl font-bold tracking-tight">{project?.name ?? "Project"}</h1>
+        <p className="mt-1 text-sm text-muted">{plural(rows.length, "mockup")}</p>
+      </div>
+
+      <div className="mb-8">
+        <UploadDropzone projectId={projectId} />
+      </div>
+
+      {rows.length > 0 && (
+        <ul className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+          {rows.map((m) => (
+            <li key={m.id}>
+              <Link href={`/app/mockups/${m.id}`} className="card card-hover block overflow-hidden">
+                <div className="aspect-[4/3] w-full overflow-hidden border-b bg-canvas">
+                  {signed.get(m.file_path) ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={signed.get(m.file_path)} alt="" className="h-full w-full object-cover object-top" />
+                  ) : (
+                    <div className="h-full w-full bg-brand-soft" />
+                  )}
+                </div>
+                <div className="p-3">
+                  <div className="truncate text-sm font-semibold text-ink">{m.name}</div>
+                  <div className="mt-0.5 font-mono text-xs text-faint">{timeAgo(m.created_at)}</div>
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

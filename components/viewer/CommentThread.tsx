@@ -3,20 +3,40 @@
 import { useState } from "react";
 import type { ViewerPin, ViewerComment } from "./MockupViewer";
 import { addComment, setPinStatus } from "@/app/app/mockups/[mockupId]/actions";
+import { Avatar } from "@/components/app/AppSidebar";
+import { timeAgo } from "@/lib/format";
+
+function CommentRow({ c, small = false }: { c: ViewerComment; small?: boolean }) {
+  return (
+    <div className="flex gap-2.5">
+      <Avatar name={c.authorName} email={c.authorName} size={small ? 24 : 30} />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-2">
+          <span className="truncate text-sm font-semibold text-ink">{c.authorName}</span>
+          <span className="shrink-0 font-mono text-[0.6875rem] text-faint">{timeAgo(c.createdAt)}</span>
+        </div>
+        <p className="mt-0.5 text-sm leading-relaxed break-words text-muted">{c.body}</p>
+      </div>
+    </div>
+  );
+}
 
 export function CommentThread({
   mockupId,
   pin,
   onChange,
+  onBack,
 }: {
   mockupId: string;
   pin: ViewerPin;
   onChange: (p: ViewerPin) => void;
+  onBack?: () => void;
 }) {
   const [body, setBody] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const roots = pin.comments.filter((c) => !c.parentCommentId);
   const repliesOf = (id: string) => pin.comments.filter((c) => c.parentCommentId === id);
+  const resolved = pin.status === "resolved";
 
   async function post() {
     const text = body.trim();
@@ -24,55 +44,113 @@ export function CommentThread({
     const res = await addComment(mockupId, pin.id, text, replyTo ?? undefined);
     if (res.error) return;
     const optimistic: ViewerComment = {
-      id: `tmp-${pin.comments.length}`, body: text, authorName: "You",
-      parentCommentId: replyTo, createdAt: new Date().toISOString(),
+      id: `tmp-${pin.comments.length}`,
+      body: text,
+      authorName: "You",
+      parentCommentId: replyTo,
+      createdAt: new Date().toISOString(),
     };
     onChange({ ...pin, comments: [...pin.comments, optimistic] });
-    setBody(""); setReplyTo(null);
+    setBody("");
+    setReplyTo(null);
   }
 
   async function toggleStatus() {
-    const next = pin.status === "active" ? "resolved" : "active";
+    const next = resolved ? "active" : "resolved";
     const res = await setPinStatus(mockupId, pin.id, next);
     if (res?.error) return;
     onChange({ ...pin, status: next });
   }
 
   return (
-    <div className="mt-2">
-      <div className="mb-2 flex items-center justify-between">
-        <span className="font-semibold">Pin #{pin.number}</span>
-        <button onClick={toggleStatus} className="text-xs underline">
-          {pin.status === "active" ? "Mark resolved" : "Reopen"}
+    <div className="flex h-full flex-col">
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1.5 border-b px-4 py-2.5 text-xs font-semibold text-muted transition-colors hover:text-brand-ink"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path d="M14 6l-6 6 6 6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          All comments
+        </button>
+      )}
+
+      {/* pin header */}
+      <div className="flex items-center justify-between gap-2 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span
+            className="grid h-6 w-6 place-items-center rounded-full font-mono text-xs font-bold text-white"
+            style={{ background: resolved ? "var(--color-success)" : "var(--color-brand)" }}
+          >
+            {pin.number}
+          </span>
+          <span className="text-sm font-bold text-ink">Pin {pin.number}</span>
+          <span
+            className="chip capitalize"
+            style={
+              resolved
+                ? { background: "var(--color-success-soft)", color: "var(--color-success)" }
+                : { background: "var(--color-brand-soft)", color: "var(--color-brand-ink)" }
+            }
+          >
+            {pin.status}
+          </span>
+        </div>
+        <button onClick={toggleStatus} className="btn-secondary btn-sm">
+          {resolved ? "Reopen" : "Resolve"}
         </button>
       </div>
 
-      <ul className="flex flex-col gap-2">
+      {/* thread */}
+      <div className="flex-1 space-y-5 overflow-y-auto px-4 py-2">
+        {roots.length === 0 && (
+          <p className="pt-2 text-sm text-faint">No comments yet. Start the thread below.</p>
+        )}
         {roots.map((c) => (
-          <li key={c.id} className="rounded border p-2 text-sm">
-            <div className="font-medium">{c.authorName}</div>
-            <div>{c.body}</div>
-            <button onClick={() => setReplyTo(c.id)} className="mt-1 text-xs text-blue-600">Reply</button>
-            <ul className="mt-2 flex flex-col gap-1 border-l pl-2">
+          <div key={c.id}>
+            <CommentRow c={c} />
+            <div className="mt-2 space-y-3 border-l pl-4 ml-3.5">
               {repliesOf(c.id).map((r) => (
-                <li key={r.id} className="text-sm">
-                  <span className="font-medium">{r.authorName}: </span>{r.body}
-                </li>
+                <CommentRow key={r.id} c={r} small />
               ))}
-            </ul>
-          </li>
+              <button
+                onClick={() => setReplyTo(c.id)}
+                className="text-xs font-semibold text-brand transition-colors hover:text-brand-hover"
+              >
+                Reply
+              </button>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
 
-      <div className="mt-3">
+      {/* composer */}
+      <div className="border-t p-3">
         {replyTo && (
-          <div className="mb-1 text-xs text-gray-500">
-            Replying… <button onClick={() => setReplyTo(null)} className="underline">cancel</button>
+          <div className="mb-2 flex items-center justify-between rounded-md bg-brand-soft px-2.5 py-1.5 text-xs font-medium text-brand-ink">
+            Replying to a comment
+            <button onClick={() => setReplyTo(null)} className="text-brand-ink/70 hover:text-brand-ink">
+              Cancel
+            </button>
           </div>
         )}
-        <textarea value={body} onChange={(e) => setBody(e.target.value)}
-          placeholder="Add a comment…" className="w-full border p-2 text-sm" rows={2} />
-        <button onClick={post} className="mt-1 bg-black px-3 py-1 text-sm text-white">Comment</button>
+        <textarea
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          onKeyDown={(e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") post();
+          }}
+          placeholder="Add a comment…"
+          className="field field-textarea text-sm"
+          rows={2}
+        />
+        <div className="mt-2 flex items-center justify-between">
+          <span className="font-mono text-[0.6875rem] text-faint">⌘↵ to send</span>
+          <button onClick={post} disabled={!body.trim()} className="btn-primary btn-sm">
+            Comment
+          </button>
+        </div>
       </div>
     </div>
   );

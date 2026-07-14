@@ -1,24 +1,30 @@
 import { signIn } from "@/app/auth/actions";
-import Link from "next/link";
+import { AuthShell, AuthLink } from "@/components/auth/AuthShell";
 
 export default function LoginPage() {
   return (
-    <main className="mx-auto max-w-sm p-8">
-      <h1 className="mb-4 text-xl font-semibold">Log in</h1>
+    <AuthShell
+      title="Welcome back"
+      subtitle="Log in to review designs and pick up the feedback."
+      footer={<>New to MarkUp? <AuthLink href="/signup">Create an account</AuthLink></>}
+    >
       <form
         action={async (formData: FormData) => {
           "use server";
           await signIn(formData);
         }}
-        className="flex flex-col gap-3"
+        className="flex flex-col gap-4"
       >
-        <input name="email" type="email" placeholder="Email" required className="border p-2" />
-        <input name="password" type="password" placeholder="Password" required className="border p-2" />
-        <button type="submit" className="bg-black p-2 text-white">Log in</button>
+        <div>
+          <label htmlFor="email" className="field-label">Email</label>
+          <input id="email" name="email" type="email" autoComplete="email" placeholder="you@agency.com" required className="field" />
+        </div>
+        <div>
+          <label htmlFor="password" className="field-label">Password</label>
+          <input id="password" name="password" type="password" autoComplete="current-password" placeholder="••••••••" required className="field" />
+        </div>
+        <button type="submit" className="btn-primary mt-1 w-full">Log in</button>
       </form>
-      <p className="mt-4 text-sm">
-        No account? <Link href="/signup" className="underline">Sign up</Link>
-      </p>
-    </main>
+    </AuthShell>
   );
 }

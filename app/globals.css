@@ -1,26 +1,190 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ---- Design tokens (OKLCH, tinted toward brand hue 274) --------------- */
+@theme {
+  /* neutrals */
+  --color-canvas: oklch(0.975 0.006 274);
+  --color-surface: oklch(0.995 0.0015 274);
+  --color-surface-2: oklch(1 0 0);
+  --color-border: oklch(0.912 0.007 274);
+  --color-border-strong: oklch(0.86 0.008 274);
+  --color-ink: oklch(0.27 0.021 274);
+  --color-muted: oklch(0.52 0.016 274);
+  --color-faint: oklch(0.64 0.013 274);
+
+  /* brand */
+  --color-brand: oklch(0.54 0.2 274);
+  --color-brand-hover: oklch(0.48 0.2 274);
+  --color-brand-ink: oklch(0.4 0.16 274);
+  --color-brand-soft: oklch(0.955 0.03 274);
+  --color-brand-ring: oklch(0.62 0.17 274);
+
+  /* functional */
+  --color-success: oklch(0.6 0.14 155);
+  --color-success-soft: oklch(0.95 0.04 155);
+  --color-danger: oklch(0.56 0.19 25);
+  --color-danger-soft: oklch(0.955 0.03 25);
+
+  /* radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+
+  /* elevation — soft, indigo-tinted, low alpha */
+  --shadow-xs: 0 1px 2px oklch(0.4 0.08 274 / 0.06);
+  --shadow-sm: 0 1px 3px oklch(0.4 0.08 274 / 0.07), 0 1px 2px oklch(0.4 0.08 274 / 0.05);
+  --shadow-md: 0 4px 14px oklch(0.4 0.08 274 / 0.1), 0 2px 6px oklch(0.4 0.08 274 / 0.06);
+  --shadow-lg: 0 12px 34px oklch(0.4 0.1 274 / 0.14), 0 4px 10px oklch(0.4 0.08 274 / 0.08);
+
+  --ease-out-quart: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ---- Base ------------------------------------------------------------- */
+@layer base {
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4 {
+    letter-spacing: -0.014em;
+  }
+  ::selection {
+    background: var(--color-brand-soft);
+    color: var(--color-brand-ink);
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+  }
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: 9999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--color-faint);
+    background-clip: content-box;
+  }
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-brand-ring);
+    border-radius: var(--radius-sm);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ---- Components (plain CSS; Tailwind v4 forbids @apply of components) -- */
+@layer components {
+  .btn-primary,
+  .btn-secondary,
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 2.25rem;
+    padding-inline: 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    user-select: none;
+    cursor: pointer;
+    transition:
+      background 0.15s var(--ease-out-quart),
+      box-shadow 0.15s var(--ease-out-quart),
+      transform 0.15s var(--ease-out-quart),
+      color 0.15s var(--ease-out-quart),
+      border-color 0.15s var(--ease-out-quart);
+  }
+  .btn-primary:disabled,
+  .btn-secondary:disabled,
+  .btn-ghost:disabled { opacity: 0.5; pointer-events: none; }
+  .btn-sm { height: 2rem; padding-inline: 0.75rem; font-size: 0.8125rem; }
+
+  .btn-primary { background: var(--color-brand); color: #fff; box-shadow: var(--shadow-xs); }
+  .btn-primary:hover { background: var(--color-brand-hover); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+  .btn-primary:active { transform: none; box-shadow: none; }
+
+  .btn-secondary { background: var(--color-surface); color: var(--color-ink); border: 1px solid var(--color-border-strong); }
+  .btn-secondary:hover { background: var(--color-brand-soft); border-color: var(--color-brand-ring); color: var(--color-brand-ink); }
+
+  .btn-ghost { background: transparent; color: var(--color-muted); }
+  .btn-ghost:hover { background: var(--color-brand-soft); color: var(--color-brand-ink); }
+
+  .field-label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-muted);
+  }
+  .field {
+    display: block;
+    width: 100%;
+    height: 2.5rem;
+    padding-inline: 0.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-surface);
+    font-size: 0.875rem;
+    color: var(--color-ink);
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .field::placeholder { color: var(--color-faint); }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-brand-ring);
+    box-shadow: 0 0 0 3px var(--color-brand-soft);
+  }
+  /* apply together with .field on a textarea */
+  .field-textarea { height: auto; padding-block: 0.625rem; resize: vertical; line-height: 1.5; }
+
+  .card {
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+    transition:
+      box-shadow 0.2s var(--ease-out-quart),
+      transform 0.2s var(--ease-out-quart),
+      border-color 0.2s var(--ease-out-quart);
+  }
+  .card-hover:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--color-border-strong); }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-radius: 9999px;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .nav-item,
+  .nav-item-active {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    border-radius: var(--radius-md);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-item:hover { background: var(--color-brand-soft); color: var(--color-brand-ink); }
+  .nav-item-active { background: var(--color-brand-soft); color: var(--color-brand-ink); font-weight: 600; }
 }
