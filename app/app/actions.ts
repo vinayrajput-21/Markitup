@@ -49,3 +49,48 @@ export async function createProject(formData: FormData) {
   if (error) return { error: error.message };
   revalidatePath("/app");
 }
+
+export async function getWorkspaceMembers() {
+  const supabase = await createServerSupabase();
+  const ws = await getCurrentWorkspace();
+  if (!ws) return [];
+  const { data } = await supabase
+    .from("workspace_members")
+    .select("role, profiles(id, name, email)")
+    .eq("workspace_id", ws.id);
+  return (data ?? []).map((m) => {
+    const p = m.profiles as unknown as { id: string; name: string; email: string };
+    return { id: p.id, name: p.name, email: p.email, role: m.role as string };
+  });
+}
+
+export async function addMemberByEmail(formData: FormData) {
+  const email = String(formData.get("email")).trim().toLowerCase();
+  if (!email) return { error: "Email required" };
+  const supabase = await createServerSupabase();
+  const ws = await getCurrentWorkspace();
+  if (!ws) return { error: "No workspace" };
+  const { data: userData } = await supabase.auth.getUser();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (profile) {
+    const { error } = await supabase
+      .from("workspace_members")
+      .insert({ workspace_id: ws.id, user_id: profile.id, role: "member" });
+    if (error) return { error: error.message };
+    revalidatePath("/app/members");
+    return { invited: false };
+  }
+
+  const { error } = await supabase
+    .from("invitations")
+    .insert({ workspace_id: ws.id, email, invited_by: userData.user!.id });
+  if (error) return { error: error.message };
+  revalidatePath("/app/members");
+  return { invited: true };
+}
