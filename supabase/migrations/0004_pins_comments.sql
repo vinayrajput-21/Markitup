@@ -7,7 +7,8 @@ create table public.pins (
   number int not null,
   status text not null default 'active' check (status in ('active','resolved')),
   created_by uuid not null references public.profiles(id),
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  unique (mockup_id, number)
 );
 
 create table public.comments (
@@ -20,10 +21,15 @@ create table public.comments (
   updated_at timestamptz not null default now()
 );
 
--- assign the next sequential pin number per mockup, safely under concurrency
+-- assign the next sequential pin number per mockup; a per-mockup advisory
+-- lock serializes concurrent inserts so numbering cannot race, and the
+-- unique(mockup_id, number) constraint on public.pins is a backstop that
+-- makes any residual race fail loudly instead of silently duplicating.
 create function public.assign_pin_number()
 returns trigger language plpgsql as $$
 begin
+  -- serialize concurrent inserts for the same mockup so numbering cannot race
+  perform pg_advisory_xact_lock(hashtext(new.mockup_id::text));
   select coalesce(max(number), 0) + 1 into new.number
   from public.pins where mockup_id = new.mockup_id;
   return new;
