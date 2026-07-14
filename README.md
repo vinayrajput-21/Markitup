@@ -10,12 +10,19 @@ This project uses a **cloud** Supabase project (no local Docker / Supabase CLI r
 2. **Copy your keys.** In the Supabase dashboard, go to your project's **Settings → API** page and copy:
    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
    - **anon / public key** → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - **service_role key** (Settings → API → Project API keys, keep secret) → `SUPABASE_SERVICE_ROLE_KEY`
-3. **Create your local env file.** Copy `.env.example` to `.env.local` and paste in the three values from step 2:
+   - **service_role key** (optional in Plan 1 — reserved for a future admin client) → `SUPABASE_SERVICE_ROLE_KEY`
+   - **Database connection string** (Settings → Database → Connection string → URI; insert your DB password) → `SUPABASE_DB_URL`. This is used **only** by the migration/verification scripts (`scripts/*.mjs`) and the E2E seed helper, never by the app runtime.
+3. **Create your local env file.** Copy `.env.example` to `.env.local` and paste in the values from step 2:
    ```bash
    cp .env.example .env.local
    ```
    `.env.local` is already listed in `.gitignore` (via the `.env*` pattern) and must never be committed.
+4. **Apply database migrations.** The SQL in `supabase/migrations/` is applied to your cloud DB (no Docker) via:
+   ```bash
+   node scripts/db-apply.mjs supabase/migrations/0001_profiles_workspaces.sql
+   # ...repeat for 0002 → 0005 in order
+   ```
+5. **Enable sign-up.** In **Authentication → Providers → Email**, turn **OFF "Confirm email"** (or configure a custom SMTP sender). With confirmation ON and no SMTP, a new sign-up produces no session and the user cannot enter the app. (The E2E test sidesteps this by seeding pre-confirmed users directly in the DB.)
 
 ## Google sign-in (optional)
 
@@ -31,8 +38,17 @@ Email/password auth works out of the box. To also enable "Sign in with Google", 
 This project uses [Vitest](https://vitest.dev) for unit tests.
 
 ```bash
-npm test        # run the test suite once
+npm test            # run the unit test suite once (Vitest)
 npm run test:watch  # run in watch mode
+npm run test:e2e    # full end-to-end core loop (Playwright, drives the real app)
+```
+
+Two database-backed invariants are proven by standalone scripts that run against
+the cloud DB (they use a transaction and roll back, leaving no data behind):
+
+```bash
+node scripts/rls-check.mjs    # tenant-isolation RLS (self-join denied, owner bootstrap allowed)
+node scripts/pins-check.mjs   # per-mockup sequential pin numbering
 ```
 
 ## Getting Started
