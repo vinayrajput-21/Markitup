@@ -17,6 +17,15 @@ This project uses a **cloud** Supabase project (no local Docker / Supabase CLI r
    ```
    `.env.local` is already listed in `.gitignore` (via the `.env*` pattern) and must never be committed.
 
+## Google sign-in (optional)
+
+Email/password auth works out of the box. To also enable "Sign in with Google", configure the Google provider in Supabase:
+
+1. In the [Google Cloud Console](https://console.cloud.google.com/), create an OAuth 2.0 Client ID (Web application) and add `https://<your-project-ref>.supabase.co/auth/v1/callback` as an authorized redirect URI.
+2. In the Supabase dashboard, go to **Authentication → Providers → Google**, enable it, and paste in the Client ID and Client Secret from step 1.
+3. (If using the local Supabase CLI instead of the cloud dashboard, set the equivalent values under `[auth.external.google]` in `supabase/config.toml`.)
+4. The app's OAuth callback route (`app/auth/callback/route.ts`) exchanges the returned `code` for a session and redirects to `/app`; no additional app code changes are required once the provider is configured.
+
 ## Running Tests
 
 This project uses [Vitest](https://vitest.dev) for unit tests.
