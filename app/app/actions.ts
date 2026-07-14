@@ -72,16 +72,14 @@ export async function addMemberByEmail(formData: FormData) {
   if (!ws) return { error: "No workspace" };
   const { data: userData } = await supabase.auth.getUser();
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("email", email)
-    .maybeSingle();
+  const { data: profileId } = await supabase.rpc("find_profile_id_by_email", {
+    p_email: email,
+  });
 
-  if (profile) {
+  if (profileId) {
     const { error } = await supabase
       .from("workspace_members")
-      .insert({ workspace_id: ws.id, user_id: profile.id, role: "member" });
+      .insert({ workspace_id: ws.id, user_id: profileId, role: "member" });
     if (error) return { error: error.message };
     revalidatePath("/app/members");
     return { invited: false };

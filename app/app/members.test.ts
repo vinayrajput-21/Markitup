@@ -8,6 +8,7 @@ vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 vi.mock("@/lib/supabase/server", () => ({
   createServerSupabase: async () => ({
     auth: { getUser: async () => ({ data: { user: { id: "u1" } } }) },
+    rpc: async () => ({ data: null }),
     from: (table: string) => ({
       select: () => ({
         eq: () => ({
