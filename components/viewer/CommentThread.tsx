@@ -33,7 +33,8 @@ export function CommentThread({
 
   async function toggleStatus() {
     const next = pin.status === "active" ? "resolved" : "active";
-    await setPinStatus(mockupId, pin.id, next);
+    const res = await setPinStatus(mockupId, pin.id, next);
+    if (res?.error) return;
     onChange({ ...pin, status: next });
   }
 
