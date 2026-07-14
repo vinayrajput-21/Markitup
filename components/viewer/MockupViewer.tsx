@@ -59,8 +59,21 @@ export function MockupViewer({
         <TransformWrapper doubleClick={{ disabled: true }}>
           <TransformComponent wrapperClass="!w-full !h-full" contentClass="!w-full">
             <div className="relative">
+              {/* react-zoom-pan-pinch's own stylesheet sets
+                  `.transform-component-module_content__FBWxo img { pointer-events: none }`
+                  (to stop native image-drag from fighting its pan gesture),
+                  which silently swallows every click on this image in a real
+                  browser -- the click never reaches the img, so no pin can
+                  ever be dropped. That CSS rule has higher specificity than a
+                  Tailwind utility class, so it must be overridden inline. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={imageUrl} alt="mockup" onClick={handleImageClick} className="block w-full select-none" />
+              <img
+                src={imageUrl}
+                alt="mockup"
+                onClick={handleImageClick}
+                className="block w-full select-none"
+                style={{ pointerEvents: "auto" }}
+              />
               {visiblePins.map((p) => (
                 <PinMarker key={p.id} number={p.number} x={p.x} y={p.y} status={p.status}
                   onClick={() => setActivePinId(p.id)} />
