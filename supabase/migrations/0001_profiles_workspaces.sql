@@ -77,7 +77,10 @@ create policy "members read roster" on public.workspace_members
   for select using (public.is_workspace_member(workspace_id));
 create policy "self join via owner insert" on public.workspace_members
   for insert with check (
-    user_id = auth.uid()
+    (user_id = auth.uid() and exists (
+       select 1 from public.workspaces w
+       where w.id = workspace_members.workspace_id and w.owner_id = auth.uid()
+    ))
     or exists (
       select 1 from public.workspace_members m
       where m.workspace_id = workspace_members.workspace_id
