@@ -72,6 +72,7 @@ export function MockupViewer({
                 alt="mockup"
                 onClick={handleImageClick}
                 className="block w-full select-none"
+                draggable={false}
                 style={{ pointerEvents: "auto" }}
               />
               {visiblePins.map((p) => (
