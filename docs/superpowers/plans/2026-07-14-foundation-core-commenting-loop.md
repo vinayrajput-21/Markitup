@@ -398,6 +398,16 @@ returns boolean language sql security definer stable set search_path = public as
   );
 $$;
 
+-- ownership helper (SECURITY DEFINER so the self-join policy can check
+-- ownership without being blocked by workspaces' own membership-gated RLS,
+-- which would otherwise deny a brand-new owner's bootstrap insert)
+create function public.is_workspace_owner(ws uuid)
+returns boolean language sql security definer stable set search_path = public as $$
+  select exists (
+    select 1 from public.workspaces where id = ws and owner_id = auth.uid()
+  );
+$$;
+
 alter table public.profiles enable row level security;
 alter table public.workspaces enable row level security;
 alter table public.workspace_members enable row level security;
@@ -418,7 +428,7 @@ create policy "update own profile" on public.profiles
 
 -- workspaces: members can read; any authed user can create; owner can update
 create policy "members read workspace" on public.workspaces
-  for select using (public.is_workspace_member(id));
+  for select using (public.is_workspace_member(id) or owner_id = auth.uid());
 create policy "authed create workspace" on public.workspaces
   for insert with check (owner_id = auth.uid());
 create policy "owner update workspace" on public.workspaces
@@ -429,7 +439,7 @@ create policy "members read roster" on public.workspace_members
   for select using (public.is_workspace_member(workspace_id));
 create policy "self join via owner insert" on public.workspace_members
   for insert with check (
-    user_id = auth.uid()
+    (user_id = auth.uid() and public.is_workspace_owner(workspace_id))
     or exists (
       select 1 from public.workspace_members m
       where m.workspace_id = workspace_members.workspace_id
