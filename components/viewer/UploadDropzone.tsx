@@ -3,7 +3,11 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { validateUpload } from "@/lib/validation";
-import { uploadMockup } from "@/app/app/projects/[projectId]/actions";
+import { createBrowserSupabase } from "@/lib/supabase/client";
+import {
+  createMockupUploadUrl,
+  finalizeMockup,
+} from "@/app/app/projects/[projectId]/actions";
 
 export function UploadDropzone({ projectId }: { projectId: string }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -19,10 +23,29 @@ export function UploadDropzone({ projectId }: { projectId: string }) {
       return;
     }
     setError(null);
-    const fd = new FormData();
-    fd.set("file", file);
     start(async () => {
-      const res = await uploadMockup(projectId, fd);
+      // 1. Ask the server for a signed upload URL (tiny request).
+      const target = await createMockupUploadUrl(projectId, file.type);
+      if ("error" in target && target.error) {
+        setError(target.error);
+        return;
+      }
+
+      // 2. Send the bytes straight to Supabase Storage, bypassing the Server
+      // Action body limit so files up to 25 MB upload from anywhere.
+      const supabase = createBrowserSupabase();
+      const { error: upErr } = await supabase.storage
+        .from("mockups")
+        .uploadToSignedUrl(target.path!, target.token!, file, {
+          contentType: file.type,
+        });
+      if (upErr) {
+        setError(upErr.message);
+        return;
+      }
+
+      // 3. Record the mockup row (reference only, no bytes).
+      const res = await finalizeMockup(projectId, target.path!, file.name);
       if (res.error) setError(res.error);
       else router.refresh();
     });
