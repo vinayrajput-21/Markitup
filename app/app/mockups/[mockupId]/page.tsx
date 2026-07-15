@@ -20,6 +20,12 @@ export default async function MockupPage({
     .maybeSingle();
   if (!mockup) notFound();
 
+  const { data: siblings } = await supabase
+    .from("mockups")
+    .select("id")
+    .eq("project_id", mockup.project_id)
+    .order("created_at", { ascending: true });
+
   const { data: pins } = await supabase
     .from("pins")
     .select("id, x, y, number, status, comments(id, body, parent_comment_id, created_at, profiles(name))")
@@ -84,7 +90,13 @@ export default async function MockupPage({
       {/* viewer */}
       <div className="min-h-0 flex-1">
         {url ? (
-          <MockupViewer mockupId={mockupId} imageUrl={url} initialPins={viewerPins} />
+          <MockupViewer
+            mockupId={mockupId}
+            imageUrl={url}
+            imageName={mockup.name}
+            initialPins={viewerPins}
+            siblings={siblings ?? [{ id: mockupId }]}
+          />
         ) : (
           <div className="grid h-full place-items-center text-sm text-faint">
             Could not load this mockup.
