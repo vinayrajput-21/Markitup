@@ -1,0 +1,174 @@
+"use client";
+
+import { useState } from "react";
+import { Avatar } from "@/components/app/AppSidebar";
+import {
+  getShareInfo,
+  setShareVisibility,
+  inviteToProject,
+  type ShareInfo,
+} from "@/app/app/mockups/[mockupId]/share-actions";
+
+export function ShareDialog({ mockupId }: { mockupId: string }) {
+  const [open, setOpen] = useState(false);
+  const [info, setInfo] = useState<ShareInfo | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  async function load() {
+    setLoading(true);
+    const res = await getShareInfo(mockupId);
+    setLoading(false);
+    if ("error" in res) setError(res.error);
+    else setInfo(res);
+  }
+
+  function openDialog() {
+    setOpen(true);
+    setError(null);
+    setInfo(null);
+    load();
+  }
+
+  async function addEmail(e: React.FormEvent) {
+    e.preventDefault();
+    const value = email.trim();
+    if (!value) return;
+    setBusy(true);
+    setError(null);
+    const res = await inviteToProject(mockupId, value);
+    setBusy(false);
+    if ("error" in res && res.error) {
+      setError(res.error);
+      return;
+    }
+    setEmail("");
+    await load();
+  }
+
+  async function toggleVisibility(next: boolean) {
+    if (!info) return;
+    const visibility = next ? "public" : "restricted";
+    setInfo({ ...info, visibility });
+    const res = await setShareVisibility(mockupId, visibility);
+    if (res?.error) {
+      setInfo({ ...info, visibility: info.visibility });
+      setError(res.error);
+    }
+  }
+
+  function copyLink() {
+    if (!info) return;
+    const url = `${window.location.origin}/s/${info.token}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    });
+  }
+
+  return (
+    <>
+      <button onClick={openDialog} className="btn-primary btn-sm">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path d="M4 12v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+          <path d="M12 15V4m0 0-4 4m4-4 4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        Share
+      </button>
+
+      {open && (
+        <div className="fixed inset-0 z-[100] grid place-items-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
+          <div className="relative z-10 w-full max-w-lg rounded-xl border bg-surface-2 shadow-lg">
+            <div className="flex items-center justify-between border-b px-5 py-4">
+              <h2 className="text-lg font-bold text-ink">Share this MarkUp</h2>
+              <button
+                onClick={() => setOpen(false)}
+                className="grid h-8 w-8 place-items-center rounded-md text-faint transition-colors hover:bg-[color:var(--accent)] hover:text-ink"
+                aria-label="Close"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="px-5 py-4">
+              <form onSubmit={addEmail} className="flex gap-2">
+                <input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  type="email"
+                  placeholder="Invite by email…"
+                  className="field flex-1"
+                />
+                <button type="submit" disabled={busy || !email.trim()} className="btn-primary">
+                  {busy ? "Inviting…" : "Invite"}
+                </button>
+              </form>
+              {error && (
+                <p className="mt-2 text-sm font-medium" style={{ color: "var(--destructive)" }}>{error}</p>
+              )}
+
+              <div className="mt-5">
+                <p className="mb-2 text-xs font-semibold tracking-wider text-faint uppercase">
+                  Invited{info ? ` (${info.invited.length})` : ""}
+                </p>
+                {loading && <p className="text-sm text-faint">Loading…</p>}
+                <ul className="max-h-56 space-y-1 overflow-y-auto">
+                  {info?.invited.map((m, i) => (
+                    <li key={m.id ?? `inv-${i}`} className="flex items-center gap-3 rounded-md px-1 py-1.5">
+                      <Avatar name={m.name} email={m.email} size={34} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium text-ink">{m.name}</span>
+                        {m.name !== m.email && <span className="block truncate text-xs text-faint">{m.email}</span>}
+                      </span>
+                      <span className="chip capitalize" style={{ background: "var(--accent)", color: "var(--accent-foreground)" }}>
+                        {m.pending ? "pending" : m.role}
+                      </span>
+                    </li>
+                  ))}
+                  {info && info.invited.length === 0 && (
+                    <li className="px-1 py-2 text-sm text-faint">No one invited yet.</li>
+                  )}
+                </ul>
+                {info && (
+                  <p className="mt-3 text-xs text-muted">
+                    All <span className="font-semibold text-ink">{info.workspaceName}</span> team members have full access.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 border-t px-5 py-4">
+              <label className="flex cursor-pointer items-center gap-2.5 text-sm font-medium text-ink">
+                <input
+                  type="checkbox"
+                  checked={info?.visibility === "public"}
+                  onChange={(e) => toggleVisibility(e.target.checked)}
+                  disabled={!info}
+                  className="h-4 w-4 accent-[color:var(--primary)]"
+                />
+                Anyone with the link can view
+              </label>
+              <button onClick={copyLink} disabled={!info} className="btn-secondary btn-sm">
+                {copied ? (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden><path d="m5 12 4.5 4.5L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                ) : (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <path d="M9 12a3 3 0 0 1 3-3h5a3 3 0 1 1 0 6h-2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                    <path d="M15 12a3 3 0 0 1-3 3H7a3 3 0 1 1 0-6h2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  </svg>
+                )}
+                {copied ? "Copied" : "Copy link"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

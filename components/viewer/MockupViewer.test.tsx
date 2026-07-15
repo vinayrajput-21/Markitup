@@ -31,6 +31,7 @@ describe("MockupViewer", () => {
         imageName="a.png"
         initialPins={[{ id: "p1", x: 0.5, y: 0.5, number: 3, status: "active", comments: [] }]}
         siblings={[{ id: "m1" }]}
+        members={[]}
       />,
     );
     expect(screen.getByLabelText("Pin 3, active")).toBeInTheDocument();

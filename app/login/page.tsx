@@ -1,12 +1,17 @@
 import { signIn } from "@/app/auth/actions";
 import { AuthShell, AuthLink } from "@/components/auth/AuthShell";
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
   return (
     <AuthShell
       title="Welcome back"
       subtitle="Log in to review designs and pick up the feedback."
-      footer={<>New to MarkUp? <AuthLink href="/signup">Create an account</AuthLink></>}
+      footer={<>New to MarkUp? <AuthLink href={next ? `/signup?next=${encodeURIComponent(next)}` : "/signup"}>Create an account</AuthLink></>}
     >
       <form
         action={async (formData: FormData) => {
@@ -15,6 +20,7 @@ export default function LoginPage() {
         }}
         className="flex flex-col gap-4"
       >
+        {next && <input type="hidden" name="next" value={next} />}
         <div>
           <label htmlFor="email" className="field-label">Email</label>
           <input id="email" name="email" type="email" autoComplete="email" placeholder="you@agency.com" required className="field" />

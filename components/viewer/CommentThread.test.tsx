@@ -15,10 +15,11 @@ describe("CommentThread", () => {
       <CommentThread
         mockupId="m1"
         pin={{ id: "p1", x: 0.5, y: 0.5, number: 1, status: "active", comments: [] }}
+        members={[]}
         onChange={onChange}
       />,
     );
-    fireEvent.change(screen.getByPlaceholderText("Add a comment…"), {
+    fireEvent.change(screen.getByPlaceholderText(/Add a comment/), {
       target: { value: "Looks off here" },
     });
     fireEvent.click(screen.getByText("Comment"));

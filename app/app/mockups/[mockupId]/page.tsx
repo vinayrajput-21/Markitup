@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getMockupSignedUrl } from "@/app/app/projects/[projectId]/actions";
 import { MockupViewer, type ViewerPin } from "@/components/viewer/MockupViewer";
-import { CopyLinkButton } from "@/components/viewer/CopyLinkButton";
+import { ShareDialog } from "@/components/viewer/ShareDialog";
 
 export default async function MockupPage({
   params,
@@ -15,7 +15,7 @@ export default async function MockupPage({
 
   const { data: mockup } = await supabase
     .from("mockups")
-    .select("id, name, file_path, type, project_id, projects(name)")
+    .select("id, name, file_path, type, project_id, projects(name, workspace_id)")
     .eq("id", mockupId)
     .maybeSingle();
   if (!mockup) notFound();
@@ -25,6 +25,21 @@ export default async function MockupPage({
     .select("id")
     .eq("project_id", mockup.project_id)
     .order("created_at", { ascending: true });
+
+  // people who can be @mentioned: workspace team + project reviewers/editors
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const workspaceId = (mockup as any).projects?.workspace_id as string | undefined;
+  const [{ data: wm }, { data: pm }] = await Promise.all([
+    supabase.from("workspace_members").select("profiles(id, name)").eq("workspace_id", workspaceId ?? ""),
+    supabase.from("project_members").select("profiles(id, name)").eq("project_id", mockup.project_id),
+  ]);
+  const memberMap = new Map<string, { id: string; name: string }>();
+  for (const row of [...(wm ?? []), ...(pm ?? [])]) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const p = (row as any).profiles;
+    if (p?.id && p?.name) memberMap.set(p.id, { id: p.id, name: p.name });
+  }
+  const members = [...memberMap.values()];
 
   const { data: pins } = await supabase
     .from("pins")
@@ -83,7 +98,7 @@ export default async function MockupPage({
           <span className="hidden font-mono text-xs text-faint sm:inline">
             {resolved}/{viewerPins.length} resolved
           </span>
-          <CopyLinkButton />
+          <ShareDialog mockupId={mockupId} />
         </div>
       </header>
 
@@ -96,6 +111,7 @@ export default async function MockupPage({
             imageName={mockup.name}
             initialPins={viewerPins}
             siblings={siblings ?? [{ id: mockupId }]}
+            members={members}
           />
         ) : (
           <div className="grid h-full place-items-center text-sm text-faint">

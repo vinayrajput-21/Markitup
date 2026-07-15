@@ -1,12 +1,17 @@
 import { signUp } from "@/app/auth/actions";
 import { AuthShell, AuthLink } from "@/components/auth/AuthShell";
 
-export default function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
   return (
     <AuthShell
       title="Create your account"
       subtitle="Set up a workspace and start collecting feedback in minutes."
-      footer={<>Already have an account? <AuthLink href="/login">Log in</AuthLink></>}
+      footer={<>Already have an account? <AuthLink href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"}>Log in</AuthLink></>}
     >
       <form
         action={async (formData: FormData) => {
@@ -15,6 +20,7 @@ export default function SignupPage() {
         }}
         className="flex flex-col gap-4"
       >
+        {next && <input type="hidden" name="next" value={next} />}
         <div>
           <label htmlFor="name" className="field-label">Full name</label>
           <input id="name" name="name" type="text" autoComplete="name" placeholder="Jane Designer" required className="field" />

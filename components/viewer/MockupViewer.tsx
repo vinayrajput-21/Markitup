@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { toNormalized } from "@/lib/coords";
 import { PinMarker } from "./PinMarker";
-import { CommentThread } from "./CommentThread";
+import { CommentThread, type Member } from "./CommentThread";
 import { CommentFilter, type Filter } from "./CommentFilter";
 import { createPin } from "@/app/app/mockups/[mockupId]/actions";
 import { timeAgo } from "@/lib/format";
@@ -115,12 +115,14 @@ export function MockupViewer({
   imageName,
   initialPins,
   siblings,
+  members,
 }: {
   mockupId: string;
   imageUrl: string;
   imageName: string;
   initialPins: ViewerPin[];
   siblings: Sibling[];
+  members: Member[];
 }) {
   const [pins, setPins] = useState<ViewerPin[]>(initialPins);
   const [activePinId, setActivePinId] = useState<string | null>(null);
@@ -236,6 +238,7 @@ export function MockupViewer({
           <CommentThread
             mockupId={mockupId}
             pin={activePin}
+            members={members}
             onBack={() => setActivePinId(null)}
             onChange={(updated) => setPins((ps) => ps.map((p) => (p.id === updated.id ? updated : p)))}
           />
