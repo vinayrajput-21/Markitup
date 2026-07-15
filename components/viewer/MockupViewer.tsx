@@ -34,8 +34,11 @@ function PinListItem({ pin, onSelect }: { pin: ViewerPin; onSelect: () => void }
       className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors duration-150 hover:bg-brand-soft/60"
     >
       <span
-        className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full font-mono text-xs font-bold text-white"
-        style={{ background: resolved ? "var(--color-success)" : "var(--color-brand)" }}
+        className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full font-mono text-xs font-bold"
+        style={{
+          background: resolved ? "var(--success)" : "var(--primary)",
+          color: resolved ? "#fff" : "var(--primary-foreground)",
+        }}
       >
         {pin.number}
       </span>
@@ -197,7 +200,10 @@ export function MockupViewer({
 
         {counts.all === 0 && (
           <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center">
-            <span className="rounded-full bg-ink/85 px-4 py-2 text-xs font-medium text-white shadow-lg">
+            <span
+              className="rounded-full px-4 py-2 text-xs font-medium shadow-lg"
+              style={{ background: "var(--foreground)", color: "var(--background)" }}
+            >
               Click anywhere on the design to leave a comment
             </span>
           </div>

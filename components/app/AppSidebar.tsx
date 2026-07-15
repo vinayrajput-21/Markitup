@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "@/app/auth/actions";
+import { ThemeMenu } from "./ThemeMenu";
 
 function initials(name: string, email: string) {
   const base = (name || email || "?").trim();
@@ -104,7 +105,7 @@ export function AppSidebar({
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-r bg-surface">
+    <aside className="flex w-64 shrink-0 flex-col border-r bg-sidebar">
       {/* workspace switcher */}
       <div className="p-3">
         <Link
@@ -146,8 +147,11 @@ export function AppSidebar({
         </ul>
       </nav>
 
-      {/* user */}
+      {/* theme + user */}
       <div className="border-t p-3">
+        <div className="mb-1">
+          <ThemeMenu />
+        </div>
         <div className="flex items-center gap-2.5 rounded-lg p-1.5">
           <Avatar name={userName} email={userEmail} size={34} />
           <span className="min-w-0 flex-1">

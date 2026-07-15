@@ -80,8 +80,11 @@ export function CommentThread({
       <div className="flex items-center justify-between gap-2 px-4 py-3">
         <div className="flex items-center gap-2">
           <span
-            className="grid h-6 w-6 place-items-center rounded-full font-mono text-xs font-bold text-white"
-            style={{ background: resolved ? "var(--color-success)" : "var(--color-brand)" }}
+            className="grid h-6 w-6 place-items-center rounded-full font-mono text-xs font-bold"
+            style={{
+              background: resolved ? "var(--success)" : "var(--primary)",
+              color: resolved ? "#fff" : "var(--primary-foreground)",
+            }}
           >
             {pin.number}
           </span>

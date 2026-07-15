@@ -29,7 +29,14 @@ export default function RootLayout({
       lang="en"
       className={`${jakarta.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var a=localStorage.getItem('ui-accent');var m=localStorage.getItem('ui-mode');var e=document.documentElement;if(a&&a!=='neutral')e.setAttribute('data-theme',a);if(m==='dark')e.classList.add('dark');}catch(_){}`,
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }
