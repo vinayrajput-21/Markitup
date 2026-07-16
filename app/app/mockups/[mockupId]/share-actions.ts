@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { sendEmail } from "@/lib/email/send";
+import { invitation } from "@/lib/email/templates";
 
 export type Invited = {
   id: string | null;
@@ -97,9 +99,10 @@ export async function inviteToProject(mockupId: string, email: string) {
   const clean = email.trim().toLowerCase();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clean)) return { error: "Enter a valid email address" };
 
-  const { supabase, projectId, workspaceId } = await mockupContext(mockupId);
+  const { supabase, projectId, workspaceId, workspaceName } = await mockupContext(mockupId);
   if (!projectId || !workspaceId) return { error: "Mockup not found" };
   const { data: userData } = await supabase.auth.getUser();
+  const inviterName = (userData.user?.user_metadata?.name as string) || "A teammate";
 
   const { data: profileId } = await supabase.rpc("find_profile_id_by_email", { p_email: clean });
 
@@ -108,6 +111,9 @@ export async function inviteToProject(mockupId: string, email: string) {
       .from("project_members")
       .insert({ project_id: projectId, user_id: profileId, role: "reviewer" });
     if (error && !/duplicate|unique/i.test(error.message)) return { error: error.message };
+    try {
+      await sendEmail({ to: clean, ...invitation({ inviterName, workspaceName, isNewUser: false }) });
+    } catch (e) { console.error("[invite] email failed", e); }
     revalidatePath(`/app/mockups/${mockupId}`);
     return { invited: false as const };
   }
@@ -120,6 +126,9 @@ export async function inviteToProject(mockupId: string, email: string) {
     invited_by: userData.user!.id,
   });
   if (error) return { error: error.message };
+  try {
+    await sendEmail({ to: clean, ...invitation({ inviterName, workspaceName, isNewUser: true }) });
+  } catch (e) { console.error("[invite] email failed", e); }
   revalidatePath(`/app/mockups/${mockupId}`);
   return { invited: true as const };
 }

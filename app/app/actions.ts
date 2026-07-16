@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { sendEmail } from "@/lib/email/send";
+import { invitation } from "@/lib/email/templates";
 
 export async function getCurrentWorkspace() {
   const supabase = await createServerSupabase();
@@ -76,11 +78,19 @@ export async function addMemberByEmail(formData: FormData) {
     p_email: email,
   });
 
+  const inviterName = (userData.user?.user_metadata?.name as string) || "A teammate";
+
   if (profileId) {
     const { error } = await supabase
       .from("workspace_members")
       .insert({ workspace_id: ws.id, user_id: profileId, role: "member" });
     if (error) return { error: error.message };
+    try {
+      const tpl = invitation({ inviterName, workspaceName: ws.name, isNewUser: false });
+      await sendEmail({ to: email, ...tpl });
+    } catch (e) {
+      console.error("[invite] email failed", e);
+    }
     revalidatePath("/app/members");
     return { invited: false };
   }
@@ -89,6 +99,12 @@ export async function addMemberByEmail(formData: FormData) {
     .from("invitations")
     .insert({ workspace_id: ws.id, email, invited_by: userData.user!.id });
   if (error) return { error: error.message };
+  try {
+    const tpl = invitation({ inviterName, workspaceName: ws.name, isNewUser: true });
+    await sendEmail({ to: email, ...tpl });
+  } catch (e) {
+    console.error("[invite] email failed", e);
+  }
   revalidatePath("/app/members");
   return { invited: true };
 }
