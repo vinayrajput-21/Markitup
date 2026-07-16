@@ -5,6 +5,10 @@ import { describe, it, expect, vi } from "vitest";
 // in app/auth/actions.test.ts.
 vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 
+// Isolate from real email: without this, a set RESEND_API_KEY would make a live
+// Resend call (and could send a real email to new@client.com) when this runs.
+vi.mock("@/lib/email/send", () => ({ sendEmail: vi.fn().mockResolvedValue({ ok: true }), EMAIL_FROM: "x" }));
+
 vi.mock("@/lib/supabase/server", () => ({
   createServerSupabase: async () => ({
     auth: { getUser: async () => ({ data: { user: { id: "u1" } } }) },
