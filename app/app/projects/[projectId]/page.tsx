@@ -32,6 +32,19 @@ export default async function ProjectPage({
     for (const u of urls ?? []) if (u.signedUrl && u.path) signed.set(u.path, u.signedUrl);
   }
 
+  const { data: authData } = await supabase.auth.getUser();
+  const meId = authData.user?.id ?? "";
+  const ids = rows.map((m) => m.id);
+  const viewedIds = new Set<string>();
+  if (meId && ids.length) {
+    const { data: views } = await supabase
+      .from("mockup_views")
+      .select("mockup_id")
+      .eq("user_id", meId)
+      .in("mockup_id", ids);
+    for (const v of views ?? []) viewedIds.add(v.mockup_id as string);
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-8 py-8">
       <Link
@@ -58,7 +71,15 @@ export default async function ProjectPage({
           {rows.map((m) => (
             <li key={m.id}>
               <Link href={`/app/mockups/${m.id}`} className="card card-hover block overflow-hidden">
-                <div className="aspect-[4/3] w-full overflow-hidden border-b bg-canvas">
+                <div className="relative aspect-[4/3] w-full overflow-hidden border-b bg-canvas">
+                  {!viewedIds.has(m.id) && (
+                    <span
+                      className="absolute left-2 top-2 z-10 rounded-full px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-wide text-white"
+                      style={{ background: "var(--color-brand)" }}
+                    >
+                      New
+                    </span>
+                  )}
                   {signed.get(m.file_path) ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={signed.get(m.file_path)} alt="" className="h-full w-full object-cover object-top" />
