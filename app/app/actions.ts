@@ -108,3 +108,23 @@ export async function addMemberByEmail(formData: FormData) {
   revalidatePath("/app/members");
   return { invited: true };
 }
+
+export async function updateProfileName(formData: FormData) {
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) return { error: "Name cannot be empty" };
+  const supabase = await createServerSupabase();
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) return { error: "Not signed in" };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ name })
+    .eq("id", userData.user.id);
+  if (error) return { error: error.message };
+
+  // Mirror into auth metadata so headers/menus that read user_metadata stay in sync.
+  await supabase.auth.updateUser({ data: { name } });
+
+  revalidatePath("/app");
+  return {};
+}
