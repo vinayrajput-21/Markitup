@@ -4,6 +4,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { getMockupSignedUrl } from "@/app/app/projects/[projectId]/actions";
 import { MockupViewer, type ViewerPin } from "@/components/viewer/MockupViewer";
 import { ShareDialog } from "@/components/viewer/ShareDialog";
+import { emailLocalPart } from "@/lib/format";
 
 export default async function MockupPage({
   params,
@@ -43,9 +44,15 @@ export default async function MockupPage({
 
   const { data: pins } = await supabase
     .from("pins")
-    .select("id, x, y, number, status, comments(id, body, parent_comment_id, created_at, profiles(name))")
+    .select("id, x, y, number, status, comments(id, body, parent_comment_id, created_at, profiles(name, email))")
     .eq("mockup_id", mockupId)
     .order("number", { ascending: true });
+
+  const { data: authData } = await supabase.auth.getUser();
+  const currentUserName =
+    (authData.user?.user_metadata?.name as string) ||
+    emailLocalPart(authData.user?.email ?? "") ||
+    "You";
 
   const url = await getMockupSignedUrl(mockup.file_path);
 
@@ -64,7 +71,7 @@ export default async function MockupPage({
       body: c.body,
       parentCommentId: c.parent_comment_id,
       createdAt: c.created_at,
-      authorName: c.profiles?.name ?? "Someone",
+      authorName: c.profiles?.name || emailLocalPart(c.profiles?.email ?? "") || "Unknown",
     })),
   }));
 
@@ -112,6 +119,7 @@ export default async function MockupPage({
             initialPins={viewerPins}
             siblings={siblings ?? [{ id: mockupId }]}
             members={members}
+            currentUserName={currentUserName}
           />
         ) : (
           <div className="grid h-full place-items-center text-sm text-faint">

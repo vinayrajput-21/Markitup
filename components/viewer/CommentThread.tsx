@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import type { ViewerPin, ViewerComment } from "./MockupViewer";
 import { addComment, setPinStatus } from "@/app/app/mockups/[mockupId]/actions";
 import { Avatar } from "@/components/app/AppSidebar";
-import { timeAgo } from "@/lib/format";
+import { timeAgo, formatDateTime } from "@/lib/format";
 
 export type Member = { id: string; name: string };
 
@@ -40,7 +40,7 @@ function CommentRow({ c, names, small = false }: { c: ViewerComment; names: stri
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
           <span className="truncate text-sm font-semibold text-ink">{c.authorName}</span>
-          <span className="shrink-0 font-mono text-[0.6875rem] text-faint">{timeAgo(c.createdAt)}</span>
+          <span className="shrink-0 font-mono text-[0.6875rem] text-faint" title={formatDateTime(c.createdAt)}>{timeAgo(c.createdAt)}</span>
         </div>
         <p className="mt-0.5 text-sm leading-relaxed break-words text-muted">
           <MentionText text={c.body} names={names} />
@@ -54,12 +54,14 @@ export function CommentThread({
   mockupId,
   pin,
   members,
+  currentUserName,
   onChange,
   onBack,
 }: {
   mockupId: string;
   pin: ViewerPin;
   members: Member[];
+  currentUserName: string;
   onChange: (p: ViewerPin) => void;
   onBack?: () => void;
 }) {
@@ -109,7 +111,7 @@ export function CommentThread({
     const optimistic: ViewerComment = {
       id: `tmp-${pin.comments.length}`,
       body: text,
-      authorName: "You",
+      authorName: currentUserName,
       parentCommentId: replyTo,
       createdAt: new Date().toISOString(),
     };

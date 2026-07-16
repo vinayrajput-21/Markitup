@@ -16,6 +16,7 @@ describe("CommentThread", () => {
         mockupId="m1"
         pin={{ id: "p1", x: 0.5, y: 0.5, number: 1, status: "active", comments: [] }}
         members={[]}
+        currentUserName="Tester"
         onChange={onChange}
       />,
     );

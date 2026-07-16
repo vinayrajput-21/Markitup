@@ -117,6 +117,7 @@ export function MockupViewer({
   initialPins,
   siblings,
   members,
+  currentUserName,
 }: {
   mockupId: string;
   imageUrl: string;
@@ -124,6 +125,7 @@ export function MockupViewer({
   initialPins: ViewerPin[];
   siblings: Sibling[];
   members: Member[];
+  currentUserName: string;
 }) {
   const [pins, setPins] = useState<ViewerPin[]>(initialPins);
   const [activePinId, setActivePinId] = useState<string | null>(null);
@@ -217,7 +219,7 @@ export function MockupViewer({
           number: number!,
           status: "active",
           comments: [
-            { id: `tmp-${pinId}`, body, authorName: "You", parentCommentId: null, createdAt: new Date().toISOString() },
+            { id: `tmp-${pinId}`, body, authorName: currentUserName, parentCommentId: null, createdAt: new Date().toISOString() },
           ],
         },
       ]);
@@ -284,6 +286,7 @@ export function MockupViewer({
             mockupId={mockupId}
             pin={activePin}
             members={members}
+            currentUserName={currentUserName}
             onBack={() => setActivePinId(null)}
             onChange={(updated) => setPins((ps) => ps.map((p) => (p.id === updated.id ? updated : p)))}
           />

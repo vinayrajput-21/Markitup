@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { MockupViewer } from "./MockupViewer";
 import { createPin, addComment } from "@/app/app/mockups/[mockupId]/actions";
@@ -110,5 +110,27 @@ describe("MockupViewer", () => {
     expect(screen.queryByLabelText(/Pin 1/)).toBeNull();
     // popup stays open so the user can retry
     expect(screen.getByPlaceholderText(/add comment here/i)).toBeTruthy();
+  });
+
+  it("labels a newly created pin comment with the current user's name", async () => {
+    render(
+      <MockupViewer
+        mockupId="m1"
+        imageUrl="http://x/y.png"
+        imageName="y.png"
+        initialPins={[]}
+        siblings={[{ id: "m1" }]}
+        members={[]}
+        currentUserName="Ravi Rajput"
+      />,
+    );
+    const img = screen.getByAltText("mockup");
+    fireEvent.load(img);
+    fireEvent.click(img);
+    fireEvent.change(screen.getByPlaceholderText(/add comment here/i), {
+      target: { value: "Fix the header" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^comment$/i }));
+    await waitFor(() => expect(screen.getByText("Ravi Rajput")).toBeTruthy());
   });
 });
