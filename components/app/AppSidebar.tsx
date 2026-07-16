@@ -67,7 +67,7 @@ function LogoMark() {
 const NAV = [
   {
     href: "/app",
-    label: "Projects",
+    label: "Dashboard",
     match: (p: string) =>
       p === "/app" || p.startsWith("/app/projects") || p.startsWith("/app/mockups"),
     icon: (
@@ -81,13 +81,25 @@ const NAV = [
   },
   {
     href: "/app/members",
-    label: "Members",
+    label: "Team",
     match: (p: string) => p.startsWith("/app/members"),
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
         <circle cx="9" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.7" />
         <path d="M3.5 19a5.5 5.5 0 0 1 11 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
         <path d="M16 5.2a3.2 3.2 0 0 1 0 5.6M17 19a5.5 5.5 0 0 0-2.2-4.4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    href: "/app/archive",
+    label: "Archive",
+    match: (p: string) => p.startsWith("/app/archive"),
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <rect x="3" y="4" width="18" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
+        <path d="M4.5 9V18a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M10 13h4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
       </svg>
     ),
   },
