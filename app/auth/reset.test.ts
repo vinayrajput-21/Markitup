@@ -16,7 +16,9 @@ describe("requestPasswordReset", () => {
     expect(res.sent).toBe(true);
     expect(resetMock).toHaveBeenCalledWith(
       "ravi@x.com",
-      expect.objectContaining({ redirectTo: expect.stringContaining("/reset-password") }),
+      expect.objectContaining({ redirectTo: expect.stringContaining("/auth/callback") }),
     );
+    const redirectTo = resetMock.mock.calls[0][1].redirectTo;
+    expect(redirectTo).toContain("reset-password");
   });
 });

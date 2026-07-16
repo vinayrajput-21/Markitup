@@ -8,5 +8,8 @@ export async function GET(request: Request) {
     const supabase = await createServerSupabase();
     await supabase.auth.exchangeCodeForSession(code);
   }
-  return NextResponse.redirect(`${origin}/app`);
+  // Only honor same-app relative paths as the post-exchange destination.
+  const next = searchParams.get("next");
+  const dest = next && next.startsWith("/") && !next.startsWith("//") ? next : "/app";
+  return NextResponse.redirect(`${origin}${dest}`);
 }

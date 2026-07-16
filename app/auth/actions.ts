@@ -74,12 +74,15 @@ export async function requestPasswordReset(
   _prev: { error?: string; sent?: boolean },
   formData: FormData,
 ): Promise<{ error?: string; sent?: boolean }> {
-  const email = String(formData.get("email")).trim().toLowerCase();
+  const raw = formData.get("email");
+  const email = (typeof raw === "string" ? raw : "").trim().toLowerCase();
   if (!email) return { error: "Enter your email address" };
   const supabase = await createServerSupabase();
   // Ignore the result to avoid revealing whether an account exists.
+  // Route through /auth/callback so the PKCE code is exchanged server-side,
+  // which makes cross-device / cross-browser resets work.
   await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${APP_URL}/reset-password`,
+    redirectTo: `${APP_URL}/auth/callback?next=/reset-password`,
   });
   return { sent: true };
 }
