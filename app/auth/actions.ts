@@ -2,6 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { sendEmail } from "@/lib/email/send";
+import { welcome } from "@/lib/email/templates";
 
 // Only allow same-app relative paths as post-login destinations.
 function safeNext(formData: FormData): string {
@@ -29,6 +31,15 @@ export async function signUp(formData: FormData) {
     options: { data: { name } },
   });
   if (error) return { error: error.message };
+
+  // Best-effort welcome email; never blocks or fails the signup.
+  try {
+    const tpl = welcome({ name: name || email });
+    await sendEmail({ to: email, ...tpl });
+  } catch (e) {
+    console.error("[signup] welcome email failed", e);
+  }
+
   redirect(safeNext(formData));
 }
 
