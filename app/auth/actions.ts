@@ -67,3 +67,19 @@ export async function signUpAction(
 ): Promise<AuthState> {
   return (await signUp(formData)) ?? {};
 }
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://markitup-woad.vercel.app";
+
+export async function requestPasswordReset(
+  _prev: { error?: string; sent?: boolean },
+  formData: FormData,
+): Promise<{ error?: string; sent?: boolean }> {
+  const email = String(formData.get("email")).trim().toLowerCase();
+  if (!email) return { error: "Enter your email address" };
+  const supabase = await createServerSupabase();
+  // Ignore the result to avoid revealing whether an account exists.
+  await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${APP_URL}/reset-password`,
+  });
+  return { sent: true };
+}

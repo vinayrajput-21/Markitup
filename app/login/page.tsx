@@ -20,7 +20,10 @@ export default async function LoginPage({
           <input id="email" name="email" type="email" autoComplete="email" placeholder="you@agency.com" required className="field" />
         </div>
         <div>
-          <label htmlFor="password" className="field-label">Password</label>
+          <div className="flex items-center justify-between">
+            <label htmlFor="password" className="field-label">Password</label>
+            <AuthLink href="/forgot-password">Forgot password?</AuthLink>
+          </div>
           <input id="password" name="password" type="password" autoComplete="current-password" placeholder="••••••••" required className="field" />
         </div>
       </AuthForm>
