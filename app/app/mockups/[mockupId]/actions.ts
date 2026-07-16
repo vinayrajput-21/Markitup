@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { sendEmail } from "@/lib/email/send";
+import { commentNotification } from "@/lib/email/templates";
 
 export async function createPin(mockupId: string, x: number, y: number) {
   const supabase = await createServerSupabase();
@@ -24,13 +26,54 @@ export async function addComment(
 ) {
   const supabase = await createServerSupabase();
   const { data: userData } = await supabase.auth.getUser();
+  const author = userData.user!;
   const { error } = await supabase.from("comments").insert({
     pin_id: pinId,
-    author_id: userData.user!.id,
+    author_id: author.id,
     body,
     parent_comment_id: parentCommentId ?? null,
   });
   if (error) return { error: error.message };
+
+  // Best-effort: notify the team (everyone but the author). Never fail the comment.
+  try {
+    const { data: mk } = await supabase
+      .from("mockups")
+      .select("name, project_id, projects(workspace_id)")
+      .eq("id", mockupId)
+      .maybeSingle();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const workspaceId = (mk as any)?.projects?.workspace_id as string | undefined;
+    const projectId = mk?.project_id as string | undefined;
+    if (mk && (workspaceId || projectId)) {
+      const [{ data: wm }, { data: pm }] = await Promise.all([
+        supabase.from("workspace_members").select("profiles(id, name, email)").eq("workspace_id", workspaceId ?? ""),
+        supabase.from("project_members").select("profiles(id, name, email)").eq("project_id", projectId ?? ""),
+      ]);
+      const recipients = new Map<string, { name: string; email: string }>();
+      for (const row of [...(wm ?? []), ...(pm ?? [])]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const p = (row as any).profiles;
+        if (p?.id && p.id !== author.id && p.email) {
+          recipients.set(p.email, { name: p.name ?? "there", email: p.email });
+        }
+      }
+      const commenterName = (author.user_metadata?.name as string) || author.email || "Someone";
+      for (const r of recipients.values()) {
+        const tpl = commentNotification({
+          recipientName: r.name,
+          commenterName,
+          mockupName: mk.name as string,
+          body,
+          mockupId,
+        });
+        await sendEmail({ to: r.email, ...tpl });
+      }
+    }
+  } catch (e) {
+    console.error("[comment] notification failed", e);
+  }
+
   revalidatePath(`/app/mockups/${mockupId}`);
   return {};
 }
