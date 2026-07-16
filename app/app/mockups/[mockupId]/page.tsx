@@ -5,6 +5,7 @@ import { getMockupSignedUrl } from "@/app/app/projects/[projectId]/actions";
 import { MockupViewer, type ViewerPin } from "@/components/viewer/MockupViewer";
 import { ShareDialog } from "@/components/viewer/ShareDialog";
 import { ProfileMenu } from "@/components/app/ProfileMenu";
+import { NotificationBell } from "@/components/app/NotificationBell";
 import { emailLocalPart } from "@/lib/format";
 
 export default async function MockupPage({
@@ -108,6 +109,7 @@ export default async function MockupPage({
             {resolved}/{viewerPins.length} resolved
           </span>
           <ShareDialog mockupId={mockupId} />
+          <NotificationBell />
           <ProfileMenu name={currentUserName} email={currentUserEmail} />
         </div>
       </header>

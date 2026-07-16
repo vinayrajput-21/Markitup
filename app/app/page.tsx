@@ -3,6 +3,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { getCurrentWorkspace, createProject } from "./actions";
 import { timeAgo, plural, emailLocalPart } from "@/lib/format";
 import { ProfileMenu } from "@/components/app/ProfileMenu";
+import { NotificationBell } from "@/components/app/NotificationBell";
 
 type ProjectRow = {
   id: string;
@@ -85,7 +86,8 @@ export default async function ProjectsPage() {
             New project
           </button>
         </form>
-        <div className="ml-auto self-center">
+        <div className="ml-auto flex items-center gap-2 self-center">
+          <NotificationBell />
           <ProfileMenu name={userName} email={userEmail} />
         </div>
       </div>
