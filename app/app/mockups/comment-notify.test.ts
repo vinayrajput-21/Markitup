@@ -24,7 +24,7 @@ vi.mock("@/lib/supabase/server", () => ({
     auth: { getUser: async () => ({ data: { user: { id: "u1", user_metadata: { name: "Author" }, email: "author@x.com" } } }) },
     rpc: h.rpcMock,
     from: (table: string) => {
-      if (table === "comments") return { insert: async () => ({ error: null }) };
+      if (table === "comments") return { insert: () => ({ select: () => ({ single: async () => ({ data: { id: "c1" }, error: null }) }) }) };
       if (table === "mockups") return {
         select: () => ({ eq: () => ({ maybeSingle: async () => {
           if (h.state.mockupThrows) throw new Error("mockup lookup failed");

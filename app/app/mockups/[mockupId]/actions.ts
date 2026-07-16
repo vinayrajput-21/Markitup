@@ -24,18 +24,33 @@ export async function addComment(
   pinId: string,
   body: string,
   parentCommentId?: string,
+  attachments?: { path: string; type: "image" | "pdf"; name: string }[],
 ) {
   const supabase = await createServerSupabase();
   const { data: userData } = await supabase.auth.getUser();
   const author = userData.user!;
   const cleanBody = sanitizeCommentHtml(body);
-  const { error } = await supabase.from("comments").insert({
-    pin_id: pinId,
-    author_id: author.id,
-    body: cleanBody,
-    parent_comment_id: parentCommentId ?? null,
-  });
+  const { data: inserted, error } = await supabase
+    .from("comments")
+    .insert({
+      pin_id: pinId,
+      author_id: author.id,
+      body: cleanBody,
+      parent_comment_id: parentCommentId ?? null,
+    })
+    .select("id")
+    .single();
   if (error) return { error: error.message };
+
+  if (attachments?.length && inserted?.id) {
+    try {
+      await supabase.from("comment_attachments").insert(
+        attachments.map((a) => ({ comment_id: inserted.id, file_path: a.path, type: a.type, name: a.name })),
+      );
+    } catch (e) {
+      console.error("[comment] attachment insert failed", e);
+    }
+  }
 
   // Best-effort: notify the team (everyone but the author). Never fail the comment.
   try {
