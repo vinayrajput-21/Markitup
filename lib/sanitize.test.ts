@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { sanitizeCommentHtml } from "./sanitize";
+import { sanitizeCommentHtml, htmlToPlainText } from "./sanitize";
 
 describe("sanitizeCommentHtml", () => {
   it("keeps allowed formatting", () => {
@@ -16,5 +16,14 @@ describe("sanitizeCommentHtml", () => {
   it("keeps safe links, drops javascript: urls", () => {
     expect(sanitizeCommentHtml('<a href="https://x.com">x</a>')).toContain('href="https://x.com"');
     expect(sanitizeCommentHtml('<a href="javascript:alert(1)">x</a>')).not.toContain("javascript:");
+  });
+});
+
+describe("htmlToPlainText", () => {
+  it("strips all tags, leaving text", () => {
+    const out = htmlToPlainText("<b>hi</b><script>x</script>");
+    expect(out).toContain("hi");
+    expect(out).not.toContain("<b>");
+    expect(out).not.toContain("<script");
   });
 });

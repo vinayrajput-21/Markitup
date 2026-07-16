@@ -6,7 +6,8 @@ import { CommentThread } from "./CommentThread";
 import type { ViewerPin } from "./MockupViewer";
 
 vi.mock("@/app/app/mockups/[mockupId]/actions", () => ({
-  addComment: async () => ({}),
+  // Echo the submitted body as the server-sanitized body the client renders.
+  addComment: async (_m: string, _p: string, body: string) => ({ body }),
   setPinStatus: async () => ({}),
 }));
 

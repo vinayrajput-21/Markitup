@@ -6,7 +6,8 @@ import { createPin, addComment } from "@/app/app/mockups/[mockupId]/actions";
 
 vi.mock("@/app/app/mockups/[mockupId]/actions", () => ({
   createPin: vi.fn(async () => ({ id: "p1", number: 1 })),
-  addComment: vi.fn(async () => ({})),
+  // Echo the submitted body as the server-sanitized body the client renders.
+  addComment: vi.fn(async (_m: string, _p: string, body: string) => ({ body })),
   setPinStatus: vi.fn(async () => ({})),
 }));
 
@@ -18,7 +19,7 @@ beforeEach(() => {
   mockCreatePin.mockReset();
   mockCreatePin.mockResolvedValue({ id: "p1", number: 1 });
   mockAddComment.mockReset();
-  mockAddComment.mockResolvedValue({});
+  mockAddComment.mockImplementation(async (_m: string, _p: string, body: string) => ({ body }));
   Element.prototype.getBoundingClientRect = () =>
     ({ left: 0, top: 0, width: 100, height: 100, right: 100, bottom: 100, x: 0, y: 0, toJSON: () => {} }) as DOMRect;
   Object.assign(global, {
@@ -133,5 +134,24 @@ describe("MockupViewer", () => {
     fireEvent.input(textbox, { target: { innerHTML: "Fix the header" } });
     fireEvent.click(screen.getByRole("button", { name: /^comment$/i }));
     await waitFor(() => expect(screen.getByText("Ravi Rajput")).toBeTruthy());
+  });
+
+  it("renders the server-returned body, never the raw typed HTML", async () => {
+    // Server always returns sanitized output regardless of the dirty input.
+    mockAddComment.mockResolvedValue({ body: "SAFE-OUTPUT" });
+    const { container } = renderViewer();
+    const img = screen.getByAltText("mockup");
+    fireEvent.load(img);
+    fireEvent.click(img);
+    const textbox = screen.getByRole("textbox", { name: /comment/i });
+    fireEvent.input(textbox, { target: { innerHTML: '<img src=x onerror="alert(1)">bad' } });
+    fireEvent.click(screen.getByRole("button", { name: /^comment$/i }));
+
+    await waitFor(() => expect(screen.getByText("SAFE-OUTPUT")).toBeInTheDocument());
+    // The dangerous payload must never reach the DOM (the mockup <img> is
+    // legitimate; the injected onerror <img> must not exist).
+    expect(container.querySelector("img[onerror]")).toBeNull();
+    expect(container.innerHTML).not.toContain("onerror");
+    expect(container.innerHTML).not.toContain("<img src=x");
   });
 });

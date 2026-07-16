@@ -13,3 +13,10 @@ export function sanitizeCommentHtml(dirty: string): string {
     },
   });
 }
+
+// Strip all HTML, leaving only the text content. Used for plain-text contexts
+// (e.g. notification email bodies) where rendered tags would show as literal
+// markup.
+export function htmlToPlainText(html: string): string {
+  return sanitizeHtml(html ?? "", { allowedTags: [], allowedAttributes: {} });
+}

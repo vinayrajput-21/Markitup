@@ -55,7 +55,8 @@ export function CommentThread({
     if (res.error) return;
     const optimistic: ViewerComment = {
       id: `tmp-${pin.comments.length}`,
-      body: text,
+      // Render only the server-sanitized HTML, never the raw editor input.
+      body: res.body ?? "",
       authorName: currentUserName,
       parentCommentId: replyTo,
       createdAt: new Date().toISOString(),

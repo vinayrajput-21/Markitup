@@ -65,6 +65,21 @@ describe("addComment notifications", () => {
     expect(recipients).toEqual(["client@x.com", "team@x.com"]);
   });
 
+  it("sends plain text (no HTML tags) in the notification email body", async () => {
+    const { addComment } = await import("./[mockupId]/actions");
+    await addComment("m1", "pin1", "<p>Please <b>fix</b> the header</p>");
+    // The email templates escape their inputs; sending plain text means no
+    // literal tag characters ever reach the recipient's rendered body.
+    for (const call of h.sendEmail.mock.calls) {
+      const { html, text } = call[0];
+      expect(html).not.toContain("&lt;p&gt;");
+      expect(html).not.toContain("&lt;b&gt;");
+      expect(text).not.toContain("<p>");
+      expect(text).not.toContain("<b>");
+      expect(text).toContain("Please fix the header");
+    }
+  });
+
   it("de-dupes a member who is in both the workspace and the project (one email, not two)", async () => {
     // u2 (team@x.com) appears in BOTH lists; u3 (client@x.com) only in the project.
     h.state.workspaceMembers = [
@@ -87,14 +102,16 @@ describe("addComment notifications", () => {
     expect(new Set(recipients).size).toBe(recipients.length);
   });
 
-  it("still returns {} (never throws, no error) when the recipient lookup fails", async () => {
+  it("still returns the sanitized body (never throws, no error) when the recipient lookup fails", async () => {
     // Force the notification lookup to blow up; the comment insert itself still succeeds.
     h.state.mockupThrows = true;
 
     const { addComment } = await import("./[mockupId]/actions");
     const result = await addComment("m1", "pin1", "Please fix the header");
 
-    expect(result).toEqual({});
+    // Success return carries the server-sanitized body (plain text here);
+    // crucially no `error` and no throw despite the failed recipient lookup.
+    expect(result).toEqual({ body: "Please fix the header" });
     expect(h.sendEmail).not.toHaveBeenCalled();
   });
 

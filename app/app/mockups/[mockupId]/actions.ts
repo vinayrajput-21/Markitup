@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email/send";
 import { commentNotification } from "@/lib/email/templates";
-import { sanitizeCommentHtml } from "@/lib/sanitize";
+import { sanitizeCommentHtml, htmlToPlainText } from "@/lib/sanitize";
 
 export async function createPin(mockupId: string, x: number, y: number) {
   const supabase = await createServerSupabase();
@@ -66,7 +66,7 @@ export async function addComment(
           recipientName: r.name,
           commenterName,
           mockupName: mk.name as string,
-          body,
+          body: htmlToPlainText(cleanBody),
           mockupId,
         });
         await sendEmail({ to: r.email, ...tpl });
@@ -85,7 +85,7 @@ export async function addComment(
   }
 
   revalidatePath(`/app/mockups/${mockupId}`);
-  return {};
+  return { body: cleanBody };
 }
 
 export async function setPinStatus(

@@ -219,7 +219,8 @@ export function MockupViewer({
           number: number!,
           status: "active",
           comments: [
-            { id: `tmp-${pinId}`, body, authorName: currentUserName, parentCommentId: null, createdAt: new Date().toISOString() },
+            // Render only the server-sanitized HTML, never the raw editor input.
+            { id: `tmp-${pinId}`, body: cRes.body ?? "", authorName: currentUserName, parentCommentId: null, createdAt: new Date().toISOString() },
           ],
         },
       ]);
