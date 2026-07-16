@@ -113,6 +113,14 @@ export async function inviteToProject(mockupId: string, email: string) {
     if (error && !/duplicate|unique/i.test(error.message)) return { error: error.message };
     try {
       await sendEmail({ to: clean, ...invitation({ inviterName, workspaceName, isNewUser: false }) });
+      await supabase.rpc("create_notification", {
+        p_user_id: profileId,
+        p_actor_id: userData.user!.id,
+        p_type: "share",
+        p_mockup_id: mockupId,
+        p_project_id: projectId,
+        p_body: `${inviterName} shared "${workspaceName}" with you`,
+      });
     } catch (e) { console.error("[invite] email failed", e); }
     revalidatePath(`/app/mockups/${mockupId}`);
     return { invited: false as const };

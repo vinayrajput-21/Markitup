@@ -4,6 +4,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const h = vi.hoisted(() => ({
   state: { profileId: null as string | null },
   sendEmail: vi.fn().mockResolvedValue({ ok: true }),
+  rpc: vi.fn(async (name: string) =>
+    name === "find_profile_id_by_email" ? { data: h.state.profileId } : { error: null }
+  ),
 }));
 
 vi.mock("@/lib/email/send", () => ({ sendEmail: h.sendEmail, EMAIL_FROM: "x" }));
@@ -17,7 +20,7 @@ vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 vi.mock("@/lib/supabase/server", () => ({
   createServerSupabase: async () => ({
     auth: { getUser: async () => ({ data: { user: { id: "u1", user_metadata: { name: "Ravi" } } } }) },
-    rpc: async () => ({ data: h.state.profileId }), // null -> invitations path; id -> project_members path
+    rpc: h.rpc, // null -> invitations path; id -> project_members path
     from: (table: string) => {
       if (table === "mockups") return {
         select: () => ({ eq: () => ({ maybeSingle: async () => ({
@@ -33,6 +36,7 @@ vi.mock("@/lib/supabase/server", () => ({
 describe("inviteToProject invite email", () => {
   beforeEach(() => {
     h.sendEmail.mockClear();
+    h.rpc.mockClear();
     h.state.profileId = null;
   });
 
@@ -54,5 +58,16 @@ describe("inviteToProject invite email", () => {
     expect(h.sendEmail).toHaveBeenCalledOnce();
     expect(h.sendEmail.mock.calls[0][0].to).toBe("new@client.com");
     expect(h.sendEmail.mock.calls[0][0].html).toContain("/signup");
+    expect(h.rpc.mock.calls.some((c) => c[0] === "create_notification")).toBe(false);
+  });
+
+  it("notifies an existing member when shared a mockup", async () => {
+    h.state.profileId = "existing-user"; // -> project_members path
+    const { inviteToProject } = await import("./[mockupId]/share-actions");
+    await inviteToProject("m1", "member@client.com");
+    expect(h.rpc.mock.calls).toContainEqual([
+      "create_notification",
+      expect.objectContaining({ p_user_id: "existing-user", p_type: "share" }),
+    ]);
   });
 });

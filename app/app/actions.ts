@@ -88,6 +88,14 @@ export async function addMemberByEmail(formData: FormData) {
     try {
       const tpl = invitation({ inviterName, workspaceName: ws.name, isNewUser: false });
       await sendEmail({ to: email, ...tpl });
+      await supabase.rpc("create_notification", {
+        p_user_id: profileId,
+        p_actor_id: userData.user!.id,
+        p_type: "invite",
+        p_mockup_id: null,
+        p_project_id: null,
+        p_body: `${inviterName} added you to ${ws.name}`,
+      });
     } catch (e) {
       console.error("[invite] email failed", e);
     }
