@@ -33,6 +33,32 @@ Email/password auth works out of the box. To also enable "Sign in with Google", 
 3. (If using the local Supabase CLI instead of the cloud dashboard, set the equivalent values under `[auth.external.google]` in `supabase/config.toml`.)
 4. The app's OAuth callback route (`app/auth/callback/route.ts`) exchanges the returned `code` for a session and redirects to `/app`; no additional app code changes are required once the provider is configured.
 
+## Email notifications (Resend)
+
+Transactional email (comment notifications, invites, welcome) is sent via
+[Resend](https://resend.com). Password-reset emails are sent by Supabase.
+
+1. Create a Resend account and an API key.
+2. Set these env vars (locally in `.env.local`, and in Vercel → Settings →
+   Environment Variables for Production/Preview):
+   - `RESEND_API_KEY` — your Resend API key.
+   - `EMAIL_FROM` — sender address. Use `onboarding@resend.dev` until you
+     verify a domain; then set e.g. `notifications@apexure.com`.
+   - `NEXT_PUBLIC_APP_URL` — your live URL, e.g. `https://markitup-woad.vercel.app`.
+3. In Supabase → Authentication → URL Configuration, add
+   `https://<your-app>/auth/callback` to the Redirect URLs. The password-reset
+   flow routes through this same route (it performs the server-side PKCE code
+   exchange, so resets work across devices) and then forwards internally to
+   `/reset-password`, which is same-origin and needs no separate allowlist
+   entry. This is the same callback URL used by Google sign-in above, so it
+   may already be present.
+4. **Go-live:** verify `apexure.com` in Resend (add the DNS records it shows),
+   then set `EMAIL_FROM=notifications@apexure.com`. Until then, Resend only
+   delivers to your own verified address.
+
+If `RESEND_API_KEY` is unset, the app runs normally and email sends are skipped
+(logged as warnings), so local dev and tests need no email config.
+
 ## Running Tests
 
 This project uses [Vitest](https://vitest.dev) for unit tests.
