@@ -10,7 +10,8 @@ const h = vi.hoisted(() => {
     projectMembers: [] as { profiles: Profile }[],
   };
   const sendEmail = vi.fn().mockResolvedValue({ ok: true });
-  return { state, sendEmail };
+  const rpcMock = vi.fn().mockResolvedValue({ error: null });
+  return { state, sendEmail, rpcMock };
 });
 
 vi.mock("@/lib/email/send", () => ({ sendEmail: h.sendEmail, EMAIL_FROM: "x" }));
@@ -21,6 +22,7 @@ vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 vi.mock("@/lib/supabase/server", () => ({
   createServerSupabase: async () => ({
     auth: { getUser: async () => ({ data: { user: { id: "u1", user_metadata: { name: "Author" }, email: "author@x.com" } } }) },
+    rpc: h.rpcMock,
     from: (table: string) => {
       if (table === "comments") return { insert: async () => ({ error: null }) };
       if (table === "mockups") return {
@@ -43,6 +45,7 @@ vi.mock("@/lib/supabase/server", () => ({
 describe("addComment notifications", () => {
   beforeEach(() => {
     h.sendEmail.mockClear();
+    h.rpcMock.mockClear();
     // Reset fixture to the default happy-path scenario before every test.
     h.state.mockupThrows = false;
     // workspace has u1 (author) + u2; project has u3.
@@ -93,5 +96,15 @@ describe("addComment notifications", () => {
 
     expect(result).toEqual({});
     expect(h.sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("creates an in-app notification for each non-author recipient", async () => {
+    const { addComment } = await import("./[mockupId]/actions");
+    await addComment("m1", "pin1", "Please fix the header");
+    const notified = h.rpcMock.mock.calls
+      .filter((c) => c[0] === "create_notification")
+      .map((c) => c[1].p_user_id)
+      .sort();
+    expect(notified).toEqual(["u2", "u3"]); // team + client, not the author u1
   });
 });

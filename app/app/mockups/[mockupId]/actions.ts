@@ -50,12 +50,12 @@ export async function addComment(
         supabase.from("workspace_members").select("profiles(id, name, email)").eq("workspace_id", workspaceId ?? ""),
         supabase.from("project_members").select("profiles(id, name, email)").eq("project_id", projectId ?? ""),
       ]);
-      const recipients = new Map<string, { name: string; email: string }>();
+      const recipients = new Map<string, { id: string; name: string; email: string }>();
       for (const row of [...(wm ?? []), ...(pm ?? [])]) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const p = (row as any).profiles;
         if (p?.id && p.id !== author.id && p.email) {
-          recipients.set(p.email, { name: p.name ?? "there", email: p.email });
+          recipients.set(p.email, { id: p.id, name: p.name ?? "there", email: p.email });
         }
       }
       const commenterName = (author.user_metadata?.name as string) || author.email || "Someone";
@@ -68,6 +68,14 @@ export async function addComment(
           mockupId,
         });
         await sendEmail({ to: r.email, ...tpl });
+        await supabase.rpc("create_notification", {
+          p_user_id: r.id,
+          p_actor_id: author.id,
+          p_type: "comment",
+          p_mockup_id: mockupId,
+          p_project_id: projectId ?? null,
+          p_body: `${commenterName} commented on ${mk.name as string}`,
+        });
       }
     }
   } catch (e) {
