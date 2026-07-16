@@ -8,12 +8,14 @@ export function PinComposer({
   onCancel,
   onSubmit,
   pending,
+  error,
 }: {
   xPct: number;
   yPct: number;
   onCancel: () => void;
   onSubmit: (body: string) => void;
   pending: boolean;
+  error?: string | null;
 }) {
   const [body, setBody] = useState("");
   return (
@@ -34,6 +36,9 @@ export function PinComposer({
           if (e.key === "Escape") onCancel();
         }}
       />
+      {error && (
+        <p className="mt-2 text-sm font-medium" style={{ color: "var(--color-danger)" }} role="alert">{error}</p>
+      )}
       <div className="mt-2 flex justify-end gap-2">
         <button type="button" onClick={onCancel} className="btn-secondary btn-sm">Cancel</button>
         <button

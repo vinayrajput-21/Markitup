@@ -134,8 +134,9 @@ export function MockupViewer({
   const [query, setQuery] = useState("");
   const [zoom, setZoom] = useState<Zoom>({ mode: "fit-width", pct: 0 });
   const [zoomOpen, setZoomOpen] = useState(false);
-  const [draft, setDraft] = useState<{ x: number; y: number } | null>(null);
+  const [draft, setDraft] = useState<{ x: number; y: number; pinId?: string; number?: number } | null>(null);
   const [savingPin, setSavingPin] = useState(false);
+  const [pinError, setPinError] = useState<string | null>(null);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -180,35 +181,52 @@ export function MockupViewer({
     const rect = e.currentTarget.getBoundingClientRect();
     const { x, y } = toNormalized(e.clientX, e.clientY, rect);
     setActivePinId(null);
+    setPinError(null);
     setDraft({ x, y });
   }
 
   async function saveDraft(body: string) {
     if (!draft) return;
     setSavingPin(true);
-    const res = await createPin(mockupId, draft.x, draft.y);
-    if (res.id && res.number != null) {
-      await addComment(mockupId, res.id, body);
-      const pin: ViewerPin = {
-        id: res.id,
-        x: draft.x,
-        y: draft.y,
-        number: res.number,
-        status: "active",
-        comments: [
-          {
-            id: `tmp-${res.id}`,
-            body,
-            authorName: "You",
-            parentCommentId: null,
-            createdAt: new Date().toISOString(),
-          },
-        ],
-      };
-      setPins((p) => [...p, pin]);
+    setPinError(null);
+    try {
+      let pinId = draft.pinId;
+      let number = draft.number;
+      if (!pinId) {
+        const res = await createPin(mockupId, draft.x, draft.y);
+        if (res.error || !res.id || res.number == null) {
+          setPinError(res.error || "Could not save your comment. Please try again.");
+          return;
+        }
+        pinId = res.id;
+        number = res.number;
+        // remember the created pin so a retry doesn't create a duplicate
+        setDraft((d) => (d ? { ...d, pinId, number } : d));
+      }
+      const cRes = await addComment(mockupId, pinId, body);
+      if (cRes.error) {
+        setPinError(cRes.error);
+        return;
+      }
+      setPins((p) => [
+        ...p,
+        {
+          id: pinId!,
+          x: draft.x,
+          y: draft.y,
+          number: number!,
+          status: "active",
+          comments: [
+            { id: `tmp-${pinId}`, body, authorName: "You", parentCommentId: null, createdAt: new Date().toISOString() },
+          ],
+        },
+      ]);
+      setDraft(null);
+    } catch {
+      setPinError("Something went wrong. Please try again.");
+    } finally {
+      setSavingPin(false);
     }
-    setSavingPin(false);
-    setDraft(null);
   }
 
   async function download() {
@@ -459,7 +477,8 @@ export function MockupViewer({
                   xPct={draft.x * 100}
                   yPct={draft.y * 100}
                   pending={savingPin}
-                  onCancel={() => setDraft(null)}
+                  error={pinError}
+                  onCancel={() => { setDraft(null); setPinError(null); }}
                   onSubmit={saveDraft}
                 />
               )}
