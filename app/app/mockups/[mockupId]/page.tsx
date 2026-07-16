@@ -9,6 +9,7 @@ import { NotificationBell } from "@/components/app/NotificationBell";
 import { RecentViewers, type Viewer } from "@/components/viewer/RecentViewers";
 import { RecordView } from "@/components/viewer/RecordView";
 import { emailLocalPart } from "@/lib/format";
+import { sanitizeCommentHtml } from "@/lib/sanitize";
 
 export default async function MockupPage({
   params,
@@ -101,7 +102,10 @@ export default async function MockupPage({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     comments: (p.comments ?? []).map((c: any) => ({
       id: c.id,
-      body: c.body,
+      // Sanitize at render time too: the comments table is directly writable via
+      // RLS by any project member, so a raw body could bypass addComment's write-time
+      // sanitize. Idempotent with it, and covers legacy/direct-insert rows.
+      body: sanitizeCommentHtml((c.body as string) ?? ""),
       parentCommentId: c.parent_comment_id,
       createdAt: c.created_at,
       authorName: c.profiles?.name || emailLocalPart(c.profiles?.email ?? "") || "Unknown",
