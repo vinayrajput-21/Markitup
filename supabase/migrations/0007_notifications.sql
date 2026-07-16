@@ -41,7 +41,23 @@ begin
     return; -- never notify yourself
   end if;
   if p_project_id is not null then
+    -- caller must be able to see the project ...
     if not public.can_see_project(p_project_id) then return; end if;
+    -- ... AND the recipient must belong to it (share its workspace or be a
+    -- project member). Without this, any authed user could turn an email into
+    -- a uuid (find_profile_id_by_email) and inject a notification into a
+    -- stranger's feed using a project of their own.
+    if not exists (
+      select 1 from public.projects pr
+      where pr.id = p_project_id and (
+        exists (select 1 from public.workspace_members wm
+                where wm.workspace_id = pr.workspace_id and wm.user_id = p_user_id)
+        or exists (select 1 from public.project_members pm
+                   where pm.project_id = pr.id and pm.user_id = p_user_id)
+      )
+    ) then
+      return;
+    end if;
   else
     if not exists (
       select 1 from public.workspace_members m1

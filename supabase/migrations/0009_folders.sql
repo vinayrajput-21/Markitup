@@ -9,6 +9,13 @@ create table public.folders (
 alter table public.projects add column folder_id uuid references public.folders(id) on delete set null;
 alter table public.projects add column archived_at timestamptz;
 
+-- projects gained folder_id + archived_at above. RLS on projects (0002) only
+-- had SELECT + INSERT, so folder-move and archive UPDATEs would be silently
+-- denied (0 rows, no error) and the actions would appear to succeed while
+-- persisting nothing. Add the missing UPDATE policy.
+create policy "members update projects" on public.projects
+  for update using (public.is_workspace_member(workspace_id));
+
 alter table public.folders enable row level security;
 
 create policy "see folders" on public.folders
