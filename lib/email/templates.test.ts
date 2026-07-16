@@ -30,4 +30,12 @@ describe("email templates", () => {
     expect(t.html).toContain("Ravi");
     expect(t.subject.toLowerCase()).toContain("welcome");
   });
+
+  it("escapes HTML in names/subjects to prevent injection", () => {
+    const t = commentNotification({ recipientName: "R", commenterName: "J", mockupName: '<img src=x onerror=alert(1)>', body: "hi", mockupId: "m1" });
+    expect(t.html).not.toContain("<img src=x");
+    expect(t.html).toContain("&lt;img");
+    const inv = invitation({ inviterName: '<script>bad</script>', workspaceName: "W", isNewUser: true });
+    expect(inv.html).not.toContain("<script>bad");
+  });
 });

@@ -6,7 +6,7 @@ function layout(heading: string, bodyHtml: string, cta?: { label: string; href: 
     : "";
   return `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#111827">
     <div style="font-weight:700;font-size:18px;margin-bottom:16px">MarkUp</div>
-    <h1 style="font-size:18px;margin:0 0 12px">${heading}</h1>
+    <h1 style="font-size:18px;margin:0 0 12px">${esc(heading)}</h1>
     ${bodyHtml}
     ${button}
     <p style="color:#9ca3af;font-size:12px;margin-top:28px">Apexure · Visual review, done right.</p>
@@ -56,7 +56,7 @@ export function welcome(opts: { name: string }) {
   const href = `${APP_URL}/app`;
   const subject = "Welcome to MarkUp";
   const html = layout(
-    `Welcome, ${esc(opts.name)}!`,
+    `Welcome, ${opts.name}!`,
     `<p style="margin:0;font-size:14px">Your workspace is ready. Create a project, upload a mockup, and share a link to start collecting pinned feedback.</p>`,
     { label: "Go to your workspace", href },
   );
