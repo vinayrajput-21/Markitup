@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AppSidebar } from "./AppSidebar";
 
@@ -18,6 +18,9 @@ export function AppChrome({
   const pathname = usePathname();
   const isViewer = (pathname ?? "").startsWith("/app/mockups/");
   const [reveal, setReveal] = useState(false);
+  useEffect(() => {
+    setReveal(false);
+  }, [pathname]);
   const showSidebar = !isViewer || reveal;
 
   return (
