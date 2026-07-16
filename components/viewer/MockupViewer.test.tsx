@@ -65,7 +65,7 @@ describe("MockupViewer", () => {
     const img = screen.getByAltText("mockup");
     fireEvent.load(img);
     fireEvent.click(img);
-    expect(screen.getByPlaceholderText(/add comment here/i)).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: /comment/i })).toBeTruthy();
     expect(mockCreatePin).not.toHaveBeenCalled();
   });
 
@@ -74,8 +74,8 @@ describe("MockupViewer", () => {
     const img = screen.getByAltText("mockup");
     fireEvent.load(img);
     fireEvent.click(img);
-    const textarea = screen.getByPlaceholderText(/add comment here/i);
-    fireEvent.change(textarea, { target: { value: "Hello there" } });
+    const textbox = screen.getByRole("textbox", { name: /comment/i });
+    fireEvent.input(textbox, { target: { innerHTML: "Hello there" } });
     fireEvent.click(screen.getByRole("button", { name: /^comment$/i }));
 
     await screen.findByLabelText("Pin 1, active");
@@ -84,7 +84,7 @@ describe("MockupViewer", () => {
     expect(mockAddComment).toHaveBeenCalledTimes(1);
     expect(mockAddComment).toHaveBeenCalledWith("m1", "p1", "Hello there");
     // popup closes after success
-    expect(screen.queryByPlaceholderText(/add comment here/i)).toBeNull();
+    expect(screen.queryByRole("textbox", { name: /comment/i })).toBeNull();
   });
 
   it("does not call any action when Cancel is clicked", () => {
@@ -95,7 +95,7 @@ describe("MockupViewer", () => {
     fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
     expect(mockCreatePin).not.toHaveBeenCalled();
     expect(mockAddComment).not.toHaveBeenCalled();
-    expect(screen.queryByPlaceholderText(/add comment here/i)).toBeNull();
+    expect(screen.queryByRole("textbox", { name: /comment/i })).toBeNull();
   });
 
   it("shows an error and appends no pin when addComment fails", async () => {
@@ -104,14 +104,14 @@ describe("MockupViewer", () => {
     const img = screen.getByAltText("mockup");
     fireEvent.load(img);
     fireEvent.click(img);
-    const textarea = screen.getByPlaceholderText(/add comment here/i);
-    fireEvent.change(textarea, { target: { value: "Will fail" } });
+    const textbox = screen.getByRole("textbox", { name: /comment/i });
+    fireEvent.input(textbox, { target: { innerHTML: "Will fail" } });
     fireEvent.click(screen.getByRole("button", { name: /^comment$/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("nope");
     expect(screen.queryByLabelText(/Pin 1/)).toBeNull();
     // popup stays open so the user can retry
-    expect(screen.getByPlaceholderText(/add comment here/i)).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: /comment/i })).toBeTruthy();
   });
 
   it("labels a newly created pin comment with the current user's name", async () => {
@@ -129,9 +129,8 @@ describe("MockupViewer", () => {
     const img = screen.getByAltText("mockup");
     fireEvent.load(img);
     fireEvent.click(img);
-    fireEvent.change(screen.getByPlaceholderText(/add comment here/i), {
-      target: { value: "Fix the header" },
-    });
+    const textbox = screen.getByRole("textbox", { name: /comment/i });
+    fireEvent.input(textbox, { target: { innerHTML: "Fix the header" } });
     fireEvent.click(screen.getByRole("button", { name: /^comment$/i }));
     await waitFor(() => expect(screen.getByText("Ravi Rajput")).toBeTruthy());
   });

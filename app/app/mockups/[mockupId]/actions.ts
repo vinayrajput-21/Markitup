@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email/send";
 import { commentNotification } from "@/lib/email/templates";
+import { sanitizeCommentHtml } from "@/lib/sanitize";
 
 export async function createPin(mockupId: string, x: number, y: number) {
   const supabase = await createServerSupabase();
@@ -27,10 +28,11 @@ export async function addComment(
   const supabase = await createServerSupabase();
   const { data: userData } = await supabase.auth.getUser();
   const author = userData.user!;
+  const cleanBody = sanitizeCommentHtml(body);
   const { error } = await supabase.from("comments").insert({
     pin_id: pinId,
     author_id: author.id,
-    body,
+    body: cleanBody,
     parent_comment_id: parentCommentId ?? null,
   });
   if (error) return { error: error.message };

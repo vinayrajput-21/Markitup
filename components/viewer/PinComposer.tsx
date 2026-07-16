@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { RichCommentInput } from "@/components/viewer/RichCommentInput";
 
 export function PinComposer({
   xPct,
@@ -17,39 +17,29 @@ export function PinComposer({
   pending: boolean;
   error?: string | null;
 }) {
-  const [body, setBody] = useState("");
   return (
     <div
       className="absolute z-50 w-72 -translate-x-1/2 rounded-xl border bg-surface p-3 shadow-xl"
       style={{ left: `${xPct}%`, top: `${yPct}%`, marginTop: "14px" }}
       onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") onCancel();
+      }}
     >
-      <textarea
-        autoFocus
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
+      <div className="mb-2 flex justify-end">
+        <button type="button" onClick={onCancel} className="text-xs font-semibold text-muted transition-colors hover:text-brand-ink">
+          Cancel
+        </button>
+      </div>
+      <RichCommentInput
+        projectId={""}
         placeholder="Add comment here…"
-        rows={3}
-        className="field w-full resize-none text-sm"
-        onKeyDown={(e) => {
-          if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && body.trim()) onSubmit(body.trim());
-          if (e.key === "Escape") onCancel();
-        }}
+        pending={pending}
+        onSubmit={(html) => onSubmit(html)}
       />
       {error && (
         <p className="mt-2 text-sm font-medium" style={{ color: "var(--color-danger)" }} role="alert">{error}</p>
       )}
-      <div className="mt-2 flex justify-end gap-2">
-        <button type="button" onClick={onCancel} className="btn-secondary btn-sm">Cancel</button>
-        <button
-          type="button"
-          disabled={pending || !body.trim()}
-          onClick={() => onSubmit(body.trim())}
-          className="btn-primary btn-sm"
-        >
-          {pending ? "Saving…" : "Comment"}
-        </button>
-      </div>
     </div>
   );
 }
