@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getCurrentWorkspace, createProject } from "./actions";
-import { timeAgo, plural } from "@/lib/format";
+import { timeAgo, plural, emailLocalPart } from "@/lib/format";
+import { ProfileMenu } from "@/components/app/ProfileMenu";
 
 type ProjectRow = {
   id: string;
@@ -31,6 +32,9 @@ function ProjectCover({ url, name }: { url?: string; name: string }) {
 export default async function ProjectsPage() {
   const ws = await getCurrentWorkspace();
   const supabase = await createServerSupabase();
+  const { data: authData } = await supabase.auth.getUser();
+  const userEmail = authData.user?.email ?? "";
+  const userName = (authData.user?.user_metadata?.name as string) || emailLocalPart(userEmail) || "";
   const { data } = await supabase
     .from("projects")
     .select("id, name, created_at, mockups(id, file_path, created_at)")
@@ -81,6 +85,9 @@ export default async function ProjectsPage() {
             New project
           </button>
         </form>
+        <div className="ml-auto self-center">
+          <ProfileMenu name={userName} email={userEmail} />
+        </div>
       </div>
 
       {projects.length === 0 ? (

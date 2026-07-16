@@ -4,6 +4,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { getMockupSignedUrl } from "@/app/app/projects/[projectId]/actions";
 import { MockupViewer, type ViewerPin } from "@/components/viewer/MockupViewer";
 import { ShareDialog } from "@/components/viewer/ShareDialog";
+import { ProfileMenu } from "@/components/app/ProfileMenu";
 import { emailLocalPart } from "@/lib/format";
 
 export default async function MockupPage({
@@ -53,6 +54,7 @@ export default async function MockupPage({
     (authData.user?.user_metadata?.name as string) ||
     emailLocalPart(authData.user?.email ?? "") ||
     "You";
+  const currentUserEmail = authData.user?.email ?? "";
 
   const url = await getMockupSignedUrl(mockup.file_path);
 
@@ -106,6 +108,7 @@ export default async function MockupPage({
             {resolved}/{viewerPins.length} resolved
           </span>
           <ShareDialog mockupId={mockupId} />
+          <ProfileMenu name={currentUserName} email={currentUserEmail} />
         </div>
       </header>
 
