@@ -6,6 +6,8 @@ import { MockupViewer, type ViewerPin } from "@/components/viewer/MockupViewer";
 import { ShareDialog } from "@/components/viewer/ShareDialog";
 import { ProfileMenu } from "@/components/app/ProfileMenu";
 import { NotificationBell } from "@/components/app/NotificationBell";
+import { RecentViewers, type Viewer } from "@/components/viewer/RecentViewers";
+import { RecordView } from "@/components/viewer/RecordView";
 import { emailLocalPart } from "@/lib/format";
 
 export default async function MockupPage({
@@ -50,6 +52,18 @@ export default async function MockupPage({
     .eq("mockup_id", mockupId)
     .order("number", { ascending: true });
 
+  const { data: viewRows } = await supabase
+    .from("mockup_views")
+    .select("viewed_at, profiles:user_id(id, name, email)")
+    .eq("mockup_id", mockupId)
+    .order("viewed_at", { ascending: false })
+    .limit(8);
+  const viewers: Viewer[] = (viewRows ?? []).map((r) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const p = (r as any).profiles;
+    return { id: p?.id ?? "", name: p?.name || "Someone", email: p?.email ?? "", viewedAt: r.viewed_at as string };
+  }).filter((v) => v.id);
+
   const { data: authData } = await supabase.auth.getUser();
   const currentUserName =
     (authData.user?.user_metadata?.name as string) ||
@@ -84,6 +98,7 @@ export default async function MockupPage({
 
   return (
     <div className="flex h-full flex-col">
+      <RecordView mockupId={mockupId} />
       {/* top bar */}
       <header className="flex shrink-0 items-center justify-between gap-4 border-b bg-surface px-4 py-2.5">
         <div className="flex min-w-0 items-center gap-3">
@@ -105,6 +120,7 @@ export default async function MockupPage({
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <RecentViewers viewers={viewers} />
           <span className="hidden font-mono text-xs text-faint sm:inline">
             {resolved}/{viewerPins.length} resolved
           </span>
