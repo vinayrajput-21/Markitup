@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { MockupViewer } from "./MockupViewer";
 
@@ -35,5 +35,22 @@ describe("MockupViewer", () => {
       />,
     );
     expect(screen.getByLabelText("Pin 3, active")).toBeInTheDocument();
+  });
+
+  it("opens a comment popup when the image is clicked", () => {
+    render(
+      <MockupViewer
+        mockupId="m1"
+        imageUrl="http://x/y.png"
+        imageName="y.png"
+        initialPins={[]}
+        siblings={[{ id: "m1" }]}
+        members={[]}
+      />,
+    );
+    const img = screen.getByAltText("mockup");
+    fireEvent.load(img);
+    fireEvent.click(img);
+    expect(screen.getByPlaceholderText(/add comment here/i)).toBeTruthy();
   });
 });

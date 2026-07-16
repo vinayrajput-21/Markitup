@@ -4,9 +4,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { toNormalized } from "@/lib/coords";
 import { PinMarker } from "./PinMarker";
+import { PinComposer } from "./PinComposer";
 import { CommentThread, type Member } from "./CommentThread";
 import { CommentFilter, type Filter } from "./CommentFilter";
-import { createPin } from "@/app/app/mockups/[mockupId]/actions";
+import { createPin, addComment } from "@/app/app/mockups/[mockupId]/actions";
 import { timeAgo } from "@/lib/format";
 
 export type ViewerComment = {
@@ -133,6 +134,8 @@ export function MockupViewer({
   const [query, setQuery] = useState("");
   const [zoom, setZoom] = useState<Zoom>({ mode: "fit-width", pct: 0 });
   const [zoomOpen, setZoomOpen] = useState(false);
+  const [draft, setDraft] = useState<{ x: number; y: number } | null>(null);
+  const [savingPin, setSavingPin] = useState(false);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -173,15 +176,39 @@ export function MockupViewer({
         ? "Fit horizontally"
         : `${zoom.pct}%`;
 
-  async function handleImageClick(e: React.MouseEvent<HTMLImageElement>) {
+  function handleImageClick(e: React.MouseEvent<HTMLImageElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
     const { x, y } = toNormalized(e.clientX, e.clientY, rect);
-    const res = await createPin(mockupId, x, y);
+    setActivePinId(null);
+    setDraft({ x, y });
+  }
+
+  async function saveDraft(body: string) {
+    if (!draft) return;
+    setSavingPin(true);
+    const res = await createPin(mockupId, draft.x, draft.y);
     if (res.id && res.number != null) {
-      const pin: ViewerPin = { id: res.id, x, y, number: res.number, status: "active", comments: [] };
+      await addComment(mockupId, res.id, body);
+      const pin: ViewerPin = {
+        id: res.id,
+        x: draft.x,
+        y: draft.y,
+        number: res.number,
+        status: "active",
+        comments: [
+          {
+            id: `tmp-${res.id}`,
+            body,
+            authorName: "You",
+            parentCommentId: null,
+            createdAt: new Date().toISOString(),
+          },
+        ],
+      };
       setPins((p) => [...p, pin]);
-      setActivePinId(res.id);
     }
+    setSavingPin(false);
+    setDraft(null);
   }
 
   async function download() {
@@ -427,6 +454,15 @@ export function MockupViewer({
                   onClick={() => setActivePinId(p.id)}
                 />
               ))}
+              {draft && (
+                <PinComposer
+                  xPct={draft.x * 100}
+                  yPct={draft.y * 100}
+                  pending={savingPin}
+                  onCancel={() => setDraft(null)}
+                  onSubmit={saveDraft}
+                />
+              )}
             </div>
           </div>
 
