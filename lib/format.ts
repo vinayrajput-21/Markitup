@@ -16,3 +16,20 @@ export function timeAgo(iso: string): string {
 export function plural(n: number, word: string): string {
   return `${n} ${word}${n === 1 ? "" : "s"}`;
 }
+
+// Absolute local date + time, e.g. "Jul 16, 2026, 3:42 PM".
+export function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+// The local-part of an email address ("jane@x.com" -> "jane"), or "" if absent.
+export function emailLocalPart(email: string): string {
+  const at = (email ?? "").indexOf("@");
+  return at > 0 ? email.slice(0, at) : "";
+}
