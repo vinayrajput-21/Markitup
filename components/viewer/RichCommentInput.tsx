@@ -126,6 +126,9 @@ export function RichCommentInput({
   }
 
   function onPaste(e: React.ClipboardEvent<HTMLDivElement>) {
+    // SECURITY: block the browser's native (unsanitized) paste on EVERY path,
+    // including when clipboardData is missing — call preventDefault first.
+    e.preventDefault();
     const clipboardData = e.clipboardData;
     if (!clipboardData) return;
 
@@ -134,7 +137,6 @@ export function RichCommentInput({
     const items = Array.from(clipboardData.items ?? []);
     const fileItem = items.find((i) => i.kind === "file" && ACCEPTED_ATTACHMENT_TYPES.includes(i.type));
     if (fileItem) {
-      e.preventDefault();
       const file = fileItem.getAsFile();
       if (file) uploadFile(file);
       return;
@@ -142,8 +144,28 @@ export function RichCommentInput({
 
     // SECURITY: never let pasted HTML land in the editor DOM (e.g.
     // `<img onerror=...>`). Always insert the plain-text form only.
-    e.preventDefault();
     const text = clipboardData.getData("text/plain");
+    if (text) insertPlainText(text);
+    syncEmpty();
+  }
+
+  function onDrop(e: React.DragEvent<HTMLDivElement>) {
+    // SECURITY: block the browser's native drop (which would insert dragged
+    // HTML into the contentEditable) on EVERY path.
+    e.preventDefault();
+    const dataTransfer = e.dataTransfer;
+    if (!dataTransfer) return;
+
+    // Dropped image/PDF files become attachments via the same upload path.
+    const files = Array.from(dataTransfer.files ?? []);
+    const file = files.find((f) => ACCEPTED_ATTACHMENT_TYPES.includes(f.type));
+    if (file) {
+      uploadFile(file);
+      return;
+    }
+
+    // Anything else: insert only the plain-text form, never dropped HTML.
+    const text = dataTransfer.getData("text/plain");
     if (text) insertPlainText(text);
     syncEmpty();
   }
@@ -196,6 +218,8 @@ export function RichCommentInput({
           suppressContentEditableWarning
           onInput={syncEmpty}
           onPaste={onPaste}
+          onDrop={onDrop}
+          onDragOver={(e) => e.preventDefault()}
           onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); submit(); } }}
           data-project={projectId}
           className="min-h-[3.5rem] w-full px-3 py-2 text-sm leading-relaxed text-ink outline-none [&_a]:text-brand [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5"

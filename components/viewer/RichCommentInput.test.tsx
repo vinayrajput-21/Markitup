@@ -37,4 +37,20 @@ describe("RichCommentInput", () => {
     // ...only its literal text should appear.
     expect(box.textContent).toContain('<img src=x onerror="alert(1)">evil');
   });
+
+  it("inserts dropped HTML as plain text only, never as markup", () => {
+    render(<RichCommentInput onSubmit={vi.fn()} projectId="p1" />);
+    const box = screen.getByRole("textbox");
+    const dataTransfer = {
+      files: [] as unknown as FileList,
+      getData: (type: string) => (type === "text/plain" ? "<img src=x onerror=alert(1)>evil" : ""),
+    };
+    fireEvent.drop(box, { dataTransfer });
+    // Dragged markup must never be parsed into the editor DOM (the escaped text
+    // form is inert: &lt;img...&gt; is safe even though it reads "onerror").
+    expect(box.innerHTML).not.toContain("<img");
+    expect(box.querySelector("img")).toBeNull();
+    // ...only its literal text should appear.
+    expect(box.textContent).toContain("<img src=x onerror=alert(1)>evil");
+  });
 });
