@@ -17,6 +17,7 @@ export type ViewerComment = {
   authorName: string;
   parentCommentId: string | null;
   createdAt: string;
+  attachments: { url: string; type: "image" | "pdf"; name: string }[];
 };
 export type ViewerPin = {
   id: string;
@@ -225,7 +226,7 @@ export function MockupViewer({
           status: "active",
           comments: [
             // Render only the server-sanitized HTML, never the raw editor input.
-            { id: `tmp-${pinId}`, body: cRes.body ?? "", authorName: currentUserName, parentCommentId: null, createdAt: new Date().toISOString() },
+            { id: `tmp-${pinId}`, body: cRes.body ?? "", authorName: currentUserName, parentCommentId: null, createdAt: new Date().toISOString(), attachments: [] },
           ],
         },
       ]);

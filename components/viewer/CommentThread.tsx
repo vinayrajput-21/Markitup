@@ -22,6 +22,23 @@ function CommentRow({ c, small = false }: { c: ViewerComment; small?: boolean })
           className="mt-0.5 text-sm leading-relaxed break-words text-muted [&_a]:text-brand [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5"
           dangerouslySetInnerHTML={{ __html: c.body }}
         />
+        {c.attachments?.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {c.attachments.map((a, i) =>
+              a.type === "image" ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <a key={i} href={a.url} target="_blank" rel="noopener noreferrer">
+                  <img src={a.url} alt={a.name} className="h-24 w-24 rounded-md border object-cover" />
+                </a>
+              ) : (
+                <a key={i} href={a.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium text-ink hover:bg-[color:var(--accent)]">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M7 3h7l4 4v14H7z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M14 3v4h4" stroke="currentColor" strokeWidth="1.6" /></svg>
+                  {a.name}
+                </a>
+              ),
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -64,6 +81,7 @@ export function CommentThread({
       authorName: currentUserName,
       parentCommentId: replyTo,
       createdAt: new Date().toISOString(),
+      attachments: [],
     };
     onChange({ ...pin, comments: [...pin.comments, optimistic] });
     setReplyTo(null);

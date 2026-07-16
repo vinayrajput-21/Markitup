@@ -48,9 +48,25 @@ export default async function MockupPage({
 
   const { data: pins } = await supabase
     .from("pins")
-    .select("id, x, y, number, status, comments(id, body, parent_comment_id, created_at, profiles(name, email))")
+    .select(
+      "id, x, y, number, status, comments(id, body, parent_comment_id, created_at, profiles(name, email), comment_attachments(file_path, type, name))",
+    )
     .eq("mockup_id", mockupId)
     .order("number", { ascending: true });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const attachmentPaths = (pins ?? []).flatMap((p: any) =>
+    (p.comments ?? []).flatMap((c: any) =>
+      (c.comment_attachments ?? []).map((a: any) => a.file_path as string),
+    ),
+  );
+  const signedAttachmentUrls = new Map<string, string>();
+  if (attachmentPaths.length) {
+    const { data: urls } = await supabase.storage
+      .from("comment-files")
+      .createSignedUrls(attachmentPaths, 3600);
+    for (const u of urls ?? []) if (u.signedUrl && u.path) signedAttachmentUrls.set(u.path, u.signedUrl);
+  }
 
   const { data: viewRows } = await supabase
     .from("mockup_views")
@@ -89,6 +105,11 @@ export default async function MockupPage({
       parentCommentId: c.parent_comment_id,
       createdAt: c.created_at,
       authorName: c.profiles?.name || emailLocalPart(c.profiles?.email ?? "") || "Unknown",
+      attachments: (c.comment_attachments ?? []).map((a: any) => ({
+        url: signedAttachmentUrls.get(a.file_path) ?? "",
+        type: a.type,
+        name: a.name,
+      })),
     })),
   }));
 
