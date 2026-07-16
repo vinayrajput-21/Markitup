@@ -6,6 +6,7 @@ import { toNormalized } from "@/lib/coords";
 import { PinMarker } from "./PinMarker";
 import { PinComposer } from "./PinComposer";
 import { CommentThread, type Member } from "./CommentThread";
+import type { PendingAttachment } from "./RichCommentInput";
 import { CommentFilter, type Filter } from "./CommentFilter";
 import { createPin, addComment } from "@/app/app/mockups/[mockupId]/actions";
 import { timeAgo } from "@/lib/format";
@@ -112,6 +113,7 @@ function ToolbarButton({
 
 export function MockupViewer({
   mockupId,
+  projectId,
   imageUrl,
   imageName,
   initialPins,
@@ -120,6 +122,7 @@ export function MockupViewer({
   currentUserName,
 }: {
   mockupId: string;
+  projectId: string;
   imageUrl: string;
   imageName: string;
   initialPins: ViewerPin[];
@@ -187,7 +190,7 @@ export function MockupViewer({
     setDraft({ x, y });
   }
 
-  async function saveDraft(body: string) {
+  async function saveDraft(body: string, attachments: PendingAttachment[] = []) {
     if (!draft) return;
     setSavingPin(true);
     setPinError(null);
@@ -205,7 +208,9 @@ export function MockupViewer({
         // remember the created pin so a retry doesn't create a duplicate
         setDraft((d) => (d ? { ...d, pinId, number } : d));
       }
-      const cRes = await addComment(mockupId, pinId, body);
+      const cRes = attachments.length
+        ? await addComment(mockupId, pinId, body, undefined, attachments)
+        : await addComment(mockupId, pinId, body);
       if (cRes.error) {
         setPinError(cRes.error);
         return;
@@ -285,6 +290,7 @@ export function MockupViewer({
         {activePin ? (
           <CommentThread
             mockupId={mockupId}
+            projectId={projectId}
             pin={activePin}
             members={members}
             currentUserName={currentUserName}
@@ -480,6 +486,7 @@ export function MockupViewer({
                 <PinComposer
                   xPct={draft.x * 100}
                   yPct={draft.y * 100}
+                  projectId={projectId}
                   pending={savingPin}
                   error={pinError}
                   onCancel={() => { setDraft(null); setPinError(null); }}

@@ -1,8 +1,13 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { createAttachmentUploadUrl } from "@/app/app/mockups/[mockupId]/attachment-actions";
+import { createBrowserSupabase } from "@/lib/supabase/client";
+import { MAX_UPLOAD_BYTES } from "@/lib/validation";
 
 export type PendingAttachment = { path: string; type: "image" | "pdf"; name: string };
+
+const ACCEPTED_ATTACHMENT_TYPES = ["image/png", "image/jpeg", "application/pdf"];
 
 function ToolBtn({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
   return (
@@ -33,7 +38,11 @@ export function RichCommentInput({
   projectId: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [empty, setEmpty] = useState(true);
+  const [attachments, setAttachments] = useState<PendingAttachment[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   function exec(cmd: string, arg?: string) {
     ref.current?.focus();
@@ -49,12 +58,103 @@ export function RichCommentInput({
     setEmpty(html.replace(/<br>|\s|&nbsp;/g, "").length === 0);
   }
 
+  async function uploadFile(file: File) {
+    if (!ACCEPTED_ATTACHMENT_TYPES.includes(file.type)) {
+      setUploadError("Only PNG, JPG, and PDF attachments are supported.");
+      return;
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setUploadError("File exceeds the 25 MB limit.");
+      return;
+    }
+    setUploadError(null);
+    setUploading(true);
+    try {
+      // 1. Ask the server for a signed upload URL (tiny request).
+      const target = await createAttachmentUploadUrl(projectId, file.type);
+      if ("error" in target && target.error) {
+        setUploadError(target.error);
+        return;
+      }
+
+      // 2. Send the bytes straight to Supabase Storage, bypassing the Server
+      // Action body limit so files up to 25 MB upload from anywhere.
+      const supabase = createBrowserSupabase();
+      const { error: upErr } = await supabase.storage
+        .from("comment-files")
+        .uploadToSignedUrl(target.path!, target.token!, file, {
+          contentType: file.type,
+        });
+      if (upErr) {
+        setUploadError(upErr.message);
+        return;
+      }
+
+      setAttachments((a) => [
+        ...a,
+        { path: target.path!, type: file.type === "application/pdf" ? "pdf" : "image", name: file.name },
+      ]);
+    } catch {
+      setUploadError("Could not upload the file. Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function removeAttachment(path: string) {
+    setAttachments((a) => a.filter((x) => x.path !== path));
+  }
+
+  function insertPlainText(text: string) {
+    if (typeof document.execCommand === "function") {
+      document.execCommand("insertText", false, text);
+      return;
+    }
+    // jsdom (tests) has no execCommand; fall back to manual DOM insertion so
+    // pasted text still lands as text, never as parsed HTML.
+    const el = ref.current;
+    if (!el) return;
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && el.contains(sel.anchorNode)) {
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(document.createTextNode(text));
+      range.collapse(false);
+    } else {
+      el.appendChild(document.createTextNode(text));
+    }
+  }
+
+  function onPaste(e: React.ClipboardEvent<HTMLDivElement>) {
+    const clipboardData = e.clipboardData;
+    if (!clipboardData) return;
+
+    // Image/PDF files pasted from the clipboard become attachments, not
+    // inline HTML.
+    const items = Array.from(clipboardData.items ?? []);
+    const fileItem = items.find((i) => i.kind === "file" && ACCEPTED_ATTACHMENT_TYPES.includes(i.type));
+    if (fileItem) {
+      e.preventDefault();
+      const file = fileItem.getAsFile();
+      if (file) uploadFile(file);
+      return;
+    }
+
+    // SECURITY: never let pasted HTML land in the editor DOM (e.g.
+    // `<img onerror=...>`). Always insert the plain-text form only.
+    e.preventDefault();
+    const text = clipboardData.getData("text/plain");
+    if (text) insertPlainText(text);
+    syncEmpty();
+  }
+
   function submit() {
     const html = ref.current?.innerHTML ?? "";
-    if (empty) return;
-    onSubmit(html, []);
+    if (empty && attachments.length === 0) return;
+    onSubmit(html, attachments);
     if (ref.current) ref.current.innerHTML = "";
     setEmpty(true);
+    setAttachments([]);
   }
 
   return (
@@ -69,7 +169,21 @@ export function RichCommentInput({
         <ToolBtn label="Link" onClick={() => { const url = window.prompt("Link URL"); if (url) exec("createLink", url); }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M10 14a4 4 0 0 1 0-6l2-2a4 4 0 1 1 6 6l-1 1M14 10a4 4 0 0 1 0 6l-2 2a4 4 0 1 1-6-6l1-1" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </ToolBtn>
+        <ToolBtn label="Attach file" onClick={() => fileInputRef.current?.click()}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M8 12.5V7a4 4 0 1 1 8 0v8a2.5 2.5 0 1 1-5 0V8.5a1 1 0 1 1 2 0V15" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </ToolBtn>
       </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/png,image/jpeg,application/pdf"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) uploadFile(file);
+          e.target.value = "";
+        }}
+      />
       <div className="relative">
         {empty && placeholder && (
           <span className="pointer-events-none absolute left-3 top-2 text-sm text-faint">{placeholder}</span>
@@ -81,13 +195,45 @@ export function RichCommentInput({
           contentEditable
           suppressContentEditableWarning
           onInput={syncEmpty}
+          onPaste={onPaste}
           onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); submit(); } }}
           data-project={projectId}
           className="min-h-[3.5rem] w-full px-3 py-2 text-sm leading-relaxed text-ink outline-none [&_a]:text-brand [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5"
         />
       </div>
-      <div className="flex items-center justify-end gap-2 border-t px-2 py-1.5">
-        <button type="button" disabled={pending || empty} onClick={submit} className="btn-primary btn-sm">
+      {attachments.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 border-t px-2 py-1.5">
+          {attachments.map((a) => (
+            <span
+              key={a.path}
+              className="inline-flex max-w-[10rem] items-center gap-1 rounded-md border bg-surface-2 px-2 py-1 text-xs text-ink"
+            >
+              <span className="truncate">{a.name}</span>
+              <button
+                type="button"
+                aria-label={`Remove ${a.name}`}
+                onClick={() => removeAttachment(a.path)}
+                className="shrink-0 text-muted hover:text-danger"
+              >
+                ✕
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      {uploadError && (
+        <p className="px-2 pt-1 text-xs font-medium" style={{ color: "var(--color-danger)" }}>
+          {uploadError}
+        </p>
+      )}
+      <div className="flex items-center justify-between gap-2 border-t px-2 py-1.5">
+        <span className="text-xs text-faint">{uploading ? "Uploading…" : ""}</span>
+        <button
+          type="button"
+          disabled={pending || uploading || (empty && attachments.length === 0)}
+          onClick={submit}
+          className="btn-primary btn-sm"
+        >
           {pending ? "Saving…" : "Comment"}
         </button>
       </div>

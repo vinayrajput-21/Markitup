@@ -135,6 +135,7 @@ export default async function MockupPage({
         {url ? (
           <MockupViewer
             mockupId={mockupId}
+            projectId={mockup.project_id}
             imageUrl={url}
             imageName={mockup.name}
             initialPins={viewerPins}

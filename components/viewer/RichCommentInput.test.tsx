@@ -19,5 +19,22 @@ describe("RichCommentInput", () => {
     expect(screen.getByRole("button", { name: /bold/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /bullet/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /link/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /attach/i })).toBeTruthy();
+  });
+
+  it("inserts pasted HTML as plain text only, never as markup", () => {
+    render(<RichCommentInput onSubmit={vi.fn()} projectId="p1" />);
+    const box = screen.getByRole("textbox");
+    const clipboardData = {
+      items: [] as unknown as DataTransferItemList,
+      files: [] as unknown as FileList,
+      getData: (type: string) => (type === "text/plain" ? '<img src=x onerror="alert(1)">evil' : ""),
+    };
+    fireEvent.paste(box, { clipboardData });
+    // The raw markup must never be parsed into the editor DOM...
+    expect(box.innerHTML).not.toContain("<img");
+    expect(box.querySelector("img")).toBeNull();
+    // ...only its literal text should appear.
+    expect(box.textContent).toContain('<img src=x onerror="alert(1)">evil');
   });
 });

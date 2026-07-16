@@ -19,6 +19,7 @@ function Harness({ onChangeSpy }: { onChangeSpy: (p: ViewerPin) => void }) {
   return (
     <CommentThread
       mockupId="m1"
+      projectId="proj1"
       pin={pin}
       members={[]}
       currentUserName="Tester"

@@ -1,10 +1,11 @@
 "use client";
 
-import { RichCommentInput } from "@/components/viewer/RichCommentInput";
+import { RichCommentInput, type PendingAttachment } from "@/components/viewer/RichCommentInput";
 
 export function PinComposer({
   xPct,
   yPct,
+  projectId,
   onCancel,
   onSubmit,
   pending,
@@ -12,8 +13,9 @@ export function PinComposer({
 }: {
   xPct: number;
   yPct: number;
+  projectId: string;
   onCancel: () => void;
-  onSubmit: (body: string) => void;
+  onSubmit: (body: string, attachments: PendingAttachment[]) => void;
   pending: boolean;
   error?: string | null;
 }) {
@@ -32,10 +34,10 @@ export function PinComposer({
         </button>
       </div>
       <RichCommentInput
-        projectId={""}
+        projectId={projectId}
         placeholder="Add comment here…"
         pending={pending}
-        onSubmit={(html) => onSubmit(html)}
+        onSubmit={(html, attachments) => onSubmit(html, attachments)}
       />
       {error && (
         <p className="mt-2 text-sm font-medium" style={{ color: "var(--color-danger)" }} role="alert">{error}</p>

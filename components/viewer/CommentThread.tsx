@@ -5,7 +5,7 @@ import type { ViewerPin, ViewerComment } from "./MockupViewer";
 import { addComment, setPinStatus } from "@/app/app/mockups/[mockupId]/actions";
 import { Avatar } from "@/components/app/AppSidebar";
 import { timeAgo, formatDateTime } from "@/lib/format";
-import { RichCommentInput } from "@/components/viewer/RichCommentInput";
+import { RichCommentInput, type PendingAttachment } from "@/components/viewer/RichCommentInput";
 
 export type Member = { id: string; name: string };
 
@@ -29,6 +29,7 @@ function CommentRow({ c, small = false }: { c: ViewerComment; small?: boolean })
 
 export function CommentThread({
   mockupId,
+  projectId,
   pin,
   members,
   currentUserName,
@@ -36,6 +37,7 @@ export function CommentThread({
   onBack,
 }: {
   mockupId: string;
+  projectId: string;
   pin: ViewerPin;
   members: Member[];
   currentUserName: string;
@@ -48,10 +50,12 @@ export function CommentThread({
   const repliesOf = (id: string) => pin.comments.filter((c) => c.parentCommentId === id);
   const resolved = pin.status === "resolved";
 
-  async function post(html: string) {
+  async function post(html: string, attachments: PendingAttachment[] = []) {
     const text = html.trim();
-    if (!text) return;
-    const res = await addComment(mockupId, pin.id, text, replyTo ?? undefined);
+    if (!text && attachments.length === 0) return;
+    const res = attachments.length
+      ? await addComment(mockupId, pin.id, text, replyTo ?? undefined, attachments)
+      : await addComment(mockupId, pin.id, text, replyTo ?? undefined);
     if (res.error) return;
     const optimistic: ViewerComment = {
       id: `tmp-${pin.comments.length}`,
@@ -135,7 +139,7 @@ export function CommentThread({
           </div>
         )}
 
-        <RichCommentInput projectId={""} placeholder="Add a comment…" onSubmit={(html) => post(html)} />
+        <RichCommentInput projectId={projectId} placeholder="Add a comment…" onSubmit={(html, attachments) => post(html, attachments)} />
       </div>
     </div>
   );

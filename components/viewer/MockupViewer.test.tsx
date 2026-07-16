@@ -35,6 +35,7 @@ function renderViewer() {
   return render(
     <MockupViewer
       mockupId="m1"
+      projectId="proj1"
       imageUrl="http://x/y.png"
       imageName="y.png"
       initialPins={[]}
@@ -50,6 +51,7 @@ describe("MockupViewer", () => {
     render(
       <MockupViewer
         mockupId="m1"
+        projectId="proj1"
         imageUrl="http://example.com/a.png"
         imageName="a.png"
         initialPins={[{ id: "p1", x: 0.5, y: 0.5, number: 3, status: "active", comments: [] }]}
@@ -119,6 +121,7 @@ describe("MockupViewer", () => {
     render(
       <MockupViewer
         mockupId="m1"
+        projectId="proj1"
         imageUrl="http://x/y.png"
         imageName="y.png"
         initialPins={[]}
