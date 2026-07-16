@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getCurrentWorkspace } from "./actions";
-import { AppSidebar } from "@/components/app/AppSidebar";
+import { AppChrome } from "@/components/app/AppChrome";
 
 export default async function AppLayout({
   children,
@@ -17,13 +17,12 @@ export default async function AppLayout({
   const userEmail = data.user.email ?? "";
 
   return (
-    <div className="flex h-screen overflow-hidden bg-canvas">
-      <AppSidebar
-        workspaceName={ws?.name ?? "MarkUp"}
-        userName={userName}
-        userEmail={userEmail}
-      />
-      <div className="flex-1 overflow-y-auto">{children}</div>
-    </div>
+    <AppChrome
+      workspaceName={ws?.name ?? "MarkUp"}
+      userName={userName}
+      userEmail={userEmail}
+    >
+      {children}
+    </AppChrome>
   );
 }
