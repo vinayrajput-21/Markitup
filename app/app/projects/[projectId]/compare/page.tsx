@@ -23,7 +23,7 @@ export default async function ComparePage({
 
   const { data: rows } = await supabase
     .from("mockups")
-    .select("id, name, file_path, created_at")
+    .select("id, name, file_path, created_at, version")
     .eq("project_id", projectId)
     .is("archived_at", null)
     .order("created_at", { ascending: true });
@@ -38,7 +38,8 @@ export default async function ComparePage({
   }
 
   const list: CompareMockup[] = mockups
-    .map((m) => ({ id: m.id, name: m.name, url: signed.get(m.file_path) ?? "" }))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((m) => ({ id: m.id, name: m.name, url: signed.get(m.file_path) ?? "", version: (m as any).version as number | undefined }))
     .filter((m) => m.url);
 
   const latest = list[list.length - 1];
