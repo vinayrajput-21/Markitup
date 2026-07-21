@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "@/app/auth/actions";
-import { ThemeMenu } from "./ThemeMenu";
 
 function initials(name: string, email: string) {
   const base = (name || email || "?").trim();
@@ -116,20 +114,12 @@ const NAV = [
   },
 ];
 
-export function AppSidebar({
-  workspaceName,
-  userName,
-  userEmail,
-}: {
-  workspaceName: string;
-  userName: string;
-  userEmail: string;
-}) {
+export function AppSidebar({ workspaceName }: { workspaceName: string }) {
   const pathname = usePathname();
 
   return (
     <aside className="flex w-64 shrink-0 flex-col border-r bg-sidebar">
-      {/* workspace switcher */}
+      {/* workspace */}
       <div className="p-3">
         <Link
           href="/app"
@@ -144,9 +134,6 @@ export function AppSidebar({
               Workspace
             </span>
           </span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-faint" aria-hidden>
-            <path d="m8 9 4-4 4 4M8 15l4 4 4-4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
         </Link>
       </div>
 
@@ -170,34 +157,7 @@ export function AppSidebar({
         </ul>
       </nav>
 
-      {/* theme + user */}
-      <div className="border-t p-3">
-        <div className="mb-1">
-          <ThemeMenu />
-        </div>
-        <div className="flex items-center gap-2.5 rounded-lg p-1.5">
-          <Avatar name={userName} email={userEmail} size={34} />
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-semibold text-ink">
-              {userName || "You"}
-            </span>
-            <span className="block truncate text-xs text-faint">{userEmail}</span>
-          </span>
-          <form action={signOut}>
-            <button
-              type="submit"
-              title="Sign out"
-              aria-label="Sign out"
-              className="grid h-8 w-8 place-items-center rounded-md text-faint transition-colors duration-150 hover:bg-danger-soft hover:text-danger"
-            >
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <path d="M15 12H4m0 0 3.5-3.5M4 12l3.5 3.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M10 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2v-2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-              </svg>
-            </button>
-          </form>
-        </div>
-      </div>
+      <div className="p-3" />
     </aside>
   );
 }

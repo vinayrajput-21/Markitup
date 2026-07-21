@@ -13,16 +13,5 @@ export default async function AppLayout({
   if (!data.user) redirect("/login");
   const ws = await getCurrentWorkspace();
 
-  const userName = (data.user.user_metadata?.name as string) || "";
-  const userEmail = data.user.email ?? "";
-
-  return (
-    <AppChrome
-      workspaceName={ws?.name ?? "MarkUp"}
-      userName={userName}
-      userEmail={userEmail}
-    >
-      {children}
-    </AppChrome>
-  );
+  return <AppChrome workspaceName={ws?.name ?? "MarkUp"}>{children}</AppChrome>;
 }

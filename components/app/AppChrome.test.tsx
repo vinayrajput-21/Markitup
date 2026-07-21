@@ -12,13 +12,13 @@ import { AppChrome } from "./AppChrome";
 describe("AppChrome", () => {
   it("shows the sidebar on normal app routes", () => {
     pathnameMock.mockReturnValue("/app");
-    render(<AppChrome workspaceName="W" userName="U" userEmail="e"><div /></AppChrome>);
+    render(<AppChrome workspaceName="W"><div /></AppChrome>);
     expect(screen.queryByTestId("sidebar")).not.toBeNull();
   });
 
   it("hides the sidebar on the mockup viewer route", () => {
     pathnameMock.mockReturnValue("/app/mockups/abc");
-    render(<AppChrome workspaceName="W" userName="U" userEmail="e"><div /></AppChrome>);
+    render(<AppChrome workspaceName="W"><div /></AppChrome>);
     expect(screen.queryByTestId("sidebar")).toBeNull();
     // a reveal toggle is available instead
     expect(screen.getByRole("button", { name: /menu|sidebar/i })).toBeTruthy();
@@ -26,11 +26,11 @@ describe("AppChrome", () => {
 
   it("re-hides the sidebar when navigating to another mockup", () => {
     pathnameMock.mockReturnValue("/app/mockups/a");
-    const { rerender } = render(<AppChrome workspaceName="W" userName="U" userEmail="e"><div /></AppChrome>);
+    const { rerender } = render(<AppChrome workspaceName="W"><div /></AppChrome>);
     fireEvent.click(screen.getByRole("button", { name: /show sidebar/i }));
     expect(screen.queryByTestId("sidebar")).not.toBeNull(); // revealed
     pathnameMock.mockReturnValue("/app/mockups/b");
-    rerender(<AppChrome workspaceName="W" userName="U" userEmail="e"><div /></AppChrome>);
+    rerender(<AppChrome workspaceName="W"><div /></AppChrome>);
     expect(screen.queryByTestId("sidebar")).toBeNull(); // hidden again on new mockup
   });
 });

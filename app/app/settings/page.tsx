@@ -1,5 +1,6 @@
 import { getFigmaConnection } from "@/app/app/figma-actions";
 import { FigmaConnect } from "@/components/app/FigmaConnect";
+import { ThemeSettings } from "@/components/app/ThemeSettings";
 
 export default async function SettingsPage() {
   const { connected } = await getFigmaConnection();
@@ -8,10 +9,13 @@ export default async function SettingsPage() {
     <div className="mx-auto max-w-4xl px-8 py-8">
       <div className="mb-7">
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-        <p className="mt-1 text-sm text-muted">Workspace integrations and connections.</p>
+        <p className="mt-1 text-sm text-muted">Appearance, integrations and connections.</p>
       </div>
 
-      <h2 className="mb-3 text-xs font-semibold tracking-wider text-faint uppercase">Integrations</h2>
+      <h2 className="mb-3 text-xs font-semibold tracking-wider text-faint uppercase">Appearance</h2>
+      <ThemeSettings />
+
+      <h2 className="mb-3 mt-8 text-xs font-semibold tracking-wider text-faint uppercase">Integrations</h2>
       <FigmaConnect connected={connected} />
     </div>
   );

@@ -6,13 +6,9 @@ import { AppSidebar } from "./AppSidebar";
 
 export function AppChrome({
   workspaceName,
-  userName,
-  userEmail,
   children,
 }: {
   workspaceName: string;
-  userName: string;
-  userEmail: string;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -25,9 +21,7 @@ export function AppChrome({
 
   return (
     <div className="flex h-screen overflow-hidden bg-canvas">
-      {showSidebar && (
-        <AppSidebar workspaceName={workspaceName} userName={userName} userEmail={userEmail} />
-      )}
+      {showSidebar && <AppSidebar workspaceName={workspaceName} />}
       <div className="relative flex-1 overflow-y-auto">
         {isViewer && (
           <button
