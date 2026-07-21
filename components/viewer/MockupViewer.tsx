@@ -40,6 +40,10 @@ const ZOOM_OPTIONS: { label: string; value: Zoom }[] = [
   })),
 ];
 
+const RAIL_DEFAULT = 280;
+const RAIL_MIN = 220;
+const RAIL_MAX = 620;
+
 const SORTS = [
   { key: "pins", label: "Pin order" },
   { key: "newest", label: "Latest activity" },
@@ -158,8 +162,41 @@ export function MockupViewer({
   const canvasRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
+  const railRef = useRef<HTMLElement>(null);
+  const railWidthRef = useRef(RAIL_DEFAULT);
   const [nat, setNat] = useState({ w: 0, h: 0 });
   const [box, setBox] = useState({ w: 0, h: 0 });
+  const [railWidth, setRailWidth] = useState(RAIL_DEFAULT);
+
+  // restore the saved rail width once, on mount
+  useEffect(() => {
+    const saved = Number(localStorage.getItem("markitup-rail-width"));
+    if (saved >= RAIL_MIN && saved <= RAIL_MAX) {
+      railWidthRef.current = saved;
+      setRailWidth(saved);
+    }
+  }, []);
+
+  function startRailResize(e: React.MouseEvent) {
+    e.preventDefault();
+    const left = railRef.current?.getBoundingClientRect().left ?? 0;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    const onMove = (ev: MouseEvent) => {
+      const w = Math.min(RAIL_MAX, Math.max(RAIL_MIN, ev.clientX - left));
+      railWidthRef.current = w;
+      setRailWidth(w);
+    };
+    const onUp = () => {
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      localStorage.setItem("markitup-rail-width", String(Math.round(railWidthRef.current)));
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }
 
   // track the scroll container size
   useEffect(() => {
@@ -400,8 +437,12 @@ export function MockupViewer({
       </header>
 
       <div className="flex min-h-0 flex-1">
-      {/* comment rail */}
-      <aside className="flex w-[280px] shrink-0 flex-col border-r bg-surface">
+      {/* comment rail (resizable) */}
+      <aside
+        ref={railRef}
+        style={{ width: railWidth }}
+        className="relative flex shrink-0 flex-col border-r bg-surface"
+      >
         {activePin ? (
           <CommentThread
             mockupId={mockupId}
@@ -487,6 +528,16 @@ export function MockupViewer({
             </div>
           </>
         )}
+        {/* drag handle: resize the rail from its right edge */}
+        <div
+          onMouseDown={startRailResize}
+          className="group absolute top-0 right-0 z-20 h-full w-2 translate-x-1/2 cursor-col-resize"
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize comments panel"
+        >
+          <div className="mx-auto h-full w-0.5 bg-transparent transition-colors duration-150 group-hover:bg-[color:var(--ring)]" />
+        </div>
       </aside>
 
       {/* canvas */}
