@@ -5,6 +5,7 @@ import type { ViewerPin, ViewerComment } from "./MockupViewer";
 import { addComment, setPinStatus } from "@/app/app/mockups/[mockupId]/actions";
 import { Avatar } from "@/components/app/AppSidebar";
 import { timeAgo, formatDateTime } from "@/lib/format";
+import { celebrate } from "@/lib/confetti";
 import { RichCommentInput, type PendingAttachment } from "@/components/viewer/RichCommentInput";
 
 export type Member = { id: string; name: string };
@@ -87,11 +88,16 @@ export function CommentThread({
     setReplyTo(null);
   }
 
-  async function toggleStatus() {
+  async function toggleStatus(e?: React.MouseEvent) {
+    // capture the button position before awaiting (the event is stale after)
+    const rect = (e?.currentTarget as HTMLElement | undefined)?.getBoundingClientRect();
     const next = resolved ? "active" : "resolved";
     const res = await setPinStatus(mockupId, pin.id, next);
     if (res?.error) return;
     onChange({ ...pin, status: next });
+    if (next === "resolved") {
+      celebrate(rect ? rect.left + rect.width / 2 : undefined, rect ? rect.top : undefined);
+    }
   }
 
   return (
