@@ -47,29 +47,35 @@ export default async function ComparePage({
   const initialLeft = left && list.some((m) => m.id === left) ? left : previous?.id;
   const initialRight = right && list.some((m) => m.id === right) ? right : latest?.id;
 
-  return (
-    <div className="flex h-full flex-col">
-      <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-surface px-3">
-        <Link
-          href={`/app/projects/${projectId}`}
-          className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-muted transition-colors hover:bg-brand-soft hover:text-brand-ink"
-          aria-label="Back to project"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path d="M14 6l-6 6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </Link>
-        <h1 className="truncate text-sm font-bold text-ink">Compare · {project.name}</h1>
-      </header>
-      <div className="min-h-0 flex-1">
-        {list.length < 2 ? (
-          <div className="grid h-full place-items-center px-6 text-center text-sm text-faint">
-            Add at least two mockups to this project to compare them side by side.
-          </div>
-        ) : (
-          <CompareView mockups={list} initialLeft={initialLeft} initialRight={initialRight} />
-        )}
+  if (list.length < 2) {
+    return (
+      <div className="flex h-full flex-col">
+        <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-surface px-3">
+          <Link
+            href={`/app/projects/${projectId}`}
+            className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-muted transition-colors hover:bg-brand-soft hover:text-brand-ink"
+            aria-label="Back to project"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M14 6l-6 6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </Link>
+          <h1 className="truncate text-sm font-bold text-ink">Compare · {project.name}</h1>
+        </header>
+        <div className="grid min-h-0 flex-1 place-items-center px-6 text-center text-sm text-faint">
+          Add at least two mockups to this project to compare them side by side.
+        </div>
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <CompareView
+      mockups={list}
+      initialLeft={initialLeft}
+      initialRight={initialRight}
+      projectId={projectId}
+      projectName={project.name}
+    />
   );
 }
