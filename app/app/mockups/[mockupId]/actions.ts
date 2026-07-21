@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email/send";
 import { commentNotification } from "@/lib/email/templates";
@@ -52,17 +53,21 @@ export async function addComment(
     }
   }
 
-  // Best-effort: notify the team (everyone but the author). Never fail the comment.
-  try {
-    const { data: mk } = await supabase
-      .from("mockups")
-      .select("name, project_id, projects(workspace_id)")
-      .eq("id", mockupId)
-      .maybeSingle();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const workspaceId = (mk as any)?.projects?.workspace_id as string | undefined;
-    const projectId = mk?.project_id as string | undefined;
-    if (mk && (workspaceId || projectId)) {
+  // Notify the team AFTER the response is sent, so posting a comment returns
+  // immediately instead of blocking on N sequential emails + notifications.
+  // Best-effort: never fails or delays the comment.
+  after(async () => {
+    try {
+      const { data: mk } = await supabase
+        .from("mockups")
+        .select("name, project_id, projects(workspace_id)")
+        .eq("id", mockupId)
+        .maybeSingle();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const workspaceId = (mk as any)?.projects?.workspace_id as string | undefined;
+      const projectId = mk?.project_id as string | undefined;
+      if (!mk || (!workspaceId && !projectId)) return;
+
       const [{ data: wm }, { data: pm }] = await Promise.all([
         supabase.from("workspace_members").select("profiles(id, name, email)").eq("workspace_id", workspaceId ?? ""),
         supabase.from("project_members").select("profiles(id, name, email)").eq("project_id", projectId ?? ""),
@@ -76,28 +81,34 @@ export async function addComment(
         }
       }
       const commenterName = (author.user_metadata?.name as string) || author.email || "Someone";
-      for (const r of recipients.values()) {
-        const tpl = commentNotification({
-          recipientName: r.name,
-          commenterName,
-          mockupName: mk.name as string,
-          body: htmlToPlainText(cleanBody),
-          mockupId,
-        });
-        await sendEmail({ to: r.email, ...tpl });
-        await supabase.rpc("create_notification", {
-          p_user_id: r.id,
-          p_actor_id: author.id,
-          p_type: "comment",
-          p_mockup_id: mockupId,
-          p_project_id: projectId ?? null,
-          p_body: `${commenterName} commented on ${mk.name as string}`,
-        });
-      }
+      const plain = htmlToPlainText(cleanBody);
+      // fan out in parallel rather than one-at-a-time
+      await Promise.all(
+        [...recipients.values()].map(async (r) => {
+          const tpl = commentNotification({
+            recipientName: r.name,
+            commenterName,
+            mockupName: mk.name as string,
+            body: plain,
+            mockupId,
+          });
+          await Promise.allSettled([
+            sendEmail({ to: r.email, ...tpl }),
+            supabase.rpc("create_notification", {
+              p_user_id: r.id,
+              p_actor_id: author.id,
+              p_type: "comment",
+              p_mockup_id: mockupId,
+              p_project_id: projectId ?? null,
+              p_body: `${commenterName} commented on ${mk.name as string}`,
+            }),
+          ]);
+        }),
+      );
+    } catch (e) {
+      console.error("[comment] notification failed", e);
     }
-  } catch (e) {
-    console.error("[comment] notification failed", e);
-  }
+  });
 
   revalidatePath(`/app/mockups/${mockupId}`);
   return { body: cleanBody };
@@ -110,6 +121,15 @@ export async function setPinStatus(
 ) {
   const supabase = await createServerSupabase();
   const { error } = await supabase.from("pins").update({ status }).eq("id", pinId);
+  if (error) return { error: error.message };
+  revalidatePath(`/app/mockups/${mockupId}`);
+  return {};
+}
+
+// Delete a whole comment thread (the pin + its comments, via cascade).
+export async function deletePin(mockupId: string, pinId: string) {
+  const supabase = await createServerSupabase();
+  const { error } = await supabase.from("pins").delete().eq("id", pinId);
   if (error) return { error: error.message };
   revalidatePath(`/app/mockups/${mockupId}`);
   return {};

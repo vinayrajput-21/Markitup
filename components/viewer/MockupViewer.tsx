@@ -394,6 +394,7 @@ export function MockupViewer({
             currentUserName={currentUserName}
             onClose={() => setActivePinId(null)}
             onChange={(updated) => setPins((ps) => ps.map((p) => (p.id === updated.id ? updated : p)))}
+            onDelete={() => { setPins((ps) => ps.filter((p) => p.id !== activePin.id)); setActivePinId(null); }}
           />
         </div>
       )}

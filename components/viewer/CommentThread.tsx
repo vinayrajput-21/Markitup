@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import type { ViewerPin, ViewerComment } from "./MockupViewer";
-import { addComment, setPinStatus } from "@/app/app/mockups/[mockupId]/actions";
+import { addComment, setPinStatus, deletePin } from "@/app/app/mockups/[mockupId]/actions";
 import { Avatar } from "@/components/app/AppSidebar";
 import { timeAgo, formatDateTime } from "@/lib/format";
 import { celebrate } from "@/lib/confetti";
+import { useToast } from "@/components/ui/toast";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { RichCommentInput, type PendingAttachment } from "@/components/viewer/RichCommentInput";
 
 export type Member = { id: string; name: string };
@@ -53,6 +55,7 @@ export function CommentThread({
   currentUserName,
   onChange,
   onClose,
+  onDelete,
 }: {
   mockupId: string;
   projectId: string;
@@ -61,8 +64,22 @@ export function CommentThread({
   currentUserName: string;
   onChange: (p: ViewerPin) => void;
   onClose?: () => void;
+  onDelete?: () => void;
 }) {
   const [replyTo, setReplyTo] = useState<string | null>(null);
+  const [confirmDel, setConfirmDel] = useState(false);
+  const [deleting, startDelete] = useTransition();
+  const toast = useToast();
+
+  function doDelete() {
+    startDelete(async () => {
+      const res = await deletePin(mockupId, pin.id);
+      setConfirmDel(false);
+      if (res?.error) { toast.error(res.error); return; }
+      toast.success("Comment deleted");
+      onDelete?.();
+    });
+  }
 
   const roots = pin.comments.filter((c) => !c.parentCommentId);
   const repliesOf = (id: string) => pin.comments.filter((c) => c.parentCommentId === id);
@@ -122,6 +139,16 @@ export function CommentThread({
               <path d="m8.4 12 2.4 2.4L15.6 9" stroke={resolved ? "#fff" : "currentColor"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
+          <button
+            onClick={() => setConfirmDel(true)}
+            title="Delete comment"
+            aria-label="Delete comment"
+            className="grid h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-danger-soft hover:text-danger"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
           {onClose && (
             <button
               onClick={onClose}
@@ -136,6 +163,17 @@ export function CommentThread({
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDel}
+        title="Delete this comment?"
+        message={<>This removes pin #{pin.number} and {pin.comments.length === 1 ? "its comment" : `all ${pin.comments.length} comments`}. This action cannot be undone.</>}
+        confirmLabel="Delete"
+        pendingLabel="Deleting…"
+        pending={deleting}
+        onConfirm={doDelete}
+        onCancel={() => setConfirmDel(false)}
+      />
 
       <div className="max-h-[45vh] space-y-5 overflow-y-auto px-4 py-3">
         {roots.length === 0 && <p className="pt-2 text-sm text-faint">No comments yet. Start the thread below.</p>}

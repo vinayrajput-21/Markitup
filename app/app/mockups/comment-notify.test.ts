@@ -11,11 +11,18 @@ const h = vi.hoisted(() => {
   };
   const sendEmail = vi.fn().mockResolvedValue({ ok: true });
   const rpcMock = vi.fn().mockResolvedValue({ error: null });
-  return { state, sendEmail, rpcMock };
+  // notifications are deferred via after(); capture the tasks so tests can flush them.
+  const afterTasks: Promise<unknown>[] = [];
+  return { state, sendEmail, rpcMock, afterTasks };
 });
 
 vi.mock("@/lib/email/send", () => ({ sendEmail: h.sendEmail, EMAIL_FROM: "x" }));
 vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
+// Run the deferred callback and record its promise so tests can await it.
+vi.mock("next/server", () => ({ after: (cb: () => unknown) => { h.afterTasks.push(Promise.resolve().then(cb)); } }));
+
+// Wait for the deferred (after) notification work to finish.
+const flushAfter = () => Promise.all(h.afterTasks);
 
 // Supabase mock: author is u1. Member lists are read live from the hoisted fixture so each
 // test can swap in its own scenario before calling addComment.
@@ -46,6 +53,7 @@ describe("addComment notifications", () => {
   beforeEach(() => {
     h.sendEmail.mockClear();
     h.rpcMock.mockClear();
+    h.afterTasks.length = 0;
     // Reset fixture to the default happy-path scenario before every test.
     h.state.mockupThrows = false;
     // workspace has u1 (author) + u2; project has u3.
@@ -61,6 +69,7 @@ describe("addComment notifications", () => {
   it("emails every member except the author", async () => {
     const { addComment } = await import("./[mockupId]/actions");
     await addComment("m1", "pin1", "Please fix the header");
+    await flushAfter();
     const recipients = h.sendEmail.mock.calls.map((c) => c[0].to).sort();
     expect(recipients).toEqual(["client@x.com", "team@x.com"]);
   });
@@ -68,6 +77,7 @@ describe("addComment notifications", () => {
   it("sends plain text (no HTML tags) in the notification email body", async () => {
     const { addComment } = await import("./[mockupId]/actions");
     await addComment("m1", "pin1", "<p>Please <b>fix</b> the header</p>");
+    await flushAfter();
     // The email templates escape their inputs; sending plain text means no
     // literal tag characters ever reach the recipient's rendered body.
     for (const call of h.sendEmail.mock.calls) {
@@ -93,6 +103,7 @@ describe("addComment notifications", () => {
 
     const { addComment } = await import("./[mockupId]/actions");
     await addComment("m1", "pin1", "Please fix the header");
+    await flushAfter();
 
     const recipients = h.sendEmail.mock.calls.map((c) => c[0].to).sort();
     // Unique non-author emails only.
@@ -108,6 +119,7 @@ describe("addComment notifications", () => {
 
     const { addComment } = await import("./[mockupId]/actions");
     const result = await addComment("m1", "pin1", "Please fix the header");
+    await flushAfter();
 
     // Success return carries the server-sanitized body (plain text here);
     // crucially no `error` and no throw despite the failed recipient lookup.
@@ -118,6 +130,7 @@ describe("addComment notifications", () => {
   it("creates an in-app notification for each non-author recipient", async () => {
     const { addComment } = await import("./[mockupId]/actions");
     await addComment("m1", "pin1", "Please fix the header");
+    await flushAfter();
     const notified = h.rpcMock.mock.calls
       .filter((c) => c[0] === "create_notification")
       .map((c) => c[1].p_user_id)
