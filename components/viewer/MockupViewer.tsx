@@ -161,6 +161,7 @@ export function MockupViewer({
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const surfaceRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const railRef = useRef<HTMLElement>(null);
   const railWidthRef = useRef(RAIL_DEFAULT);
@@ -230,6 +231,28 @@ export function MockupViewer({
       : zoom.mode === "fit-width"
         ? "Fit horizontally"
         : `${zoom.pct}%`;
+
+  // Bring a pin into view (centered) when it's selected from the comment rail,
+  // so the anchored popup is always visible even if the pin was scrolled off.
+  function scrollToPin(p: ViewerPin) {
+    const sc = scrollRef.current;
+    const surf = surfaceRef.current;
+    if (!sc || !surf) return;
+    const px = surf.offsetLeft + p.x * surf.offsetWidth;
+    const py = surf.offsetTop + p.y * surf.offsetHeight;
+    sc.scrollTo({
+      left: px - sc.clientWidth / 2,
+      top: py - sc.clientHeight / 2,
+      behavior: "smooth",
+    });
+  }
+
+  function selectPin(id: string) {
+    setDraft(null);
+    setActivePinId(id);
+    const p = pins.find((x) => x.id === id);
+    if (p) requestAnimationFrame(() => scrollToPin(p));
+  }
 
   function handleSurfaceClick(e: React.MouseEvent<HTMLElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -530,7 +553,7 @@ export function MockupViewer({
                   </p>
                 </div>
               ) : (
-                visiblePins.map((p) => <PinListItem key={p.id} pin={p} onSelect={() => setActivePinId(p.id)} />)
+                visiblePins.map((p) => <PinListItem key={p.id} pin={p} onSelect={() => selectPin(p.id)} />)
               )}
             </div>
           </>
@@ -551,7 +574,7 @@ export function MockupViewer({
       <div ref={canvasRef} className="relative min-h-0 min-w-0 flex-1 overflow-hidden bg-canvas">
         <div ref={scrollRef} className="relative h-full overflow-auto">
           <div className="flex min-h-full min-w-full items-center justify-center p-6">
-            <div className="relative shrink-0" style={{ width: displayW || "100%" }}>
+            <div ref={surfaceRef} className="relative shrink-0" style={{ width: displayW || "100%" }}>
               {isFigma ? (
                 <>
                   {/* hidden probe: read the rendered frame's aspect ratio so the
