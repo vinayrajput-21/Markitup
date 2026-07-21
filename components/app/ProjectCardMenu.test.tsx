@@ -9,7 +9,7 @@ import { ProjectCardMenu } from "./ProjectCardMenu";
 
 describe("ProjectCardMenu", () => {
   it("archives via the menu", async () => {
-    render(<ProjectCardMenu projectId="p1" />);
+    render(<ProjectCardMenu projectId="p1" name="Demo project" />);
     fireEvent.click(screen.getByRole("button", { name: /project options/i }));
     fireEvent.click(screen.getByText(/archive/i));
     await waitFor(() => expect(archiveProject).toHaveBeenCalledWith("p1"));

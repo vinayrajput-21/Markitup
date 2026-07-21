@@ -76,7 +76,7 @@ export default async function DashboardPage() {
                 coverUrl={coverFor(p)}
                 updatedAt={p.created_at}
                 stats={stats.get(p.id) ?? zero}
-                menu={<ProjectCardMenu projectId={p.id} />}
+                menu={<ProjectCardMenu projectId={p.id} name={p.name} />}
               />
             </li>
           ))}

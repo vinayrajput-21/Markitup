@@ -4,9 +4,10 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { archiveProject, deleteProject } from "@/app/app/folders-actions";
 import { CardMenu, MenuItem, LinkIcon, CheckIcon, ArchiveIcon, TrashIcon } from "@/components/app/CardMenu";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/toast";
 
-export function ProjectCardMenu({ projectId }: { projectId: string }) {
+export function ProjectCardMenu({ projectId, name }: { projectId: string; name: string }) {
   const [pending, start] = useTransition();
   const [confirm, setConfirm] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -22,6 +23,16 @@ export function ProjectCardMenu({ projectId }: { projectId: string }) {
     });
   }
 
+  function confirmDelete() {
+    start(async () => {
+      const res = (await deleteProject(projectId)) as { error?: string } | undefined;
+      setConfirm(false);
+      if (res?.error) toast.error(res.error);
+      else toast.success(`“${name}” deleted`, { description: "Project and all its files removed." });
+      router.refresh();
+    });
+  }
+
   function copyLink(close: () => void) {
     const url = `${window.location.origin}/app/projects/${projectId}`;
     navigator.clipboard?.writeText(url).then(() => {
@@ -32,42 +43,33 @@ export function ProjectCardMenu({ projectId }: { projectId: string }) {
   }
 
   return (
-    <CardMenu label="Project options" onClose={() => setConfirm(false)}>
-      {(close) =>
-        confirm ? (
-          <div className="p-1.5">
-            <p className="px-1.5 pb-2 pt-1 text-xs text-muted">Delete this project and all its files & comments?</p>
-            <div className="flex gap-1.5 px-1.5 pb-1">
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => { setConfirm(false); close(); run(() => deleteProject(projectId), "Project deleted"); }}
-                className="btn-sm flex-1 rounded-md px-2 py-1 text-center text-sm font-semibold text-white"
-                style={{ background: "var(--color-danger)" }}
-              >
-                Delete
-              </button>
-              <button type="button" onClick={() => setConfirm(false)} className="btn-secondary btn-sm flex-1">Cancel</button>
-            </div>
-          </div>
-        ) : (
+    <>
+      <CardMenu label="Project options">
+        {(close) => (
           <>
             <MenuItem onClick={() => copyLink(close)}>
-              {copied ? (
-                <><CheckIcon /> Link copied</>
-              ) : (
-                <><LinkIcon /> Copy project link</>
-              )}
+              {copied ? (<><CheckIcon /> Link copied</>) : (<><LinkIcon /> Copy project link</>)}
             </MenuItem>
-            <MenuItem disabled={pending} onClick={() => { close(); run(() => archiveProject(projectId), "Project archived"); }}>
+            <MenuItem disabled={pending} onClick={() => { close(); run(() => archiveProject(projectId), `“${name}” archived`); }}>
               <ArchiveIcon /> Archive
             </MenuItem>
-            <MenuItem danger disabled={pending} onClick={() => setConfirm(true)}>
+            <MenuItem danger disabled={pending} onClick={() => { close(); setConfirm(true); }}>
               <TrashIcon /> Delete
             </MenuItem>
           </>
-        )
-      }
-    </CardMenu>
+        )}
+      </CardMenu>
+
+      <ConfirmDialog
+        open={confirm}
+        title="Delete this project?"
+        message={<>This permanently deletes <b className="text-ink">“{name}”</b> and every mockup, version and comment inside it. This action cannot be undone.</>}
+        confirmLabel="Delete project"
+        pendingLabel="Deleting…"
+        pending={pending}
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirm(false)}
+      />
+    </>
   );
 }

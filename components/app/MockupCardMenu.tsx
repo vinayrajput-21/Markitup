@@ -6,9 +6,10 @@ import { archiveMockup, deleteMockup } from "@/app/app/projects/[projectId]/acti
 import { ShareDialog } from "@/components/viewer/ShareDialog";
 import { useVersionUpload } from "@/components/viewer/useVersionUpload";
 import { CardMenu, MenuItem, ShareIcon, ArchiveIcon, TrashIcon } from "@/components/app/CardMenu";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/toast";
 
-export function MockupCardMenu({ mockupId, projectId }: { mockupId: string; projectId: string }) {
+export function MockupCardMenu({ mockupId, projectId, name }: { mockupId: string; projectId: string; name: string }) {
   const [pending, start] = useTransition();
   const [confirm, setConfirm] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -26,6 +27,16 @@ export function MockupCardMenu({ mockupId, projectId }: { mockupId: string; proj
     });
   }
 
+  function confirmDelete() {
+    start(async () => {
+      const res = (await deleteMockup(mockupId)) as { error?: string } | undefined;
+      setConfirm(false);
+      if (res?.error) toast.error(res.error);
+      else toast.success(`“${name}” deleted`, { description: "File and its comments removed." });
+      router.refresh();
+    });
+  }
+
   const busy = pending || uploading;
 
   return (
@@ -38,43 +49,35 @@ export function MockupCardMenu({ mockupId, projectId }: { mockupId: string; proj
         className="hidden"
         onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
       />
-      <CardMenu label="File options" onClose={() => setConfirm(false)}>
-        {(close) =>
-          confirm ? (
-            <div className="p-1.5">
-              <p className="px-1.5 pb-2 pt-1 text-xs text-muted">Delete this file and its comments?</p>
-              <div className="flex gap-1.5 px-1.5 pb-1">
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => { setConfirm(false); close(); run(() => deleteMockup(mockupId), "File deleted"); }}
-                  className="btn-sm flex-1 rounded-md px-2 py-1 text-center text-sm font-semibold text-white"
-                  style={{ background: "var(--color-danger)" }}
-                >
-                  Delete
-                </button>
-                <button type="button" onClick={() => setConfirm(false)} className="btn-secondary btn-sm flex-1">Cancel</button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <MenuItem onClick={() => { close(); setShareOpen(true); }}>
-                <ShareIcon /> Share
-              </MenuItem>
-              <MenuItem disabled={busy} onClick={() => { close(); inputRef.current?.click(); }}>
-                <UploadIcon /> {uploading ? "Uploading…" : "Upload new version"}
-              </MenuItem>
-              <MenuItem disabled={busy} onClick={() => { close(); run(() => archiveMockup(mockupId), "File archived"); }}>
-                <ArchiveIcon /> Archive
-              </MenuItem>
-              <MenuItem danger disabled={busy} onClick={() => setConfirm(true)}>
-                <TrashIcon /> Delete
-              </MenuItem>
-            </>
-          )
-        }
+      <CardMenu label="File options">
+        {(close) => (
+          <>
+            <MenuItem onClick={() => { close(); setShareOpen(true); }}>
+              <ShareIcon /> Share
+            </MenuItem>
+            <MenuItem disabled={busy} onClick={() => { close(); inputRef.current?.click(); }}>
+              <UploadIcon /> {uploading ? "Uploading…" : "Upload new version"}
+            </MenuItem>
+            <MenuItem disabled={busy} onClick={() => { close(); run(() => archiveMockup(mockupId), `“${name}” archived`); }}>
+              <ArchiveIcon /> Archive
+            </MenuItem>
+            <MenuItem danger disabled={busy} onClick={() => { close(); setConfirm(true); }}>
+              <TrashIcon /> Delete
+            </MenuItem>
+          </>
+        )}
       </CardMenu>
       <ShareDialog mockupId={mockupId} hideTrigger open={shareOpen} onOpenChange={setShareOpen} />
+      <ConfirmDialog
+        open={confirm}
+        title="Delete this file?"
+        message={<>This permanently deletes <b className="text-ink">“{name}”</b> — all its versions, pins and comments. This action cannot be undone.</>}
+        confirmLabel="Delete file"
+        pendingLabel="Deleting…"
+        pending={busy}
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirm(false)}
+      />
     </>
   );
 }

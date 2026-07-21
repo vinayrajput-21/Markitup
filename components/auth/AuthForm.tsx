@@ -11,12 +11,15 @@ export function AuthForm({
   next,
   submitLabel,
   successLabel = "Welcome back",
+  celebrate: withConfetti = false,
   children,
 }: {
   action: (state: AuthState, formData: FormData) => Promise<AuthState>;
   next?: string;
   submitLabel: string;
   successLabel?: string;
+  // Fire confetti on success — reserved for first-time signup, not every login.
+  celebrate?: boolean;
   children: React.ReactNode;
 }) {
   const [state, formAction, pending] = useActionState(action, {});
@@ -26,16 +29,21 @@ export function AuthForm({
   useEffect(() => {
     if (!state?.ok || !state.redirect) return;
     setDone(true);
-    // A generous welcome burst — a few bloom points feel more celebratory.
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    celebrate(w * 0.5, h * 0.4, 160);
-    const t1 = setTimeout(() => celebrate(w * 0.22, h * 0.5, 90), 160);
-    const t2 = setTimeout(() => celebrate(w * 0.78, h * 0.5, 90), 300);
+    if (withConfetti) {
+      // A generous welcome burst — a few bloom points feel more celebratory.
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      celebrate(w * 0.5, h * 0.4, 160);
+      const t1 = setTimeout(() => celebrate(w * 0.22, h * 0.5, 90), 160);
+      const t2 = setTimeout(() => celebrate(w * 0.78, h * 0.5, 90), 300);
+      router.prefetch?.(state.redirect);
+      const nav = setTimeout(() => router.push(state.redirect!), 1300);
+      return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(nav); };
+    }
     router.prefetch?.(state.redirect);
-    const nav = setTimeout(() => router.push(state.redirect!), 1300);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(nav); };
-  }, [state, router]);
+    const nav = setTimeout(() => router.push(state.redirect!), 1000);
+    return () => clearTimeout(nav);
+  }, [state, router, withConfetti]);
 
   return (
     <>

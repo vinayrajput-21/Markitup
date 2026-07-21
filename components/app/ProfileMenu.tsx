@@ -13,7 +13,7 @@ export function ProfileMenu({ name, email }: { name: string; email: string }) {
         type="button"
         aria-label="Account menu"
         onClick={() => setOpen((o) => !o)}
-        className="rounded-full ring-2 ring-transparent transition hover:ring-[color:var(--color-border-strong)]"
+        className="flex rounded-full ring-2 ring-transparent transition hover:ring-[color:var(--color-border-strong)]"
       >
         <Avatar name={name} email={email} size={32} />
       </button>

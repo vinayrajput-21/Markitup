@@ -96,7 +96,7 @@ export default async function ProjectPage({
           {rows.map((m) => (
             <li key={m.id} className="relative">
               <div className="absolute right-2 top-2 z-10">
-                <MockupCardMenu mockupId={m.id} projectId={projectId} />
+                <MockupCardMenu mockupId={m.id} projectId={projectId} name={m.name} />
               </div>
               <Link href={`/app/mockups/${m.id}`} className="card card-hover block overflow-hidden">
                 <div className="relative aspect-[4/3] w-full overflow-hidden border-b bg-canvas">
