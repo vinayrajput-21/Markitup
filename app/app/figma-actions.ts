@@ -134,7 +134,7 @@ export async function importFigmaFrame(projectId: string, figmaUrl: string) {
     created_by: userData.user!.id,
     figma_file_key: ref.fileKey,
     figma_node_id: ref.nodeId,
-    figma_embed_url: buildEmbedUrl(figmaUrl.trim()),
+    figma_embed_url: buildEmbedUrl(ref.fileKey, ref.nodeId),
   });
   if (insErr) return { error: insErr.message };
 

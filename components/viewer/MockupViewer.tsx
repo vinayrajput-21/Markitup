@@ -412,9 +412,7 @@ export function MockupViewer({
       <div ref={canvasRef} className="flex min-w-0 flex-1 flex-col bg-canvas">
         {/* canvas toolbar */}
         <div className="flex shrink-0 items-center justify-between gap-3 border-b bg-surface px-3 py-2">
-          <span className="hidden font-mono text-xs text-faint md:inline">
-            {isFigma ? "Live Figma preview" : shownPct ? `${shownPct}%` : ""}
-          </span>
+          <span className="hidden font-mono text-xs text-faint md:inline">{shownPct ? `${shownPct}%` : ""}</span>
 
           {/* pagination */}
           <div className="flex items-center gap-1">
@@ -447,40 +445,38 @@ export function MockupViewer({
 
           {/* zoom + actions */}
           <div className="flex items-center gap-1">
-            {!isFigma && (
-              <div className="relative">
-                <button
-                  onClick={() => setZoomOpen((o) => !o)}
-                  className="btn-secondary btn-sm gap-1.5"
-                >
-                  {zoomLabel}
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden><path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                </button>
-                {zoomOpen && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setZoomOpen(false)} />
-                    <div className="absolute right-0 z-50 mt-1 w-44 rounded-lg border bg-surface-2 p-1 shadow-lg">
-                      {ZOOM_OPTIONS.map((o) => {
-                        const on = o.value.mode === zoom.mode && (o.value.mode !== "percent" || o.value.pct === zoom.pct);
-                        return (
-                          <button
-                            key={o.label}
-                            onClick={() => { setZoom(o.value); setZoomOpen(false); }}
-                            className="flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-[color:var(--accent)]"
-                            style={on ? { color: "var(--primary)", fontWeight: 600 } : { color: "var(--foreground)" }}
-                          >
-                            {o.label}
-                            {on && (
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden><path d="m5 12 4.5 4.5L19 7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+            <div className="relative">
+              <button
+                onClick={() => setZoomOpen((o) => !o)}
+                className="btn-secondary btn-sm gap-1.5"
+              >
+                {zoomLabel}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden><path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </button>
+              {zoomOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setZoomOpen(false)} />
+                  <div className="absolute right-0 z-50 mt-1 w-44 rounded-lg border bg-surface-2 p-1 shadow-lg">
+                    {ZOOM_OPTIONS.map((o) => {
+                      const on = o.value.mode === zoom.mode && (o.value.mode !== "percent" || o.value.pct === zoom.pct);
+                      return (
+                        <button
+                          key={o.label}
+                          onClick={() => { setZoom(o.value); setZoomOpen(false); }}
+                          className="flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-[color:var(--accent)]"
+                          style={on ? { color: "var(--primary)", fontWeight: 600 } : { color: "var(--foreground)" }}
+                        >
+                          {o.label}
+                          {on && (
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden><path d="m5 12 4.5 4.5L19 7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
             {!isFigma && (
               <ToolbarButton label="Download" onClick={download}>
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden>

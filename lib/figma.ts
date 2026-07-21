@@ -26,9 +26,13 @@ export function parseFigmaUrl(input: string): FigmaRef | null {
   return { fileKey, nodeId };
 }
 
-// The interactive prototype embed player. `embed_host` is a free analytics label.
-export function buildEmbedUrl(originalUrl: string, host = "markitup"): string {
-  return `https://www.figma.com/embed?embed_host=${encodeURIComponent(host)}&url=${encodeURIComponent(originalUrl)}`;
+// The interactive prototype embed player, forced to "Fit width" (scale-down-width)
+// so the frame fills the embed box instead of being cropped. `embed_host` is a
+// free analytics label.
+export function buildEmbedUrl(fileKey: string, nodeId: string, host = "markitup"): string {
+  const urlNode = nodeId.replace(/:/g, "-"); // Figma URLs use 12-34, not 12:34
+  const proto = `https://www.figma.com/proto/${fileKey}?node-id=${urlNode}&scaling=scale-down-width`;
+  return `https://www.figma.com/embed?embed_host=${encodeURIComponent(host)}&url=${encodeURIComponent(proto)}`;
 }
 
 // Render a single node to a PNG. Returns the (temporary) Figma S3 URL of the image.
