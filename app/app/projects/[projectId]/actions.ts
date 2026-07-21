@@ -66,6 +66,54 @@ export async function finalizeMockup(
   return {};
 }
 
+// Add a new version of an existing file. Each version is its own mockups row
+// sharing the base's version_group, so its pins/comments stay separate.
+export async function addMockupVersion(baseMockupId: string, path: string) {
+  const supabase = await createServerSupabase();
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) return { error: "You must be signed in to upload." };
+
+  const { data: base } = await supabase
+    .from("mockups")
+    .select("project_id, name, version_group")
+    .eq("id", baseMockupId)
+    .maybeSingle();
+  if (!base) return { error: "Original file not found." };
+
+  // The object must live under this project's folder.
+  if (!path.startsWith(`${base.project_id}/`)) {
+    return { error: "Invalid upload path." };
+  }
+
+  // Next version number within the group.
+  const { data: peers } = await supabase
+    .from("mockups")
+    .select("version")
+    .eq("version_group", base.version_group)
+    .order("version", { ascending: false })
+    .limit(1);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const nextVersion = ((peers?.[0] as any)?.version ?? 0) + 1;
+
+  const { data: inserted, error: insErr } = await supabase
+    .from("mockups")
+    .insert({
+      project_id: base.project_id,
+      name: base.name,
+      type: "image",
+      file_path: path,
+      created_by: userData.user.id,
+      version: nextVersion,
+      version_group: base.version_group,
+    })
+    .select("id")
+    .maybeSingle();
+  if (insErr) return { error: insErr.message };
+
+  revalidatePath(`/app/projects/${base.project_id}`);
+  return { id: inserted?.id as string | undefined, version: nextVersion };
+}
+
 export async function getMockupSignedUrl(filePath: string) {
   const supabase = await createServerSupabase();
   const { data } = await supabase.storage

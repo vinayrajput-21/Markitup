@@ -21,12 +21,22 @@ export default async function ProjectPage({
 
   const { data: mockups } = await supabase
     .from("mockups")
-    .select("id, name, file_path, created_at")
+    .select("id, name, file_path, created_at, version, version_group")
     .eq("project_id", projectId)
     .is("archived_at", null)
-    .order("created_at", { ascending: false });
+    .order("version", { ascending: false });
 
-  const rows = mockups ?? [];
+  // Collapse each version group to its latest version (query is version-desc,
+  // so the first row seen per group is the latest). `count` = versions in the file.
+  const allMockups = mockups ?? [];
+  const fileMap = new Map<string, (typeof allMockups)[number] & { count: number }>();
+  for (const m of allMockups) {
+    const g = fileMap.get(m.version_group);
+    if (!g) fileMap.set(m.version_group, { ...m, count: 1 });
+    else g.count += 1;
+  }
+  const rows = [...fileMap.values()].sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const totalMockups = allMockups.length;
   const signed = new Map<string, string>();
   if (rows.length) {
     const { data: urls } = await supabase.storage
@@ -65,7 +75,7 @@ export default async function ProjectPage({
           <h1 className="text-2xl font-bold tracking-tight">{project?.name ?? "Project"}</h1>
           <p className="mt-1 text-sm text-muted">{plural(rows.length, "mockup")}</p>
         </div>
-        {rows.length >= 2 && (
+        {totalMockups >= 2 && (
           <Link href={`/app/projects/${projectId}/compare`} className="btn-secondary btn-sm">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
               <rect x="3" y="4" width="8" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
@@ -86,7 +96,7 @@ export default async function ProjectPage({
           {rows.map((m) => (
             <li key={m.id} className="relative">
               <div className="absolute right-2 top-2 z-10">
-                <MockupCardMenu mockupId={m.id} />
+                <MockupCardMenu mockupId={m.id} projectId={projectId} />
               </div>
               <Link href={`/app/mockups/${m.id}`} className="card card-hover block overflow-hidden">
                 <div className="relative aspect-[4/3] w-full overflow-hidden border-b bg-canvas">
@@ -107,7 +117,14 @@ export default async function ProjectPage({
                 </div>
                 <div className="p-3">
                   <div className="truncate text-sm font-semibold text-ink">{m.name}</div>
-                  <div className="mt-0.5 font-mono text-xs text-faint">{timeAgo(m.created_at)}</div>
+                  <div className="mt-0.5 flex items-center gap-1.5 text-xs text-faint">
+                    {m.count > 1 && (
+                      <span className="rounded bg-brand-soft px-1.5 py-0.5 text-[0.625rem] font-bold text-brand-ink">
+                        V{m.version}
+                      </span>
+                    )}
+                    <span className="font-mono">{timeAgo(m.created_at)}</span>
+                  </div>
                 </div>
               </Link>
             </li>

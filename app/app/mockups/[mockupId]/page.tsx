@@ -8,6 +8,7 @@ import { ShareDialog } from "@/components/viewer/ShareDialog";
 import { ProfileMenu } from "@/components/app/ProfileMenu";
 import { NotificationBell } from "@/components/app/NotificationBell";
 import { RecentViewers, type Viewer } from "@/components/viewer/RecentViewers";
+import { VersionSwitcher } from "@/components/viewer/VersionSwitcher";
 import { RecordView } from "@/components/viewer/RecordView";
 import { emailLocalPart } from "@/lib/format";
 import { sanitizeCommentHtml } from "@/lib/sanitize";
@@ -22,17 +23,40 @@ export default async function MockupPage({
 
   const { data: mockup } = await supabase
     .from("mockups")
-    .select("id, name, file_path, type, project_id, figma_file_key, figma_node_id, projects(name, workspace_id)")
+    .select("id, name, file_path, type, project_id, version_group, figma_file_key, figma_node_id, projects(name, workspace_id)")
     .eq("id", mockupId)
     .maybeSingle();
   if (!mockup) notFound();
 
-  const { data: siblings } = await supabase
+  // All non-archived files in this project, used both for version stacking and
+  // for prev/next pagination (which walks between files, not versions).
+  const { data: projectMockups } = await supabase
     .from("mockups")
-    .select("id")
+    .select("id, created_at, version, version_group")
     .eq("project_id", mockup.project_id)
     .is("archived_at", null)
-    .order("created_at", { ascending: true });
+    .order("version", { ascending: false });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pmRows = (projectMockups ?? []) as any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const currentGroup = (mockup as any).version_group as string;
+
+  // Versions of THIS file, newest first, for the switcher.
+  const versions = pmRows
+    .filter((m) => m.version_group === currentGroup)
+    .sort((a, b) => b.version - a.version)
+    .map((m) => ({ id: m.id as string, version: m.version as number, createdAt: m.created_at as string }));
+
+  // One entry per file (version group) for pagination. `pmRows` is version-desc,
+  // so the first row seen per group is its latest version. The current group is
+  // represented by the version actually being viewed so pagination stays put.
+  const latestByGroup = new Map<string, { id: string; created_at: string }>();
+  for (const m of pmRows) {
+    if (!latestByGroup.has(m.version_group)) latestByGroup.set(m.version_group, { id: m.id, created_at: m.created_at });
+  }
+  const siblings = [...latestByGroup.entries()]
+    .sort(([, a], [, b]) => a.created_at.localeCompare(b.created_at))
+    .map(([grp, g]) => ({ id: grp === currentGroup ? mockupId : g.id }));
 
   // people who can be @mentioned: workspace team + project reviewers/editors
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -144,6 +168,7 @@ export default async function MockupPage({
         </svg>
       </Link>
       <h1 className="truncate text-sm font-bold text-ink">{mockup.name}</h1>
+      <VersionSwitcher versions={versions} currentId={mockupId} projectId={mockup.project_id} />
     </>
   );
   const actionsSlot = (
