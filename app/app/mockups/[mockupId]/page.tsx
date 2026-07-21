@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getMockupSignedUrl } from "@/app/app/projects/[projectId]/actions";
 import { MockupViewer, type ViewerPin } from "@/components/viewer/MockupViewer";
+import { FigmaSurface } from "@/components/viewer/FigmaSurface";
 import { ShareDialog } from "@/components/viewer/ShareDialog";
 import { ProfileMenu } from "@/components/app/ProfileMenu";
 import { NotificationBell } from "@/components/app/NotificationBell";
@@ -21,7 +22,7 @@ export default async function MockupPage({
 
   const { data: mockup } = await supabase
     .from("mockups")
-    .select("id, name, file_path, type, project_id, projects(name, workspace_id)")
+    .select("id, name, file_path, type, project_id, figma_embed_url, figma_file_key, figma_node_id, projects(name, workspace_id)")
     .eq("id", mockupId)
     .maybeSingle();
   if (!mockup) notFound();
@@ -120,6 +121,11 @@ export default async function MockupPage({
   const resolved = viewerPins.filter((p) => p.status === "resolved").length;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const projectName = (mockup as any).projects?.name as string | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mk = mockup as any;
+  const figmaEmbedUrl = mockup.type === "figma" ? (mk.figma_embed_url as string | null) : null;
+  const figmaFileKey = mk.figma_file_key as string | null;
+  const figmaNodeId = mk.figma_node_id as string | null;
 
   return (
     <div className="flex h-full flex-col">
@@ -157,8 +163,14 @@ export default async function MockupPage({
 
       {/* viewer */}
       <div className="min-h-0 flex-1">
-        {url ? (
-          <MockupViewer
+        {!url ? (
+          <div className="grid h-full place-items-center text-sm text-faint">
+            Could not load this mockup.
+          </div>
+        ) : figmaEmbedUrl ? (
+          <FigmaSurface
+            embedUrl={figmaEmbedUrl}
+            figmaUrl={figmaFileKey ? `https://www.figma.com/design/${figmaFileKey}?node-id=${encodeURIComponent(figmaNodeId ?? "")}` : null}
             mockupId={mockupId}
             projectId={mockup.project_id}
             imageUrl={url}
@@ -169,9 +181,16 @@ export default async function MockupPage({
             currentUserName={currentUserName}
           />
         ) : (
-          <div className="grid h-full place-items-center text-sm text-faint">
-            Could not load this mockup.
-          </div>
+          <MockupViewer
+            mockupId={mockupId}
+            projectId={mockup.project_id}
+            imageUrl={url}
+            imageName={mockup.name}
+            initialPins={viewerPins}
+            siblings={siblings ?? [{ id: mockupId }]}
+            members={members}
+            currentUserName={currentUserName}
+          />
         )}
       </div>
     </div>

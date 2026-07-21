@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { UploadDropzone } from "@/components/viewer/UploadDropzone";
+import { FigmaImport } from "@/components/viewer/FigmaImport";
 import { timeAgo, plural } from "@/lib/format";
 
 export default async function ProjectPage({
@@ -62,8 +63,9 @@ export default async function ProjectPage({
         <p className="mt-1 text-sm text-muted">{plural(rows.length, "mockup")}</p>
       </div>
 
-      <div className="mb-8">
+      <div className="mb-8 grid gap-4 lg:grid-cols-[1fr_22rem]">
         <UploadDropzone projectId={projectId} />
+        <FigmaImport projectId={projectId} />
       </div>
 
       {rows.length > 0 && (
