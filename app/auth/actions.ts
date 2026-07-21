@@ -17,7 +17,9 @@ export async function signIn(formData: FormData) {
   const supabase = await createServerSupabase();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return { error: error.message };
-  redirect(safeNext(formData));
+  // Return success (with the destination) instead of redirecting server-side, so
+  // the client can play the welcome animation before navigating.
+  return { ok: true, redirect: safeNext(formData) };
 }
 
 export async function signUp(formData: FormData) {
@@ -40,7 +42,7 @@ export async function signUp(formData: FormData) {
     console.error("[signup] welcome email failed", e);
   }
 
-  redirect(safeNext(formData));
+  return { ok: true, redirect: safeNext(formData) };
 }
 
 export async function signOut() {
@@ -49,10 +51,10 @@ export async function signOut() {
   redirect("/login");
 }
 
-// useActionState wrappers: on success signIn/signUp throw a redirect (which
-// propagates and navigates); on failure they return { error }, which we hand
-// back to the form so it can render the message instead of silently reloading.
-type AuthState = { error?: string };
+// useActionState wrappers: on success signIn/signUp return { ok, redirect } so
+// the client can play the welcome animation and then navigate; on failure they
+// return { error }, which the form renders instead of silently reloading.
+type AuthState = { error?: string; ok?: boolean; redirect?: string };
 
 export async function signInAction(
   _prev: AuthState,

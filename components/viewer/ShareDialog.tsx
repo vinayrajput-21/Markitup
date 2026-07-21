@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Avatar } from "@/components/app/AppSidebar";
+import { useToast } from "@/components/ui/toast";
 import {
   getShareInfo,
   setShareVisibility,
@@ -35,6 +36,7 @@ export function ShareDialog({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const toast = useToast();
 
   async function load() {
     setLoading(true);
@@ -86,6 +88,7 @@ export function ShareDialog({
     const url = `${window.location.origin}/s/${info.token}`;
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
+      toast.success("Share link copied");
       setTimeout(() => setCopied(false), 1600);
     });
   }

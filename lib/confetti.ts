@@ -1,6 +1,6 @@
 // Small, dependency-free confetti burst. Subtle by default: one short burst of
 // color-filled paper, respects prefers-reduced-motion, and cleans up its canvas.
-export function celebrate(originX?: number, originY?: number) {
+export function celebrate(originX?: number, originY?: number, count = 90) {
   if (typeof window === "undefined") return;
   if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
 
@@ -18,7 +18,7 @@ export function celebrate(originX?: number, originY?: number) {
   const colors = ["#6366f1", "#22c55e", "#f59e0b", "#ec4899", "#0ea5e9", "#a855f7"];
   const ox = originX ?? window.innerWidth / 2;
   const oy = originY ?? window.innerHeight / 3;
-  const N = 90;
+  const N = count;
 
   type P = {
     x: number; y: number; vx: number; vy: number; size: number;

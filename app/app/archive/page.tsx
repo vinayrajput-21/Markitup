@@ -35,7 +35,7 @@ export default async function ArchivePage() {
       <p className="mt-1 text-sm text-muted">Archived items are hidden from the app. Restore any to bring it back.</p>
 
       {nothing ? (
-        <div className="card mt-6 grid place-items-center px-6 py-16 text-center">
+        <div className="rise-in card mt-6 grid place-items-center px-6 py-16 text-center">
           <h3 className="text-lg font-semibold">Nothing archived</h3>
         </div>
       ) : (

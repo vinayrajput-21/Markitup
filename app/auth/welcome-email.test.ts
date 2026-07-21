@@ -16,7 +16,9 @@ describe("signUp welcome email", () => {
     fd.set("name", "Ravi");
     fd.set("email", "ravi@x.com");
     fd.set("password", "password123");
-    await expect(signUp(fd)).rejects.toThrow("REDIRECT");
+    // signUp now returns success (with the destination) instead of redirecting
+    // server-side, so the client can play the welcome animation first.
+    await expect(signUp(fd)).resolves.toMatchObject({ ok: true });
     expect(sendEmail).toHaveBeenCalledOnce();
     expect(sendEmail.mock.calls[0][0]).toMatchObject({ to: "ravi@x.com" });
   });

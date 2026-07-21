@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { validateUpload } from "@/lib/validation";
 import { createBrowserSupabase } from "@/lib/supabase/client";
+import { useToast } from "@/components/ui/toast";
 import {
   createMockupUploadUrl,
   finalizeMockup,
@@ -14,40 +15,53 @@ export function UploadDropzone({ projectId }: { projectId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [pending, start] = useTransition();
+  const [progress, setProgress] = useState(0);
   const router = useRouter();
+  const toast = useToast();
+
+  function fail(message: string, iv?: ReturnType<typeof setInterval>) {
+    if (iv) clearInterval(iv);
+    setProgress(0);
+    setError(message);
+    toast.error(message);
+  }
 
   function onFile(file: File) {
     const check = validateUpload({ size: file.size, type: file.type });
     if (!check.ok) {
       setError(check.error);
+      toast.error(check.error);
       return;
     }
     setError(null);
+    setProgress(6);
     start(async () => {
-      // 1. Ask the server for a signed upload URL (tiny request).
-      const target = await createMockupUploadUrl(projectId, file.type);
-      if ("error" in target && target.error) {
-        setError(target.error);
-        return;
-      }
+      // Smooth simulated progress that eases toward ~92% and snaps to 100% on done.
+      const iv = setInterval(() => setProgress((p) => (p < 92 ? p + (92 - p) * 0.14 : p)), 160);
+      try {
+        // 1. Ask the server for a signed upload URL (tiny request).
+        const target = await createMockupUploadUrl(projectId, file.type);
+        if ("error" in target && target.error) return fail(target.error, iv);
 
-      // 2. Send the bytes straight to Supabase Storage, bypassing the Server
-      // Action body limit so files up to 25 MB upload from anywhere.
-      const supabase = createBrowserSupabase();
-      const { error: upErr } = await supabase.storage
-        .from("mockups")
-        .uploadToSignedUrl(target.path!, target.token!, file, {
-          contentType: file.type,
-        });
-      if (upErr) {
-        setError(upErr.message);
-        return;
-      }
+        // 2. Send the bytes straight to Supabase Storage, bypassing the Server
+        // Action body limit so files up to 25 MB upload from anywhere.
+        const supabase = createBrowserSupabase();
+        const { error: upErr } = await supabase.storage
+          .from("mockups")
+          .uploadToSignedUrl(target.path!, target.token!, file, { contentType: file.type });
+        if (upErr) return fail(upErr.message, iv);
 
-      // 3. Record the mockup row (reference only, no bytes).
-      const res = await finalizeMockup(projectId, target.path!, file.name);
-      if (res.error) setError(res.error);
-      else router.refresh();
+        // 3. Record the mockup row (reference only, no bytes).
+        const res = await finalizeMockup(projectId, target.path!, file.name);
+        clearInterval(iv);
+        if (res.error) return fail(res.error);
+        setProgress(100);
+        toast.success("Mockup uploaded", { description: file.name });
+        setTimeout(() => setProgress(0), 500);
+        router.refresh();
+      } catch {
+        fail("Upload failed. Please try again.", iv);
+      }
     });
   }
 
@@ -101,7 +115,13 @@ export function UploadDropzone({ projectId }: { projectId: string }) {
           <span className="block text-sm font-semibold text-ink">
             {pending ? "Uploading…" : "Drop a mockup, or click to browse"}
           </span>
-          <span className="mt-0.5 block text-xs text-faint">PNG or JPG, up to 25 MB</span>
+          {pending ? (
+            <span className="mx-auto mt-2 block h-1.5 w-40 overflow-hidden rounded-full" style={{ background: "var(--color-brand-soft)" }}>
+              <span className="block h-full rounded-full transition-[width] duration-200" style={{ width: `${progress}%`, background: "var(--color-brand)" }} />
+            </span>
+          ) : (
+            <span className="mt-0.5 block text-xs text-faint">PNG or JPG, up to 25 MB</span>
+          )}
         </span>
       </button>
       {error && (

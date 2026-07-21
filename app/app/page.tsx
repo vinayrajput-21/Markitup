@@ -5,6 +5,7 @@ import { getWorkspaceStats, signCovers, type ProjectStats } from "./dashboard-da
 import { plural, emailLocalPart } from "@/lib/format";
 import { ProjectCard } from "@/components/app/ProjectCard";
 import { ProjectCardMenu } from "@/components/app/ProjectCardMenu";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 import { NotificationBell } from "@/components/app/NotificationBell";
 import { ProfileMenu } from "@/components/app/ProfileMenu";
 
@@ -52,7 +53,7 @@ export default async function DashboardPage() {
         <div className="flex items-center gap-2">
           <form action={async (formData: FormData) => { "use server"; await createProject(formData); }} className="flex items-center gap-2">
             <input name="name" placeholder="New project…" required className="field h-10 w-44" />
-            <button className="btn-primary btn-sm">New project</button>
+            <SubmitButton pendingLabel="Creating…" className="btn-primary btn-sm">New project</SubmitButton>
           </form>
           <Link href="/app/members" className="btn-secondary btn-sm">Invite</Link>
           <NotificationBell />
@@ -61,7 +62,7 @@ export default async function DashboardPage() {
       </div>
 
       {projects.length === 0 ? (
-        <div className="card grid place-items-center px-6 py-16 text-center">
+        <div className="rise-in card grid place-items-center px-6 py-16 text-center">
           <h3 className="text-lg font-semibold">No projects yet</h3>
           <p className="mt-1 max-w-sm text-sm text-muted">Create a project above, upload a mockup, and start collecting pinned feedback.</p>
         </div>

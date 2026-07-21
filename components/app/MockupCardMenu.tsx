@@ -6,18 +6,22 @@ import { archiveMockup, deleteMockup } from "@/app/app/projects/[projectId]/acti
 import { ShareDialog } from "@/components/viewer/ShareDialog";
 import { useVersionUpload } from "@/components/viewer/useVersionUpload";
 import { CardMenu, MenuItem, ShareIcon, ArchiveIcon, TrashIcon } from "@/components/app/CardMenu";
+import { useToast } from "@/components/ui/toast";
 
 export function MockupCardMenu({ mockupId, projectId }: { mockupId: string; projectId: string }) {
   const [pending, start] = useTransition();
   const [confirm, setConfirm] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const router = useRouter();
+  const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const { pending: uploading, upload } = useVersionUpload({ baseMockupId: mockupId, projectId });
 
-  function run(fn: () => Promise<unknown>) {
+  function run(fn: () => Promise<unknown>, successMsg: string) {
     start(async () => {
-      await fn();
+      const res = (await fn()) as { error?: string } | undefined;
+      if (res?.error) toast.error(res.error);
+      else toast.success(successMsg);
       router.refresh();
     });
   }
@@ -43,7 +47,7 @@ export function MockupCardMenu({ mockupId, projectId }: { mockupId: string; proj
                 <button
                   type="button"
                   disabled={busy}
-                  onClick={() => { setConfirm(false); close(); run(() => deleteMockup(mockupId)); }}
+                  onClick={() => { setConfirm(false); close(); run(() => deleteMockup(mockupId), "File deleted"); }}
                   className="btn-sm flex-1 rounded-md px-2 py-1 text-center text-sm font-semibold text-white"
                   style={{ background: "var(--color-danger)" }}
                 >
@@ -60,7 +64,7 @@ export function MockupCardMenu({ mockupId, projectId }: { mockupId: string; proj
               <MenuItem disabled={busy} onClick={() => { close(); inputRef.current?.click(); }}>
                 <UploadIcon /> {uploading ? "Uploading…" : "Upload new version"}
               </MenuItem>
-              <MenuItem disabled={busy} onClick={() => { close(); run(() => archiveMockup(mockupId)); }}>
+              <MenuItem disabled={busy} onClick={() => { close(); run(() => archiveMockup(mockupId), "File archived"); }}>
                 <ArchiveIcon /> Archive
               </MenuItem>
               <MenuItem danger disabled={busy} onClick={() => setConfirm(true)}>

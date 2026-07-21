@@ -1,5 +1,6 @@
 import { getWorkspaceMembers, addMemberByEmail } from "@/app/app/actions";
 import { Avatar } from "@/components/app/AppSidebar";
+import { SubmitButton } from "@/components/ui/SubmitButton";
 
 function RoleChip({ role }: { role: string }) {
   const isOwner = role === "owner" || role === "admin";
@@ -43,7 +44,7 @@ export default async function MembersPage() {
           className="field flex-1"
           required
         />
-        <button className="btn-primary">Add member</button>
+        <SubmitButton pendingLabel="Adding…">Add member</SubmitButton>
       </form>
 
       <div className="card divide-y overflow-hidden">

@@ -4,16 +4,20 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { archiveProject, deleteProject } from "@/app/app/folders-actions";
 import { CardMenu, MenuItem, LinkIcon, CheckIcon, ArchiveIcon, TrashIcon } from "@/components/app/CardMenu";
+import { useToast } from "@/components/ui/toast";
 
 export function ProjectCardMenu({ projectId }: { projectId: string }) {
   const [pending, start] = useTransition();
   const [confirm, setConfirm] = useState(false);
   const [copied, setCopied] = useState(false);
   const router = useRouter();
+  const toast = useToast();
 
-  function run(fn: () => Promise<unknown>) {
+  function run(fn: () => Promise<unknown>, successMsg: string) {
     start(async () => {
-      await fn();
+      const res = (await fn()) as { error?: string } | undefined;
+      if (res?.error) toast.error(res.error);
+      else toast.success(successMsg);
       router.refresh();
     });
   }
@@ -22,6 +26,7 @@ export function ProjectCardMenu({ projectId }: { projectId: string }) {
     const url = `${window.location.origin}/app/projects/${projectId}`;
     navigator.clipboard?.writeText(url).then(() => {
       setCopied(true);
+      toast.success("Project link copied");
       setTimeout(() => { setCopied(false); close(); }, 1100);
     }).catch(() => close());
   }
@@ -36,7 +41,7 @@ export function ProjectCardMenu({ projectId }: { projectId: string }) {
               <button
                 type="button"
                 disabled={pending}
-                onClick={() => { setConfirm(false); close(); run(() => deleteProject(projectId)); }}
+                onClick={() => { setConfirm(false); close(); run(() => deleteProject(projectId), "Project deleted"); }}
                 className="btn-sm flex-1 rounded-md px-2 py-1 text-center text-sm font-semibold text-white"
                 style={{ background: "var(--color-danger)" }}
               >
@@ -54,7 +59,7 @@ export function ProjectCardMenu({ projectId }: { projectId: string }) {
                 <><LinkIcon /> Copy project link</>
               )}
             </MenuItem>
-            <MenuItem disabled={pending} onClick={() => { close(); run(() => archiveProject(projectId)); }}>
+            <MenuItem disabled={pending} onClick={() => { close(); run(() => archiveProject(projectId), "Project archived"); }}>
               <ArchiveIcon /> Archive
             </MenuItem>
             <MenuItem danger disabled={pending} onClick={() => setConfirm(true)}>

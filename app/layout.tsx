@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ToastProvider } from "@/components/ui/toast";
+import { TopProgress } from "@/components/ui/TopProgress";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -35,7 +37,8 @@ export default function RootLayout({
             __html: `try{var a=localStorage.getItem('ui-accent');var m=localStorage.getItem('ui-mode');var e=document.documentElement;if(a&&a!=='neutral')e.setAttribute('data-theme',a);if(m==='dark')e.classList.add('dark');}catch(_){}`,
           }}
         />
-        {children}
+        <TopProgress />
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );
