@@ -29,6 +29,12 @@ function Panel({
   return (
     <div className="flex min-w-0 flex-col">
       <div className="flex h-11 shrink-0 items-center gap-2 border-b bg-surface px-3">
+        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-brand-soft text-brand-ink" title="Comparison view">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <rect x="3" y="4" width="8" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
+            <rect x="13" y="4" width="8" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
+          </svg>
+        </span>
         <span className="shrink-0 text-[0.6875rem] font-semibold tracking-wider text-faint uppercase">{side}</span>
         <select value={value} onChange={(e) => onChange(e.target.value)} className="field h-8 min-w-0 flex-1 text-sm">
           {mockups.map((x) => (
@@ -140,14 +146,23 @@ export function CompareView({
           </select>
         </div>
         <div className="ml-auto flex items-center gap-2">
+          <span className="hidden items-center gap-1 text-xs text-muted md:flex">
+            Hold
+            <kbd className="rounded border bg-surface px-1 font-mono text-[0.625rem] text-ink">Space</kbd>
+            bar to compare
+          </span>
           {/* press-and-hold for touch / no keyboard */}
           <button
             onPointerDown={(e) => { e.preventDefault(); setPeek(true); }}
             onPointerUp={() => setPeek(false)}
             onPointerLeave={() => setPeek(false)}
-            className="btn-secondary btn-sm select-none"
+            className="btn-secondary btn-sm select-none gap-1.5"
             title="Hold to see the old version"
           >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <rect x="3" y="4" width="8" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
+              <rect x="13" y="4" width="8" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
+            </svg>
             {peek ? "Showing old…" : "Hold to compare"}
           </button>
           <button onClick={toggleFull} aria-label="Fullscreen" title="Fullscreen" className="grid h-8 w-8 place-items-center rounded-md text-muted transition-colors hover:bg-[color:var(--accent)] hover:text-ink">

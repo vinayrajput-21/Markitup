@@ -32,7 +32,8 @@ export function VersionSwitcher({
       : null;
 
   return (
-    <div className="relative">
+    <div className="flex items-center gap-1.5">
+      <div className="relative">
       <input
         ref={inputRef}
         type="file"
@@ -91,24 +92,21 @@ export function VersionSwitcher({
               </svg>
               Upload new version
             </button>
-            {compareHref && (
-              <Link
-                href={compareHref}
-                onClick={() => setOpen(false)}
-                className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-[color:var(--accent)]"
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <rect x="3" y="4" width="8" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
-                  <rect x="13" y="4" width="8" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
-                </svg>
-                Compare versions
-              </Link>
-            )}
           </div>
         </>
       )}
       {error && (
         <span className="absolute left-0 top-full mt-1 whitespace-nowrap text-xs font-medium" style={{ color: "var(--color-danger)" }}>{error}</span>
+      )}
+      </div>
+      {compareHref && (
+        <Link href={compareHref} className="btn-secondary btn-sm gap-1.5" title="Compare previous vs latest — hold Space to flip">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <rect x="3" y="4" width="8" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
+            <rect x="13" y="4" width="8" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
+          </svg>
+          Compare
+        </Link>
       )}
     </div>
   );
