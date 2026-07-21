@@ -58,9 +58,20 @@ export default async function ProjectPage({
         Projects
       </Link>
 
-      <div className="mb-7">
-        <h1 className="text-2xl font-bold tracking-tight">{project?.name ?? "Project"}</h1>
-        <p className="mt-1 text-sm text-muted">{plural(rows.length, "mockup")}</p>
+      <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">{project?.name ?? "Project"}</h1>
+          <p className="mt-1 text-sm text-muted">{plural(rows.length, "mockup")}</p>
+        </div>
+        {rows.length >= 2 && (
+          <Link href={`/app/projects/${projectId}/compare`} className="btn-secondary btn-sm">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <rect x="3" y="4" width="8" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
+              <rect x="13" y="4" width="8" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
+            </svg>
+            Compare
+          </Link>
+        )}
       </div>
 
       <div className="mb-8 grid gap-4 lg:grid-cols-[1fr_22rem]">

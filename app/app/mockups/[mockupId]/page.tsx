@@ -118,10 +118,16 @@ export default async function MockupPage({
     })),
   }));
 
+  // Live Figma embed is shown ONLY to trusted workspace members. External
+  // reviewers (share-link visitors / project-only members) get the static
+  // rendered frame, so the Figma URL is never present in their page to inspect.
+  const { data: isTeam } = workspaceId
+    ? await supabase.rpc("is_workspace_member", { ws: workspaceId })
+    : { data: false };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mk = mockup as any;
   const figmaEmbedUrl =
-    mockup.type === "figma" && mk.figma_file_key
+    mockup.type === "figma" && mk.figma_file_key && isTeam
       ? buildEmbedUrl(mk.figma_file_key as string, (mk.figma_node_id as string) ?? "")
       : null;
 
