@@ -3,18 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-function initials(name: string, email: string) {
-  const base = (name || email || "?").trim();
-  const parts = base.split(/\s+/);
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return base.slice(0, 2).toUpperCase();
-}
+// Number of cartoon avatars available under /public/avatars.
+const AVATAR_COUNT = 30;
 
-// deterministic soft tint from a string, so avatars are stable + varied
-function tintHue(seed: string) {
+// Deterministic 1..AVATAR_COUNT from a seed, so each person keeps a stable
+// (but varied) cartoon avatar.
+function avatarIndex(seed: string) {
   let h = 0;
-  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) % 360;
-  return h;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  return (h % AVATAR_COUNT) + 1;
 }
 
 export function Avatar({
@@ -26,20 +23,22 @@ export function Avatar({
   email: string;
   size?: number;
 }) {
-  const hue = tintHue(email || name);
+  const n = avatarIndex((email || name || "?").toLowerCase());
   return (
     <span
-      className="inline-flex shrink-0 items-center justify-center rounded-full font-semibold"
-      style={{
-        width: size,
-        height: size,
-        fontSize: size * 0.4,
-        background: `oklch(0.93 0.05 ${hue})`,
-        color: `oklch(0.42 0.13 ${hue})`,
-      }}
+      className="inline-block shrink-0 overflow-hidden rounded-full bg-canvas"
+      style={{ width: size, height: size }}
       aria-hidden
     >
-      {initials(name, email)}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={`/avatars/${n}.png`}
+        alt=""
+        width={size}
+        height={size}
+        draggable={false}
+        className="h-full w-full object-cover"
+      />
     </span>
   );
 }
