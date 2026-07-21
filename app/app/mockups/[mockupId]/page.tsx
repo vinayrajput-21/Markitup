@@ -31,6 +31,7 @@ export default async function MockupPage({
     .from("mockups")
     .select("id")
     .eq("project_id", mockup.project_id)
+    .is("archived_at", null)
     .order("created_at", { ascending: true });
 
   // people who can be @mentioned: workspace team + project reviewers/editors

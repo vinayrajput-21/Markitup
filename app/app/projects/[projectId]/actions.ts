@@ -73,3 +73,55 @@ export async function getMockupSignedUrl(filePath: string) {
     .createSignedUrl(filePath, 60 * 60);
   return data?.signedUrl ?? null;
 }
+
+// Hide a single file from its project (restorable from the Archive page).
+export async function archiveMockup(mockupId: string) {
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase
+    .from("mockups")
+    .update({ archived_at: new Date().toISOString() })
+    .eq("id", mockupId)
+    .select("project_id")
+    .maybeSingle();
+  if (error) return { error: error.message };
+  if (data?.project_id) revalidatePath(`/app/projects/${data.project_id}`);
+  revalidatePath("/app/archive");
+  return {};
+}
+
+export async function unarchiveMockup(mockupId: string) {
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase
+    .from("mockups")
+    .update({ archived_at: null })
+    .eq("id", mockupId)
+    .select("project_id")
+    .maybeSingle();
+  if (error) return { error: error.message };
+  if (data?.project_id) revalidatePath(`/app/projects/${data.project_id}`);
+  revalidatePath("/app/archive");
+  return {};
+}
+
+export async function deleteMockup(mockupId: string) {
+  const supabase = await createServerSupabase();
+
+  // Grab the path + project before deleting so we can clean storage + revalidate.
+  const { data: mockup } = await supabase
+    .from("mockups")
+    .select("file_path, project_id")
+    .eq("id", mockupId)
+    .maybeSingle();
+
+  // Cascades handle pins, comments, attachments, share links, notifications, views.
+  const { error } = await supabase.from("mockups").delete().eq("id", mockupId);
+  if (error) return { error: error.message };
+
+  // Best-effort storage cleanup (non-fatal).
+  if (mockup?.file_path) {
+    await supabase.storage.from("mockups").remove([mockup.file_path]);
+  }
+  if (mockup?.project_id) revalidatePath(`/app/projects/${mockup.project_id}`);
+  revalidatePath("/app/archive");
+  return {};
+}

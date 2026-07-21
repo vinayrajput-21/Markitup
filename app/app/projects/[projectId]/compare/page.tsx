@@ -25,6 +25,7 @@ export default async function ComparePage({
     .from("mockups")
     .select("id, name, file_path, created_at")
     .eq("project_id", projectId)
+    .is("archived_at", null)
     .order("created_at", { ascending: true });
   const mockups = rows ?? [];
 

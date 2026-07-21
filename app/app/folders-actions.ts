@@ -26,3 +26,22 @@ export async function unarchiveProject(projectId: string) {
   revalidatePath("/app/archive");
   return {};
 }
+
+export async function deleteProject(projectId: string) {
+  const supabase = await createServerSupabase();
+
+  // Best-effort: remove the project's storage originals first (the DB rows
+  // cascade, but storage objects don't). Failure here is non-fatal.
+  const { data: files } = await supabase.storage.from("mockups").list(projectId);
+  if (files?.length) {
+    await supabase.storage.from("mockups").remove(files.map((f) => `${projectId}/${f.name}`));
+  }
+
+  // Cascades handle mockups, pins, comments, attachments, share links,
+  // notifications and views.
+  const { error } = await supabase.from("projects").delete().eq("id", projectId);
+  if (error) return { error: error.message };
+  revalidatePath("/app");
+  revalidatePath("/app/archive");
+  return {};
+}

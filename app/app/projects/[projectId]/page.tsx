@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { UploadDropzone } from "@/components/viewer/UploadDropzone";
 import { FigmaImport } from "@/components/viewer/FigmaImport";
+import { MockupCardMenu } from "@/components/app/MockupCardMenu";
 import { timeAgo, plural } from "@/lib/format";
 
 export default async function ProjectPage({
@@ -22,6 +23,7 @@ export default async function ProjectPage({
     .from("mockups")
     .select("id, name, file_path, created_at")
     .eq("project_id", projectId)
+    .is("archived_at", null)
     .order("created_at", { ascending: false });
 
   const rows = mockups ?? [];
@@ -82,7 +84,10 @@ export default async function ProjectPage({
       {rows.length > 0 && (
         <ul className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
           {rows.map((m) => (
-            <li key={m.id}>
+            <li key={m.id} className="relative">
+              <div className="absolute right-2 top-2 z-10">
+                <MockupCardMenu mockupId={m.id} />
+              </div>
               <Link href={`/app/mockups/${m.id}`} className="card card-hover block overflow-hidden">
                 <div className="relative aspect-[4/3] w-full overflow-hidden border-b bg-canvas">
                   {!viewedIds.has(m.id) && (

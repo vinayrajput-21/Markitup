@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Avatar } from "@/components/app/AppSidebar";
 import {
   getShareInfo,
@@ -9,8 +9,26 @@ import {
   type ShareInfo,
 } from "@/app/app/mockups/[mockupId]/share-actions";
 
-export function ShareDialog({ mockupId }: { mockupId: string }) {
-  const [open, setOpen] = useState(false);
+export function ShareDialog({
+  mockupId,
+  hideTrigger = false,
+  open: openProp,
+  onOpenChange,
+}: {
+  mockupId: string;
+  // Hide the built-in "Share" button (when another control opens the dialog).
+  hideTrigger?: boolean;
+  // Optional controlled open state (e.g. driven by a card menu).
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  const controlled = openProp !== undefined;
+  const [openInternal, setOpenInternal] = useState(false);
+  const open = controlled ? openProp! : openInternal;
+  const setOpen = (v: boolean) => {
+    if (!controlled) setOpenInternal(v);
+    onOpenChange?.(v);
+  };
   const [info, setInfo] = useState<ShareInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -26,12 +44,15 @@ export function ShareDialog({ mockupId }: { mockupId: string }) {
     else setInfo(res);
   }
 
-  function openDialog() {
-    setOpen(true);
+  // Load share info whenever the dialog opens (controlled or uncontrolled).
+  useEffect(() => {
+    if (!open) return;
     setError(null);
     setInfo(null);
     load();
-  }
+    // load closes over stable setters only; re-running on `open` is enough.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   async function addEmail(e: React.FormEvent) {
     e.preventDefault();
@@ -71,13 +92,15 @@ export function ShareDialog({ mockupId }: { mockupId: string }) {
 
   return (
     <>
-      <button onClick={openDialog} className="btn-primary btn-sm">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path d="M4 12v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-          <path d="M12 15V4m0 0-4 4m4-4 4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        Share
-      </button>
+      {!hideTrigger && (
+        <button onClick={() => setOpen(true)} className="btn-primary btn-sm">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path d="M4 12v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+            <path d="M12 15V4m0 0-4 4m4-4 4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Share
+        </button>
+      )}
 
       {open && (
         <div className="fixed inset-0 z-[100] grid place-items-center p-4">
