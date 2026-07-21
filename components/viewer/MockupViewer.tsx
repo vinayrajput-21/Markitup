@@ -357,6 +357,23 @@ export function MockupViewer({
           onSubmit={saveDraft}
         />
       )}
+      {!draft && activePin && (
+        <div
+          className="absolute z-50 w-80 -translate-x-1/2 overflow-hidden rounded-xl border bg-surface shadow-xl"
+          style={{ left: `${activePin.x * 100}%`, top: `${activePin.y * 100}%`, marginTop: "14px" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <CommentThread
+            mockupId={mockupId}
+            projectId={projectId}
+            pin={activePin}
+            members={members}
+            currentUserName={currentUserName}
+            onClose={() => setActivePinId(null)}
+            onChange={(updated) => setPins((ps) => ps.map((p) => (p.id === updated.id ? updated : p)))}
+          />
+        </div>
+      )}
     </>
   );
 
@@ -443,17 +460,7 @@ export function MockupViewer({
         style={{ width: railWidth }}
         className="relative flex shrink-0 flex-col border-r bg-surface"
       >
-        {activePin ? (
-          <CommentThread
-            mockupId={mockupId}
-            projectId={projectId}
-            pin={activePin}
-            members={members}
-            currentUserName={currentUserName}
-            onBack={() => setActivePinId(null)}
-            onChange={(updated) => setPins((ps) => ps.map((p) => (p.id === updated.id ? updated : p)))}
-          />
-        ) : (
+        {(
           <>
             <div className="border-b p-3">
               <div className="mb-2.5 flex items-center justify-between">

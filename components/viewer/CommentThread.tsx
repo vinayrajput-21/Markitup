@@ -52,7 +52,7 @@ export function CommentThread({
   members,
   currentUserName,
   onChange,
-  onBack,
+  onClose,
 }: {
   mockupId: string;
   projectId: string;
@@ -60,7 +60,7 @@ export function CommentThread({
   members: Member[];
   currentUserName: string;
   onChange: (p: ViewerPin) => void;
-  onBack?: () => void;
+  onClose?: () => void;
 }) {
   const [replyTo, setReplyTo] = useState<string | null>(null);
 
@@ -101,41 +101,43 @@ export function CommentThread({
   }
 
   return (
-    <div className="flex h-full flex-col">
-      {onBack && (
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1.5 border-b px-4 py-2.5 text-xs font-semibold text-muted transition-colors hover:text-brand-ink"
+    <div className="flex flex-col">
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2">
+        <span
+          className="grid h-6 w-6 place-items-center rounded-full font-mono text-xs font-bold"
+          style={{ background: resolved ? "var(--success)" : "var(--primary)", color: resolved ? "#fff" : "var(--primary-foreground)" }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path d="M14 6l-6 6 6 6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          All comments
-        </button>
-      )}
-
-      <div className="flex items-center justify-between gap-2 px-4 py-3">
-        <div className="flex items-center gap-2">
-          <span
-            className="grid h-6 w-6 place-items-center rounded-full font-mono text-xs font-bold"
-            style={{ background: resolved ? "var(--success)" : "var(--primary)", color: resolved ? "#fff" : "var(--primary-foreground)" }}
+          {pin.number}
+        </span>
+        <div className="flex items-center gap-0.5">
+          <button
+            onClick={toggleStatus}
+            title={resolved ? "Reopen" : "Mark resolved"}
+            aria-label={resolved ? "Reopen" : "Mark resolved"}
+            className="grid h-8 w-8 place-items-center rounded-full transition-colors hover:bg-[color:var(--accent)]"
+            style={{ color: resolved ? "var(--success)" : "var(--muted-foreground)" }}
           >
-            {pin.number}
-          </span>
-          <span className="text-sm font-bold text-ink">Pin {pin.number}</span>
-          <span
-            className="chip capitalize"
-            style={resolved ? { background: "var(--success-soft)", color: "var(--success)" } : { background: "var(--color-brand-soft)", color: "var(--color-brand-ink)" }}
-          >
-            {pin.status}
-          </span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.7" fill={resolved ? "var(--success)" : "transparent"} />
+              <path d="m8.4 12 2.4 2.4L15.6 9" stroke={resolved ? "#fff" : "currentColor"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          {onClose && (
+            <button
+              onClick={onClose}
+              title="Close"
+              aria-label="Close"
+              className="grid h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-[color:var(--accent)] hover:text-ink"
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+            </button>
+          )}
         </div>
-        <button onClick={toggleStatus} className="btn-secondary btn-sm">
-          {resolved ? "Reopen" : "Resolve"}
-        </button>
       </div>
 
-      <div className="flex-1 space-y-5 overflow-y-auto px-4 py-2">
+      <div className="max-h-[45vh] space-y-5 overflow-y-auto px-4 py-3">
         {roots.length === 0 && <p className="pt-2 text-sm text-faint">No comments yet. Start the thread below.</p>}
         {roots.map((c) => (
           <div key={c.id}>
@@ -155,7 +157,7 @@ export function CommentThread({
         ))}
       </div>
 
-      <div className="relative border-t p-3">
+      <div className="relative shrink-0 border-t p-3">
         {replyTo && (
           <div className="mb-2 flex items-center justify-between rounded-md bg-brand-soft px-2.5 py-1.5 text-xs font-medium text-brand-ink">
             Replying to a comment
