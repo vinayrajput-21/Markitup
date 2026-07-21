@@ -121,6 +121,7 @@ export function MockupViewer({
   siblings,
   members,
   currentUserName,
+  figmaEmbedUrl,
 }: {
   mockupId: string;
   projectId: string;
@@ -130,7 +131,11 @@ export function MockupViewer({
   siblings: Sibling[];
   members: Member[];
   currentUserName: string;
+  // When set, the canvas is a live Figma prototype embed (animations/video play)
+  // with a transparent pin-capture overlay on top, instead of a static image.
+  figmaEmbedUrl?: string | null;
 }) {
+  const isFigma = !!figmaEmbedUrl;
   const [pins, setPins] = useState<ViewerPin[]>(initialPins);
   const [activePinId, setActivePinId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
@@ -183,7 +188,7 @@ export function MockupViewer({
         ? "Fit horizontally"
         : `${zoom.pct}%`;
 
-  function handleImageClick(e: React.MouseEvent<HTMLImageElement>) {
+  function handleSurfaceClick(e: React.MouseEvent<HTMLElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
     const { x, y } = toNormalized(e.clientX, e.clientY, rect);
     setActivePinId(null);
@@ -284,6 +289,34 @@ export function MockupViewer({
   const prev = idx > 0 ? siblings[idx - 1] : null;
   const next = idx >= 0 && idx < siblings.length - 1 ? siblings[idx + 1] : null;
 
+  // Pins + the pinned popup composer, shared by the image and live-embed surfaces.
+  const pinsOverlay = (
+    <>
+      {visiblePins.map((p) => (
+        <PinMarker
+          key={p.id}
+          number={p.number}
+          x={p.x}
+          y={p.y}
+          status={p.status}
+          selected={p.id === activePinId}
+          onClick={() => setActivePinId(p.id)}
+        />
+      ))}
+      {draft && (
+        <PinComposer
+          xPct={draft.x * 100}
+          yPct={draft.y * 100}
+          projectId={projectId}
+          pending={savingPin}
+          error={pinError}
+          onCancel={() => { setDraft(null); setPinError(null); }}
+          onSubmit={saveDraft}
+        />
+      )}
+    </>
+  );
+
   return (
     <div className="flex h-full min-h-0">
       {/* comment rail */}
@@ -379,7 +412,9 @@ export function MockupViewer({
       <div ref={canvasRef} className="flex min-w-0 flex-1 flex-col bg-canvas">
         {/* canvas toolbar */}
         <div className="flex shrink-0 items-center justify-between gap-3 border-b bg-surface px-3 py-2">
-          <span className="hidden font-mono text-xs text-faint md:inline">{shownPct ? `${shownPct}%` : ""}</span>
+          <span className="hidden font-mono text-xs text-faint md:inline">
+            {isFigma ? "Live Figma preview" : shownPct ? `${shownPct}%` : ""}
+          </span>
 
           {/* pagination */}
           <div className="flex items-center gap-1">
@@ -412,44 +447,48 @@ export function MockupViewer({
 
           {/* zoom + actions */}
           <div className="flex items-center gap-1">
-            <div className="relative">
-              <button
-                onClick={() => setZoomOpen((o) => !o)}
-                className="btn-secondary btn-sm gap-1.5"
-              >
-                {zoomLabel}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden><path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              </button>
-              {zoomOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setZoomOpen(false)} />
-                  <div className="absolute right-0 z-50 mt-1 w-44 rounded-lg border bg-surface-2 p-1 shadow-lg">
-                    {ZOOM_OPTIONS.map((o) => {
-                      const on = o.value.mode === zoom.mode && (o.value.mode !== "percent" || o.value.pct === zoom.pct);
-                      return (
-                        <button
-                          key={o.label}
-                          onClick={() => { setZoom(o.value); setZoomOpen(false); }}
-                          className="flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-[color:var(--accent)]"
-                          style={on ? { color: "var(--primary)", fontWeight: 600 } : { color: "var(--foreground)" }}
-                        >
-                          {o.label}
-                          {on && (
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden><path d="m5 12 4.5 4.5L19 7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-            </div>
-            <ToolbarButton label="Download" onClick={download}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <path d="M12 4v11m0 0 4-4m-4 4-4-4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M5 18h14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-              </svg>
-            </ToolbarButton>
+            {!isFigma && (
+              <div className="relative">
+                <button
+                  onClick={() => setZoomOpen((o) => !o)}
+                  className="btn-secondary btn-sm gap-1.5"
+                >
+                  {zoomLabel}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden><path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </button>
+                {zoomOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setZoomOpen(false)} />
+                    <div className="absolute right-0 z-50 mt-1 w-44 rounded-lg border bg-surface-2 p-1 shadow-lg">
+                      {ZOOM_OPTIONS.map((o) => {
+                        const on = o.value.mode === zoom.mode && (o.value.mode !== "percent" || o.value.pct === zoom.pct);
+                        return (
+                          <button
+                            key={o.label}
+                            onClick={() => { setZoom(o.value); setZoomOpen(false); }}
+                            className="flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-[color:var(--accent)]"
+                            style={on ? { color: "var(--primary)", fontWeight: 600 } : { color: "var(--foreground)" }}
+                          >
+                            {o.label}
+                            {on && (
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden><path d="m5 12 4.5 4.5L19 7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+            {!isFigma && (
+              <ToolbarButton label="Download" onClick={download}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <path d="M12 4v11m0 0 4-4m-4 4-4-4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M5 18h14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                </svg>
+              </ToolbarButton>
+            )}
             <ToolbarButton label="Fullscreen" onClick={toggleFullscreen}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 0-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
@@ -462,37 +501,49 @@ export function MockupViewer({
         <div ref={scrollRef} className="relative min-h-0 flex-1 overflow-auto">
           <div className="flex min-h-full min-w-full items-center justify-center p-6">
             <div className="relative shrink-0" style={{ width: displayW || "100%" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                ref={imgRef}
-                src={imageUrl}
-                alt="mockup"
-                onLoad={(e) => setNat({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })}
-                onClick={handleImageClick}
-                draggable={false}
-                className="block w-full cursor-crosshair rounded-lg shadow-lg ring-1 ring-border select-none"
-              />
-              {visiblePins.map((p) => (
-                <PinMarker
-                  key={p.id}
-                  number={p.number}
-                  x={p.x}
-                  y={p.y}
-                  status={p.status}
-                  selected={p.id === activePinId}
-                  onClick={() => setActivePinId(p.id)}
-                />
-              ))}
-              {draft && (
-                <PinComposer
-                  xPct={draft.x * 100}
-                  yPct={draft.y * 100}
-                  projectId={projectId}
-                  pending={savingPin}
-                  error={pinError}
-                  onCancel={() => { setDraft(null); setPinError(null); }}
-                  onSubmit={saveDraft}
-                />
+              {isFigma ? (
+                <>
+                  {/* hidden probe: read the rendered frame's aspect ratio so the
+                      embed box matches the design and pins line up */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={imageUrl}
+                    alt=""
+                    className="hidden"
+                    onLoad={(e) => setNat({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })}
+                  />
+                  <div
+                    className="relative w-full overflow-hidden rounded-lg bg-surface shadow-lg ring-1 ring-border"
+                    style={{ aspectRatio: nat.w && nat.h ? `${nat.w} / ${nat.h}` : "16 / 10" }}
+                  >
+                    <iframe
+                      src={figmaEmbedUrl ?? undefined}
+                      title="Figma prototype"
+                      allow="fullscreen"
+                      className="absolute inset-0 h-full w-full border-0"
+                      style={{ pointerEvents: "none" }}
+                    />
+                    {/* transparent capture layer: clicks drop pins; the embed
+                        underneath keeps animating video/GIF */}
+                    <div className="absolute inset-0 cursor-crosshair" onClick={handleSurfaceClick}>
+                      {pinsOverlay}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    ref={imgRef}
+                    src={imageUrl}
+                    alt="mockup"
+                    onLoad={(e) => setNat({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })}
+                    onClick={handleSurfaceClick}
+                    draggable={false}
+                    className="block w-full cursor-crosshair rounded-lg shadow-lg ring-1 ring-border select-none"
+                  />
+                  {pinsOverlay}
+                </>
               )}
             </div>
           </div>

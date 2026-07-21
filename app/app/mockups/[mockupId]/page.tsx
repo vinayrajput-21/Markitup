@@ -21,7 +21,7 @@ export default async function MockupPage({
 
   const { data: mockup } = await supabase
     .from("mockups")
-    .select("id, name, file_path, type, project_id, projects(name, workspace_id)")
+    .select("id, name, file_path, type, project_id, figma_embed_url, projects(name, workspace_id)")
     .eq("id", mockupId)
     .maybeSingle();
   if (!mockup) notFound();
@@ -120,6 +120,9 @@ export default async function MockupPage({
   const resolved = viewerPins.filter((p) => p.status === "resolved").length;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const projectName = (mockup as any).projects?.name as string | undefined;
+  const figmaEmbedUrl =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mockup.type === "figma" ? ((mockup as any).figma_embed_url as string | null) : null;
 
   return (
     <div className="flex h-full flex-col">
@@ -167,6 +170,7 @@ export default async function MockupPage({
             siblings={siblings ?? [{ id: mockupId }]}
             members={members}
             currentUserName={currentUserName}
+            figmaEmbedUrl={figmaEmbedUrl}
           />
         ) : (
           <div className="grid h-full place-items-center text-sm text-faint">
