@@ -141,30 +141,3 @@ export async function importFigmaFrame(projectId: string, figmaUrl: string) {
   revalidatePath(`/app/projects/${projectId}`);
   return {};
 }
-
-export async function resyncFigma(mockupId: string) {
-  const supabase = await createServerSupabase();
-  const { data: mk } = await supabase
-    .from("mockups")
-    .select("project_id, file_path, figma_file_key, figma_node_id, projects(workspace_id)")
-    .eq("id", mockupId)
-    .maybeSingle();
-  if (!mk?.figma_file_key || !mk?.figma_node_id) return { error: "Not a Figma mockup." };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const wsId = (mk as any).projects?.workspace_id as string | undefined;
-  if (!wsId) return { error: "Project not found" };
-
-  const token = await workspaceFigmaToken(supabase, wsId);
-  if (!token) return { error: "Connect Figma in workspace settings first." };
-
-  const res = await renderToStorage(
-    supabase,
-    { fileKey: mk.figma_file_key, nodeId: mk.figma_node_id },
-    token,
-    mk.file_path,
-    true,
-  );
-  if (res.error) return { error: res.error };
-  revalidatePath(`/app/mockups/${mockupId}`);
-  return {};
-}
