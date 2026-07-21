@@ -26,13 +26,19 @@ export function parseFigmaUrl(input: string): FigmaRef | null {
   return { fileKey, nodeId };
 }
 
-// The interactive prototype embed player, forced to "Fit width" (scale-down-width)
-// so the frame fills the embed box instead of being cropped. `embed_host` is a
-// free analytics label.
+// Figma's clean interactive prototype embed player. `hide-ui=1` removes Figma's
+// own chrome (the dark top toolbar + its fullscreen button), and
+// `scaling=scale-down-width` fits the frame to the box width instead of cropping
+// or letterboxing it. `embed-host` is a free analytics label.
 export function buildEmbedUrl(fileKey: string, nodeId: string, host = "markitup"): string {
-  const urlNode = nodeId.replace(/:/g, "-"); // Figma URLs use 12-34, not 12:34
-  const proto = `https://www.figma.com/proto/${fileKey}?node-id=${urlNode}&scaling=scale-down-width`;
-  return `https://www.figma.com/embed?embed_host=${encodeURIComponent(host)}&url=${encodeURIComponent(proto)}`;
+  const params = new URLSearchParams({
+    "node-id": nodeId.replace(/:/g, "-"), // Figma URLs use 12-34, not 12:34
+    scaling: "scale-down-width",
+    "content-scaling": "fixed",
+    "hide-ui": "1",
+    "embed-host": host,
+  });
+  return `https://embed.figma.com/proto/${fileKey}/embed?${params.toString()}`;
 }
 
 // Render a single node to a PNG. Returns the (temporary) Figma S3 URL of the image.

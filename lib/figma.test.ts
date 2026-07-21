@@ -27,10 +27,13 @@ describe("parseFigmaUrl", () => {
 });
 
 describe("buildEmbedUrl", () => {
-  it("builds a fit-width embed URL from file key + node id", () => {
+  it("builds a clean fit-width embed URL from file key + node id", () => {
     const e = buildEmbedUrl("abc", "1:2");
-    expect(e.startsWith("https://www.figma.com/embed?embed_host=markitup&url=")).toBe(true);
-    const inner = decodeURIComponent(e.split("url=")[1]);
-    expect(inner).toBe("https://www.figma.com/proto/abc?node-id=1-2&scaling=scale-down-width");
+    expect(e.startsWith("https://embed.figma.com/proto/abc/embed?")).toBe(true);
+    const p = new URL(e).searchParams;
+    expect(p.get("node-id")).toBe("1-2");
+    expect(p.get("scaling")).toBe("scale-down-width");
+    expect(p.get("hide-ui")).toBe("1");
+    expect(p.get("embed-host")).toBe("markitup");
   });
 });
