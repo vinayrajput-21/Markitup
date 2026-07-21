@@ -57,7 +57,7 @@ function PinListItem({ pin, onSelect }: { pin: ViewerPin; onSelect: () => void }
   return (
     <button
       onClick={onSelect}
-      className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors duration-150 hover:bg-[color:var(--accent)]"
+      className="flex w-full items-start gap-2.5 px-3 py-2.5 text-left transition-colors duration-150 hover:bg-[color:var(--accent)]"
     >
       <span
         className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full font-mono text-xs font-bold"
@@ -320,7 +320,7 @@ export function MockupViewer({
   return (
     <div className="flex h-full min-h-0">
       {/* comment rail */}
-      <aside className="flex w-[344px] shrink-0 flex-col border-r bg-surface">
+      <aside className="flex w-[280px] shrink-0 flex-col border-r bg-surface">
         {activePin ? (
           <CommentThread
             mockupId={mockupId}
@@ -333,8 +333,8 @@ export function MockupViewer({
           />
         ) : (
           <>
-            <div className="border-b p-4">
-              <div className="mb-3 flex items-center justify-between">
+            <div className="border-b p-3">
+              <div className="mb-2.5 flex items-center justify-between">
                 <h2 className="text-sm font-bold text-ink">Comments</h2>
                 <div className="flex items-center gap-0.5">
                   {/* sort */}
@@ -411,7 +411,7 @@ export function MockupViewer({
       {/* canvas + toolbar */}
       <div ref={canvasRef} className="flex min-w-0 flex-1 flex-col bg-canvas">
         {/* canvas toolbar */}
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b bg-surface px-3 py-2">
+        <div className="flex h-10 shrink-0 items-center justify-between gap-3 border-b bg-surface px-3">
           <span className="hidden font-mono text-xs text-faint md:inline">{shownPct ? `${shownPct}%` : ""}</span>
 
           {/* pagination */}

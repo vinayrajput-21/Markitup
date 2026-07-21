@@ -131,26 +131,24 @@ export default async function MockupPage({
     <div className="flex h-full flex-col">
       <RecordView mockupId={mockupId} />
       {/* top bar */}
-      <header className="flex shrink-0 items-center justify-between gap-4 border-b bg-surface px-4 py-2.5">
-        <div className="flex min-w-0 items-center gap-3">
+      <header className="flex h-11 shrink-0 items-center justify-between gap-3 border-b bg-surface px-2.5">
+        <div className="flex min-w-0 items-baseline gap-2">
           <Link
             href={`/app/projects/${mockup.project_id}`}
-            className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-muted transition-colors hover:bg-brand-soft hover:text-brand-ink"
+            className="grid h-7 w-7 shrink-0 -translate-y-0.5 place-items-center self-center rounded-md text-muted transition-colors hover:bg-brand-soft hover:text-brand-ink"
             aria-label="Back to project"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path d="M14 6l-6 6 6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Link>
-          <div className="min-w-0">
-            <h1 className="truncate text-sm font-bold text-ink">{mockup.name}</h1>
-            <p className="truncate text-xs text-faint">
-              {projectName ? `${projectName} · ` : ""}
-              <span className="font-mono uppercase">{mockup.type}</span>
-            </p>
-          </div>
+          <h1 className="truncate text-sm font-bold text-ink">{mockup.name}</h1>
+          <span className="hidden truncate text-xs text-faint md:inline">
+            {projectName ? `${projectName} · ` : ""}
+            <span className="font-mono uppercase">{mockup.type}</span>
+          </span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1">
           <RecentViewers viewers={viewers} />
           <ShareDialog mockupId={mockupId} />
           <NotificationBell />
