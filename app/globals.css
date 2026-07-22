@@ -515,3 +515,13 @@
   .check-ring, .check-tick { stroke-dashoffset: 0; }
   .top-progress { transition: none; }
 }
+
+/* A fullscreened container must fill the viewport with a definite height so its
+   flex children (a header + a flex-1 overflow-auto scroll area) size correctly
+   and scrolling works. An element sized `h-full` (height:100%) can otherwise
+   collapse in the fullscreen top layer, clipping tall content with no way to
+   scroll — the compare screen's Fullscreen button hit exactly this. Unlayered,
+   so it wins over Tailwind's `h-full` utility. */
+:fullscreen {
+  height: 100dvh;
+}

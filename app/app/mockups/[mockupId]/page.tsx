@@ -143,16 +143,17 @@ export default async function MockupPage({
     })),
   }));
 
-  // Live Figma embed is shown ONLY to trusted workspace members. External
-  // reviewers (share-link visitors / project-only members) get the static
-  // rendered frame, so the Figma URL is never present in their page to inspect.
-  const { data: isTeam } = workspaceId
-    ? await supabase.rpc("is_workspace_member", { ws: workspaceId })
-    : { data: false };
+  // Live Figma embed (the animated prototype) is shown to ANY signed-in viewer
+  // who can open this mockup — the workspace team AND invited/joined project
+  // reviewers (clients). This page is auth-gated (the /app layout) and
+  // RLS-gated (the mockup only loads if the viewer can see its project), so
+  // only legitimate project members reach it. Trade-off accepted by the owner:
+  // a PUBLIC share link auto-joins whoever opens it as a reviewer, so a public
+  // link exposes the embed (and thus the Figma file key) to anyone with it.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mk = mockup as any;
   const figmaEmbedUrl =
-    mockup.type === "figma" && mk.figma_file_key && isTeam
+    mockup.type === "figma" && mk.figma_file_key && authData.user
       ? buildEmbedUrl(mk.figma_file_key as string, (mk.figma_node_id as string) ?? "")
       : null;
 
