@@ -12,6 +12,7 @@ export type Activity = {
   email: string;
   mockupId: string;
   mockupName: string;
+  project: string;
   at: string;
   snippet?: string;
 };
@@ -87,6 +88,10 @@ export async function getActivityData(supabase: SupabaseClient<any>, projectIds:
   const mkMap = new Map(mkList.map((m) => [m.id, m]));
   const mkIds = mkList.map((m) => m.id);
 
+  const { data: projRows } = await supabase.from("projects").select("id, name").in("id", projectIds);
+  const projMap = new Map((projRows ?? []).map((p) => [p.id, p.name as string]));
+  const projectOf = (mkId: string) => projMap.get(mkMap.get(mkId)?.project_id ?? "") ?? "";
+
   const [{ data: views }, { data: comments }] = await Promise.all([
     supabase
       .from("mockup_views")
@@ -138,6 +143,8 @@ export async function getActivityData(supabase: SupabaseClient<any>, projectIds:
       mockupId: (v as any).mockup_id,
       mockupName: mk?.name ?? "a mockup",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      project: projectOf((v as any).mockup_id),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       at: (v as any).viewed_at,
     };
   });
@@ -153,6 +160,7 @@ export async function getActivityData(supabase: SupabaseClient<any>, projectIds:
       email: p?.email ?? "",
       mockupId: mkId ?? "",
       mockupName: mk?.name ?? "a mockup",
+      project: mkId ? projectOf(mkId) : "",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       at: (c as any).created_at,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
