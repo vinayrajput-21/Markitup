@@ -52,6 +52,40 @@ export function invitation(opts: {
   return { subject, html, text };
 }
 
+// First-touch "here's the design, please review" email sent when you Send to client.
+export function clientShareEmail(opts: { sender: string; pageName: string; href: string }) {
+  const subject = `${opts.sender} shared "${opts.pageName}" with you`;
+  const html = layout(
+    subject,
+    `<p style="margin:0;font-size:14px"><strong>${esc(opts.sender)}</strong> shared "<strong>${esc(opts.pageName)}</strong>" with you and would love your feedback. Click below to view it and add your comments — no account needed.</p>`,
+    { label: "View & comment", href: opts.href },
+  );
+  const text = `${opts.sender} shared "${opts.pageName}" with you.\n\nView & comment: ${opts.href}`;
+  return { subject, html, text };
+}
+
+// Follow-up reminder. Subject/message are already placeholder-filled by the caller.
+export function reminderEmail(opts: { subject: string; message: string; buttonLabel: string; href: string }) {
+  const html = layout(
+    opts.subject,
+    `<p style="margin:0;font-size:14px;white-space:pre-line">${esc(opts.message)}</p>`,
+    { label: opts.buttonLabel || "Leave feedback", href: opts.href },
+  );
+  const text = `${opts.message}\n\n${opts.href}`;
+  return { subject: opts.subject, html, text };
+}
+
+export function neverRespondedEmail(opts: { pageName: string; clientEmail: string; href: string }) {
+  const subject = `No feedback yet on "${opts.pageName}"`;
+  const html = layout(
+    subject,
+    `<p style="margin:0;font-size:14px"><strong>${esc(opts.clientEmail)}</strong> hasn't left feedback on "<strong>${esc(opts.pageName)}</strong>" after all reminders. You may want to follow up directly.</p>`,
+    { label: "Open in MarkUp", href: opts.href },
+  );
+  const text = `${opts.clientEmail} never left feedback on "${opts.pageName}".\n\n${opts.href}`;
+  return { subject, html, text };
+}
+
 export function welcome(opts: { name: string }) {
   const href = `${APP_URL}/app`;
   const subject = "Welcome to MarkUp";

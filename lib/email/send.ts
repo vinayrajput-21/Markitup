@@ -9,6 +9,7 @@ export async function sendEmail(opts: {
   subject: string;
   html: string;
   text: string;
+  cc?: string;
 }): Promise<{ ok: boolean }> {
   const resend = getResend();
   if (!resend) {
@@ -19,6 +20,7 @@ export async function sendEmail(opts: {
     const { error } = await resend.emails.send({
       from: EMAIL_FROM,
       to: opts.to,
+      ...(opts.cc ? { cc: opts.cc } : {}),
       subject: opts.subject,
       html: opts.html,
       text: opts.text,

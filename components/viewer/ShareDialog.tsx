@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Avatar } from "@/components/app/AppSidebar";
 import { useToast } from "@/components/ui/toast";
+import { sendToClient } from "@/app/app/reminder-actions";
 import {
   getShareInfo,
   setShareVisibility,
@@ -37,6 +38,25 @@ export function ShareDialog({
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const toast = useToast();
+  const [clientEmail, setClientEmail] = useState("");
+  const [sendingClient, setSendingClient] = useState(false);
+
+  async function sendClient(e: React.FormEvent) {
+    e.preventDefault();
+    const value = clientEmail.trim();
+    if (!value) return;
+    setSendingClient(true);
+    const res = await sendToClient(mockupId, value);
+    setSendingClient(false);
+    if ("error" in res && res.error) {
+      toast.error(res.error);
+      return;
+    }
+    setClientEmail("");
+    toast.success("Sent to client", {
+      description: res.scheduled ? "Reminders will follow up automatically." : "Turn on reminders in Settings to auto-follow-up.",
+    });
+  }
 
   async function load() {
     setLoading(true);
@@ -123,15 +143,34 @@ export function ShareDialog({
             </div>
 
             <div className="px-5 py-4">
+              {/* Send to client — emails a view-and-comment link + starts reminders */}
+              <p className="mb-2 text-xs font-semibold tracking-wider text-faint uppercase">Send to a client</p>
+              <form onSubmit={sendClient} className="flex gap-2">
+                <input
+                  value={clientEmail}
+                  onChange={(e) => setClientEmail(e.target.value)}
+                  type="email"
+                  placeholder="client@email.com"
+                  className="field flex-1"
+                />
+                <button type="submit" disabled={sendingClient || !clientEmail.trim()} className="btn-primary">
+                  {sendingClient ? "Sending…" : "Send"}
+                </button>
+              </form>
+              <p className="mt-1.5 text-xs text-faint">
+                Emails a view-and-comment link (no account needed). If reminders are on, we&apos;ll auto-follow-up until they respond.
+              </p>
+
+              <p className="mt-5 mb-2 text-xs font-semibold tracking-wider text-faint uppercase">Invite a teammate</p>
               <form onSubmit={addEmail} className="flex gap-2">
                 <input
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   type="email"
-                  placeholder="Invite by email…"
+                  placeholder="teammate@email.com"
                   className="field flex-1"
                 />
-                <button type="submit" disabled={busy || !email.trim()} className="btn-primary">
+                <button type="submit" disabled={busy || !email.trim()} className="btn-secondary">
                   {busy ? "Inviting…" : "Invite"}
                 </button>
               </form>
