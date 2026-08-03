@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Avatar } from "@/components/app/AppSidebar";
 import { useToast } from "@/components/ui/toast";
+import { ModalPortal } from "@/components/ui/ModalPortal";
 import { sendToClient } from "@/app/app/reminder-actions";
 import {
   getShareInfo,
@@ -126,6 +127,7 @@ export function ShareDialog({
       )}
 
       {open && (
+        <ModalPortal>
         <div className="fixed inset-0 z-[100] grid place-items-center p-4">
           <div className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} />
           <div className="relative z-10 w-full max-w-lg rounded-xl border bg-surface-2 shadow-lg">
@@ -233,6 +235,7 @@ export function ShareDialog({
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </>
   );

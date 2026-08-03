@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createProject } from "@/app/app/actions";
 import { useToast } from "@/components/ui/toast";
+import { ModalPortal } from "@/components/ui/ModalPortal";
 
 export function NewProjectDialog({ variant = "primary" }: { variant?: "primary" | "secondary" }) {
   const [open, setOpen] = useState(false);
@@ -37,6 +38,7 @@ export function NewProjectDialog({ variant = "primary" }: { variant?: "primary" 
       </button>
 
       {open && (
+        <ModalPortal>
         <div className="fixed inset-0 z-[300] grid place-items-center p-4" role="dialog" aria-modal="true" aria-label="New project">
           <div className="fade-anim absolute inset-0 bg-black/30" onClick={() => !pending && setOpen(false)} />
           <form onSubmit={submit} className="pop-anim relative z-10 w-full max-w-sm rounded-2xl border bg-surface-2 p-5 shadow-lg">
@@ -55,6 +57,7 @@ export function NewProjectDialog({ variant = "primary" }: { variant?: "primary" 
             </div>
           </form>
         </div>
+        </ModalPortal>
       )}
     </>
   );

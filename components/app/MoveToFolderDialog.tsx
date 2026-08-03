@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { moveMockupToFolder } from "@/app/app/folder-actions";
 import { useToast } from "@/components/ui/toast";
+import { ModalPortal } from "@/components/ui/ModalPortal";
 
 export type FolderOption = { id: string; name: string; depth: number };
 
@@ -38,6 +39,7 @@ export function MoveToFolderDialog({
   }
 
   return (
+    <ModalPortal>
     <div className="fixed inset-0 z-[300] grid place-items-center p-4" role="dialog" aria-modal="true">
       <div className="fade-anim absolute inset-0 bg-black/30" onClick={onClose} />
       <div className="pop-anim relative z-10 w-full max-w-sm rounded-2xl border bg-surface-2 p-5 shadow-lg">
@@ -55,6 +57,7 @@ export function MoveToFolderDialog({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 

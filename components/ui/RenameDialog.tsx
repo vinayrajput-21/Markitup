@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ModalPortal } from "@/components/ui/ModalPortal";
 
 export function RenameDialog({
   open,
@@ -33,6 +34,7 @@ export function RenameDialog({
   const save = () => { if (value.trim()) onSave(value.trim()); };
 
   return (
+    <ModalPortal>
     <div className="fixed inset-0 z-[300] grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={label}>
       <div className="fade-anim absolute inset-0 bg-black/30" onClick={() => !pending && onClose()} />
       <div className="pop-anim relative z-10 w-full max-w-sm rounded-2xl border bg-surface-2 p-5 shadow-lg">
@@ -51,5 +53,6 @@ export function RenameDialog({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }

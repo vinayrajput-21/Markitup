@@ -7,6 +7,7 @@ import { createFolder } from "@/app/app/folder-actions";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useToast } from "@/components/ui/toast";
+import { ModalPortal } from "@/components/ui/ModalPortal";
 
 const TABS = [
   { key: "upload", label: "Upload" },
@@ -30,6 +31,7 @@ export function AddContentDialog({ projectId, folderId }: { projectId: string; f
       </button>
 
       {open && (
+        <ModalPortal>
         <div className="fixed inset-0 z-[200] grid place-items-center p-4" role="dialog" aria-modal="true">
           <div className="fade-anim absolute inset-0 bg-black/30" onClick={close} />
           <div className="pop-anim relative z-10 w-full max-w-lg overflow-hidden rounded-2xl border bg-surface-2 shadow-lg">
@@ -62,6 +64,7 @@ export function AddContentDialog({ projectId, folderId }: { projectId: string; f
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </>
   );

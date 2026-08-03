@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { ModalPortal } from "@/components/ui/ModalPortal";
 
 // A prominent, centered confirmation modal. `variant` controls the tone:
 // "danger" (red — delete) or "default" (brand — archive and other reversible actions).
@@ -61,6 +62,7 @@ export function ConfirmDialog({
   );
 
   return (
+    <ModalPortal>
     <div className="fixed inset-0 z-[300] grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={title}>
       <div className="fade-anim absolute inset-0 bg-black/30" onClick={() => { if (!pending) onCancel(); }} />
       <div className="pop-anim relative z-10 w-full max-w-md rounded-2xl border bg-surface-2 p-6 shadow-lg">
@@ -93,5 +95,6 @@ export function ConfirmDialog({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
