@@ -6,37 +6,24 @@ import type { Activity } from "@/app/app/dashboard-data";
 export function RecentActivity({ items }: { items: Activity[] }) {
   return (
     <aside className="rounded-xl border bg-surface p-4">
-      <h2 className="mb-3 text-sm font-bold text-ink">Recent activity</h2>
+      <h2 className="mb-1 text-sm font-bold text-ink">Recent activity</h2>
       {items.length === 0 ? (
-        <p className="text-sm text-faint">No activity yet. Send a mockup to a client to start collecting views and feedback.</p>
+        <p className="pt-2 text-sm text-faint">No activity yet. Send a mockup to a client to start collecting views and feedback.</p>
       ) : (
-        <ul className="space-y-3.5">
+        <ul className="divide-y">
           {items.map((a, i) => (
-            <li key={i}>
-              <Link href={a.mockupId ? `/app/mockups/${a.mockupId}` : "#"} className="group flex gap-2.5">
-                <span className="relative shrink-0">
-                  <Avatar name={a.actor} email={a.email} size={30} />
-                  <span
-                    className="absolute -right-0.5 -bottom-0.5 grid h-3.5 w-3.5 place-items-center rounded-full ring-2 ring-[color:var(--color-surface)]"
-                    style={{ background: a.kind === "comment" ? "var(--color-brand)" : "var(--color-success)" }}
-                    aria-hidden
-                  >
-                    {a.kind === "comment" ? (
-                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v10H9l-5 4V5Z" stroke="#fff" strokeWidth="2.4" strokeLinejoin="round" /></svg>
-                    ) : (
-                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" stroke="#fff" strokeWidth="2.4" /></svg>
-                    )}
-                  </span>
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm leading-snug text-ink">
+            <li key={i} className="py-2.5">
+              <Link href={a.mockupId ? `/app/mockups/${a.mockupId}` : "#"} className="group flex items-center gap-2.5">
+                <Avatar name={a.actor} email={a.email} size={26} />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm text-ink">
                     <span className="font-semibold">{a.actor}</span>{" "}
                     <span className="text-muted">{a.kind === "view" ? "viewed" : "commented on"}</span>{" "}
-                    <span className="font-medium text-brand-ink group-hover:underline">{a.mockupName}</span>
-                  </p>
-                  {a.snippet && <p className="mt-0.5 line-clamp-1 text-xs text-muted">“{a.snippet}”</p>}
-                  <p className="mt-0.5 font-mono text-[0.6875rem] text-faint">{timeAgo(a.at)}</p>
-                </div>
+                    <span className="text-muted transition-colors group-hover:text-brand-ink">{a.mockupName}</span>
+                  </span>
+                  {a.snippet && <span className="mt-0.5 block truncate text-xs text-faint">“{a.snippet}”</span>}
+                </span>
+                <span className="shrink-0 self-start pt-0.5 font-mono text-[0.625rem] whitespace-nowrap text-faint">{timeAgo(a.at)}</span>
               </Link>
             </li>
           ))}
