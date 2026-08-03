@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { UploadDropzone } from "@/components/viewer/UploadDropzone";
-import { FigmaImport } from "@/components/viewer/FigmaImport";
-import { NewFolderForm } from "@/components/app/NewFolderForm";
+import { AddContentDialog } from "@/components/app/AddContentDialog";
 import { ProjectBrowser, type FileItem } from "@/components/app/ProjectBrowser";
 import type { FolderOption } from "@/components/app/MoveToFolderDialog";
 import { plural } from "@/lib/format";
@@ -83,12 +81,6 @@ export default async function ProjectPage({
   }
   const rows = [...fileMap.values()].sort((a, b) => b.created_at.localeCompare(a.created_at));
 
-  const { count: totalMockups } = await supabase
-    .from("mockups")
-    .select("id", { count: "exact", head: true })
-    .eq("project_id", projectId)
-    .is("archived_at", null);
-
   const signed = new Map<string, string>();
   if (rows.length) {
     const { data: urls } = await supabase.storage.from("mockups").createSignedUrls(rows.map((m) => m.file_path), 3600);
@@ -118,45 +110,27 @@ export default async function ProjectPage({
 
   return (
     <div className="mx-auto max-w-6xl px-8 py-8">
-      {/* breadcrumb */}
-      <nav className="mb-4 flex flex-wrap items-center gap-1.5 text-sm text-muted">
-        <Link href="/app" className="transition-colors hover:text-brand-ink">Projects</Link>
-        <Chevron />
-        <Link href={`/app/projects/${projectId}`} className={currentFolderId ? "transition-colors hover:text-brand-ink" : "font-semibold text-ink"}>
-          {project?.name ?? "Project"}
-        </Link>
-        {chain.map((c, i) => (
-          <span key={c.id} className="flex items-center gap-1.5">
-            <Chevron />
-            <Link href={`/app/projects/${projectId}?folder=${c.id}`} className={i === chain.length - 1 ? "font-semibold text-ink" : "transition-colors hover:text-brand-ink"}>
-              {c.name}
-            </Link>
-          </span>
-        ))}
-      </nav>
+      {/* breadcrumb — only when inside a sub-folder, so you can navigate up */}
+      {chain.length > 0 && (
+        <nav className="mb-4 flex flex-wrap items-center gap-1.5 text-sm text-muted">
+          <Link href={`/app/projects/${projectId}`} className="transition-colors hover:text-brand-ink">{project?.name ?? "Project"}</Link>
+          {chain.map((c, i) => (
+            <span key={c.id} className="flex items-center gap-1.5">
+              <Chevron />
+              <Link href={`/app/projects/${projectId}?folder=${c.id}`} className={i === chain.length - 1 ? "font-semibold text-ink" : "transition-colors hover:text-brand-ink"}>
+                {c.name}
+              </Link>
+            </span>
+          ))}
+        </nav>
+      )}
 
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{here}</h1>
           <p className="mt-1 text-sm text-muted">{plural(subfolders.length, "folder")} · {plural(files.length, "mockup")}</p>
         </div>
-        {(totalMockups ?? 0) >= 2 && (
-          <Link href={`/app/projects/${projectId}/compare`} className="btn-secondary btn-sm">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <rect x="3" y="4" width="8" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
-              <rect x="13" y="4" width="8" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
-            </svg>
-            Compare
-          </Link>
-        )}
-      </div>
-
-      <div className="mb-5">
-        <NewFolderForm projectId={projectId} parentId={currentFolderId} />
-      </div>
-      <div className="mb-8 grid gap-4 lg:grid-cols-[1fr_22rem]">
-        <UploadDropzone projectId={projectId} folderId={currentFolderId} />
-        <FigmaImport projectId={projectId} folderId={currentFolderId} />
+        <AddContentDialog projectId={projectId} folderId={currentFolderId} />
       </div>
 
       <ProjectBrowser projectId={projectId} currentFolderId={currentFolderId} folders={subfolders} files={files} allFolders={allFolders} />

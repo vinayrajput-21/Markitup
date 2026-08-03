@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createFolder } from "@/app/app/folder-actions";
 import { useToast } from "@/components/ui/toast";
 
-export function NewFolderForm({ projectId, parentId }: { projectId: string; parentId: string | null }) {
+export function NewFolderForm({ projectId, parentId, onDone }: { projectId: string; parentId: string | null; onDone?: () => void }) {
   const [name, setName] = useState("");
   const [pending, start] = useTransition();
   const router = useRouter();
@@ -17,7 +17,7 @@ export function NewFolderForm({ projectId, parentId }: { projectId: string; pare
     start(async () => {
       const r = await createFolder(projectId, parentId, name);
       if (r?.error) toast.error(r.error);
-      else { setName(""); toast.success("Folder created"); router.refresh(); }
+      else { setName(""); toast.success("Folder created"); router.refresh(); onDone?.(); }
     });
   }
 

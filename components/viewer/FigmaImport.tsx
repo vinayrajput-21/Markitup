@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { importFigmaFrame } from "@/app/app/figma-actions";
 import { useToast } from "@/components/ui/toast";
 
-export function FigmaImport({ projectId, folderId = null }: { projectId: string; folderId?: string | null }) {
+export function FigmaImport({ projectId, folderId = null, onDone }: { projectId: string; folderId?: string | null; onDone?: () => void }) {
   const [url, setUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -26,6 +26,7 @@ export function FigmaImport({ projectId, folderId = null }: { projectId: string;
         setUrl("");
         toast.update(id, { variant: "success", title: "Frame imported from Figma", duration: 2500 });
         router.refresh();
+        onDone?.();
       }
     });
   }

@@ -10,7 +10,7 @@ import {
   finalizeMockup,
 } from "@/app/app/projects/[projectId]/actions";
 
-export function UploadDropzone({ projectId, folderId = null }: { projectId: string; folderId?: string | null }) {
+export function UploadDropzone({ projectId, folderId = null, onDone }: { projectId: string; folderId?: string | null; onDone?: () => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -59,6 +59,7 @@ export function UploadDropzone({ projectId, folderId = null }: { projectId: stri
         toast.success("Mockup uploaded", { description: file.name });
         setTimeout(() => setProgress(0), 500);
         router.refresh();
+        onDone?.();
       } catch {
         fail("Upload failed. Please try again.", iv);
       }
