@@ -127,7 +127,7 @@ export function ShareDialog({
 
       {open && (
         <div className="fixed inset-0 z-[100] grid place-items-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
+          <div className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} />
           <div className="relative z-10 w-full max-w-lg rounded-xl border bg-surface-2 shadow-lg">
             <div className="flex items-center justify-between border-b px-5 py-4">
               <h2 className="text-lg font-bold text-ink">Share this MarkUp</h2>

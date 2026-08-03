@@ -50,6 +50,8 @@ export async function createProject(formData: FormData) {
     .insert({ name, workspace_id: ws.id, created_by: userData.user!.id });
   if (error) return { error: error.message };
   revalidatePath("/app");
+  revalidatePath("/app/projects");
+  return {};
 }
 
 export async function getWorkspaceMembers() {

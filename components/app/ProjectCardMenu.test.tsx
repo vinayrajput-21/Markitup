@@ -11,7 +11,8 @@ describe("ProjectCardMenu", () => {
   it("archives via the menu", async () => {
     render(<ProjectCardMenu projectId="p1" name="Demo project" />);
     fireEvent.click(screen.getByRole("button", { name: /project options/i }));
-    fireEvent.click(screen.getByText(/archive/i));
+    fireEvent.click(screen.getByText(/archive/i)); // opens the confirm dialog
+    fireEvent.click(screen.getByRole("button", { name: /^archive$/i })); // confirm
     await waitFor(() => expect(archiveProject).toHaveBeenCalledWith("p1"));
   });
 });

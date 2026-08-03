@@ -2,13 +2,16 @@
 
 import { useEffect, useRef } from "react";
 
-// A prominent, centered confirmation modal for destructive actions.
+// A prominent, centered confirmation modal. `variant` controls the tone:
+// "danger" (red — delete) or "default" (brand — archive and other reversible actions).
 export function ConfirmDialog({
   open,
   title,
   message,
   confirmLabel = "Delete",
   cancelLabel = "Cancel",
+  variant = "danger",
+  icon,
   pending = false,
   pendingLabel,
   onConfirm,
@@ -19,6 +22,8 @@ export function ConfirmDialog({
   message: React.ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
+  variant?: "danger" | "default";
+  icon?: React.ReactNode;
   pending?: boolean;
   pendingLabel?: string;
   onConfirm: () => void;
@@ -38,19 +43,30 @@ export function ConfirmDialog({
 
   if (!open) return null;
 
+  const danger = variant === "danger";
+  const chip = danger
+    ? { background: "var(--color-danger-soft)", color: "var(--color-danger)" }
+    : { background: "var(--color-brand-soft)", color: "var(--color-brand-ink)" };
+
+  const defaultIcon = danger ? (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 11v6M14 11v6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  ) : (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect x="3" y="4" width="18" height="4" rx="1" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+
   return (
     <div className="fixed inset-0 z-[300] grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={title}>
-      <div className="fade-anim absolute inset-0 bg-black/50" onClick={() => { if (!pending) onCancel(); }} />
+      <div className="fade-anim absolute inset-0 bg-black/30" onClick={() => { if (!pending) onCancel(); }} />
       <div className="pop-anim relative z-10 w-full max-w-md rounded-2xl border bg-surface-2 p-6 shadow-lg">
         <div className="flex gap-4">
-          <span
-            className="grid h-12 w-12 shrink-0 place-items-center rounded-full"
-            style={{ background: "var(--color-danger-soft)", color: "var(--color-danger)" }}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M10 11v6M14 11v6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-            </svg>
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full" style={chip}>
+            {icon ?? defaultIcon}
           </span>
           <div className="min-w-0 pt-0.5">
             <h2 className="text-lg font-bold text-ink">{title}</h2>
@@ -61,7 +77,7 @@ export function ConfirmDialog({
           <button ref={cancelRef} type="button" onClick={onCancel} disabled={pending} className="btn-secondary">
             {cancelLabel}
           </button>
-          <button type="button" onClick={onConfirm} disabled={pending} className="btn-danger">
+          <button type="button" onClick={onConfirm} disabled={pending} className={danger ? "btn-danger" : "btn-primary"}>
             {pending ? (
               <>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className="animate-spin" aria-hidden>

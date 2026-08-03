@@ -1,9 +1,9 @@
 import { createServerSupabase } from "@/lib/supabase/server";
-import { getCurrentWorkspace, createProject } from "../actions";
+import { getCurrentWorkspace } from "../actions";
 import { getProjectItems } from "../dashboard-data";
 import { plural, emailLocalPart } from "@/lib/format";
 import { ProjectGrid } from "@/components/app/ProjectGrid";
-import { SubmitButton } from "@/components/ui/SubmitButton";
+import { NewProjectDialog } from "@/components/app/NewProjectDialog";
 import { NotificationBell } from "@/components/app/NotificationBell";
 import { ProfileMenu } from "@/components/app/ProfileMenu";
 
@@ -24,10 +24,7 @@ export default async function ProjectsPage() {
           <p className="mt-1 text-sm text-muted">{ws?.name} · {plural(items.length, "project")}</p>
         </div>
         <div className="flex items-center gap-2">
-          <form action={async (formData: FormData) => { "use server"; await createProject(formData); }} className="flex items-center gap-2">
-            <input name="name" placeholder="New project…" required className="field h-10 w-44" />
-            <SubmitButton pendingLabel="Creating…" className="btn-primary btn-sm">New project</SubmitButton>
-          </form>
+          <NewProjectDialog />
           <NotificationBell />
           <ProfileMenu name={userName} email={userEmail} />
         </div>
@@ -36,7 +33,8 @@ export default async function ProjectsPage() {
       {items.length === 0 ? (
         <div className="rise-in card grid place-items-center px-6 py-16 text-center">
           <h3 className="text-lg font-semibold">No projects yet</h3>
-          <p className="mt-1 max-w-sm text-sm text-muted">Create a project above, upload a mockup, and start collecting pinned feedback.</p>
+          <p className="mt-1 mb-4 max-w-sm text-sm text-muted">Create your first project, upload a mockup, and start collecting pinned feedback.</p>
+          <NewProjectDialog />
         </div>
       ) : (
         <ProjectGrid items={items} />

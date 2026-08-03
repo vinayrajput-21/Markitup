@@ -29,6 +29,17 @@ export function MockupCardMenu({
   const [shareOpen, setShareOpen] = useState(false);
   const [moveOpen, setMoveOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
+
+  function doArchive() {
+    start(async () => {
+      const res = (await archiveMockup(mockupId)) as { error?: string } | undefined;
+      setArchiveOpen(false);
+      if (res?.error) toast.error(res.error);
+      else toast.success(`“${name}” archived`);
+      router.refresh();
+    });
+  }
 
   function doRename(next: string) {
     start(async () => {
@@ -43,15 +54,6 @@ export function MockupCardMenu({
   const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const { pending: uploading, upload } = useVersionUpload({ baseMockupId: mockupId, projectId });
-
-  function run(fn: () => Promise<unknown>, successMsg: string) {
-    start(async () => {
-      const res = (await fn()) as { error?: string } | undefined;
-      if (res?.error) toast.error(res.error);
-      else toast.success(successMsg);
-      router.refresh();
-    });
-  }
 
   function confirmDelete() {
     start(async () => {
@@ -95,7 +97,7 @@ export function MockupCardMenu({
                 Move to folder
               </MenuItem>
             )}
-            <MenuItem disabled={busy} onClick={() => { close(); run(() => archiveMockup(mockupId), `“${name}” archived`); }}>
+            <MenuItem disabled={busy} onClick={() => { close(); setArchiveOpen(true); }}>
               <ArchiveIcon /> Archive
             </MenuItem>
             <MenuItem danger disabled={busy} onClick={() => { close(); setConfirm(true); }}>
@@ -114,6 +116,17 @@ export function MockupCardMenu({
         onClose={() => setMoveOpen(false)}
       />
       <RenameDialog open={renameOpen} label="Rename file" initial={name} pending={busy} onSave={doRename} onClose={() => setRenameOpen(false)} />
+      <ConfirmDialog
+        open={archiveOpen}
+        variant="default"
+        title="Archive this file?"
+        message={<>Archiving <b className="text-ink">“{name}”</b> hides it from the project. You can restore it anytime from the Archive.</>}
+        confirmLabel="Archive"
+        pendingLabel="Archiving…"
+        pending={busy}
+        onConfirm={doArchive}
+        onCancel={() => setArchiveOpen(false)}
+      />
       <ConfirmDialog
         open={confirm}
         title="Delete this file?"

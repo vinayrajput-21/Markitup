@@ -11,10 +11,21 @@ import { useToast } from "@/components/ui/toast";
 export function ProjectCardMenu({ projectId, name }: { projectId: string; name: string }) {
   const [pending, start] = useTransition();
   const [confirm, setConfirm] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const router = useRouter();
   const toast = useToast();
+
+  function doArchive() {
+    start(async () => {
+      const res = (await archiveProject(projectId)) as { error?: string } | undefined;
+      setArchiveOpen(false);
+      if (res?.error) toast.error(res.error);
+      else toast.success(`“${name}” archived`);
+      router.refresh();
+    });
+  }
 
   function doRename(next: string) {
     start(async () => {
@@ -22,15 +33,6 @@ export function ProjectCardMenu({ projectId, name }: { projectId: string; name: 
       setRenameOpen(false);
       if (res?.error) toast.error(res.error);
       else toast.success("Project renamed");
-      router.refresh();
-    });
-  }
-
-  function run(fn: () => Promise<unknown>, successMsg: string) {
-    start(async () => {
-      const res = (await fn()) as { error?: string } | undefined;
-      if (res?.error) toast.error(res.error);
-      else toast.success(successMsg);
       router.refresh();
     });
   }
@@ -65,7 +67,7 @@ export function ProjectCardMenu({ projectId, name }: { projectId: string; name: 
             <MenuItem disabled={pending} onClick={() => { close(); setRenameOpen(true); }}>
               <PencilIcon /> Rename
             </MenuItem>
-            <MenuItem disabled={pending} onClick={() => { close(); run(() => archiveProject(projectId), `“${name}” archived`); }}>
+            <MenuItem disabled={pending} onClick={() => { close(); setArchiveOpen(true); }}>
               <ArchiveIcon /> Archive
             </MenuItem>
             <MenuItem danger disabled={pending} onClick={() => { close(); setConfirm(true); }}>
@@ -86,6 +88,17 @@ export function ProjectCardMenu({ projectId, name }: { projectId: string; name: 
         onCancel={() => setConfirm(false)}
       />
       <RenameDialog open={renameOpen} label="Rename project" initial={name} pending={pending} onSave={doRename} onClose={() => setRenameOpen(false)} />
+      <ConfirmDialog
+        open={archiveOpen}
+        variant="default"
+        title="Archive this project?"
+        message={<>Archiving <b className="text-ink">“{name}”</b> hides it from your projects. You can restore it anytime from the Archive.</>}
+        confirmLabel="Archive"
+        pendingLabel="Archiving…"
+        pending={pending}
+        onConfirm={doArchive}
+        onCancel={() => setArchiveOpen(false)}
+      />
     </>
   );
 }

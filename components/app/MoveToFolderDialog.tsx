@@ -39,7 +39,7 @@ export function MoveToFolderDialog({
 
   return (
     <div className="fixed inset-0 z-[300] grid place-items-center p-4" role="dialog" aria-modal="true">
-      <div className="fade-anim absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="fade-anim absolute inset-0 bg-black/30" onClick={onClose} />
       <div className="pop-anim relative z-10 w-full max-w-sm rounded-2xl border bg-surface-2 p-5 shadow-lg">
         <h2 className="truncate text-base font-bold text-ink">Move “{mockupName}”</h2>
         <p className="mt-1 text-xs text-muted">Choose a destination folder.</p>

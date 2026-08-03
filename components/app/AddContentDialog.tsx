@@ -31,7 +31,7 @@ export function AddContentDialog({ projectId, folderId }: { projectId: string; f
 
       {open && (
         <div className="fixed inset-0 z-[200] grid place-items-center p-4" role="dialog" aria-modal="true">
-          <div className="fade-anim absolute inset-0 bg-black/50" onClick={close} />
+          <div className="fade-anim absolute inset-0 bg-black/30" onClick={close} />
           <div className="pop-anim relative z-10 w-full max-w-lg overflow-hidden rounded-2xl border bg-surface-2 shadow-lg">
             <div className="flex items-center justify-between border-b px-5 py-4">
               <h2 className="text-lg font-bold text-ink">Add to this project</h2>
