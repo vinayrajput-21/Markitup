@@ -21,6 +21,58 @@ function one(x: any) {
   return Array.isArray(x) ? x[0] : x;
 }
 
+export type ProjectItem = {
+  id: string;
+  name: string;
+  coverUrl?: string;
+  updatedAt: string;
+  stats: ProjectStats;
+  viewers?: Viewer[];
+  lastViewedAt?: string | null;
+};
+
+// Everything the dashboard + Projects page need for the project grid, in one
+// call: cards with covers, stats and "who viewed", plus the recent-activity
+// feed and the stats map (for workspace totals).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getProjectItems(supabase: SupabaseClient<any>, workspaceId: string) {
+  const { data } = await supabase
+    .from("projects")
+    .select("id, name, created_at, mockups(id, file_path, created_at)")
+    .eq("workspace_id", workspaceId)
+    .is("archived_at", null)
+    .order("created_at", { ascending: false });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const projects = (data ?? []) as any[];
+  const ids = projects.map((p) => p.id);
+
+  const [stats, activity, covers] = await Promise.all([
+    getWorkspaceStats(supabase, ids),
+    getActivityData(supabase, ids),
+    signCovers(
+      supabase,
+      projects.map((p) => [...p.mockups].sort((a, b) => b.created_at.localeCompare(a.created_at))[0]?.file_path).filter(Boolean) as string[],
+    ),
+  ]);
+
+  const zero: ProjectStats = { mockups: 0, comments: 0, resolved: 0 };
+  const items: ProjectItem[] = projects.map((p) => {
+    const latest = [...p.mockups].sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+    const pv = activity.viewersByProject.get(p.id);
+    return {
+      id: p.id,
+      name: p.name,
+      coverUrl: latest ? covers.get(latest.file_path) : undefined,
+      updatedAt: p.created_at,
+      stats: stats.get(p.id) ?? zero,
+      viewers: pv?.viewers,
+      lastViewedAt: pv?.lastAt,
+    };
+  });
+
+  return { items, recent: activity.recent, stats };
+}
+
 // Who has viewed each project (distinct, latest first) + a workspace-wide
 // recent activity feed (views + comments), in a couple of queries.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
