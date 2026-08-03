@@ -1,12 +1,17 @@
 import { getFigmaConnection } from "@/app/app/figma-actions";
+import { getSlackConnection } from "@/app/app/slack-actions";
 import { FigmaConnect } from "@/components/app/FigmaConnect";
+import { SlackConnect } from "@/components/app/SlackConnect";
 import { ThemeSettings } from "@/components/app/ThemeSettings";
 import { RemindersSettings } from "@/components/app/RemindersSettings";
 import { getReminderData } from "@/app/app/reminder-actions";
 
 export default async function SettingsPage() {
-  const { connected } = await getFigmaConnection();
-  const { settings, schedules } = await getReminderData();
+  const [{ connected }, { connected: slackConnected }, { settings, schedules }] = await Promise.all([
+    getFigmaConnection(),
+    getSlackConnection(),
+    getReminderData(),
+  ]);
 
   return (
     <div className="mx-auto max-w-4xl px-8 py-8">
@@ -28,7 +33,10 @@ export default async function SettingsPage() {
       <RemindersSettings initial={settings} schedules={schedules} />
 
       <h2 className="mb-3 mt-9 text-xs font-semibold tracking-wider text-faint uppercase">Integrations</h2>
-      <FigmaConnect connected={connected} />
+      <div className="space-y-4">
+        <SlackConnect connected={slackConnected} />
+        <FigmaConnect connected={connected} />
+      </div>
     </div>
   );
 }

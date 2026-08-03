@@ -5,6 +5,7 @@ import { after } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email/send";
 import { commentNotification } from "@/lib/email/templates";
+import { workspaceSlackWebhook, postToSlack, commentSlackMessage } from "@/lib/slack";
 import { sanitizeCommentHtml, htmlToPlainText } from "@/lib/sanitize";
 
 export async function createPin(mockupId: string, x: number, y: number) {
@@ -105,6 +106,23 @@ export async function addComment(
           ]);
         }),
       );
+
+      // Slack (best-effort): post the comment to the workspace's channel.
+      if (workspaceId) {
+        const webhook = await workspaceSlackWebhook(supabase, workspaceId);
+        if (webhook) {
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://markitup-woad.vercel.app";
+          await postToSlack(
+            webhook,
+            commentSlackMessage({
+              commenter: commenterName,
+              mockupName: mk.name as string,
+              body: plain,
+              href: `${appUrl}/app/mockups/${mockupId}`,
+            }),
+          );
+        }
+      }
     } catch (e) {
       console.error("[comment] notification failed", e);
     }

@@ -8,5 +8,12 @@ export default defineConfig({
     globals: true,
     exclude: ["**/node_modules/**", "**/e2e/**"],
   },
-  resolve: { alias: { "@": __dirname } },
+  resolve: {
+    alias: {
+      "@": __dirname,
+      // Next.js server-guard packages have no browser build; stub them in tests.
+      "server-only": __dirname + "/test/empty.ts",
+      "client-only": __dirname + "/test/empty.ts",
+    },
+  },
 });
