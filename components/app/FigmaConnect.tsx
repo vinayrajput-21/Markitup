@@ -79,10 +79,6 @@ export function FigmaConnect({ connected }: { connected: boolean }) {
         {error && (
           <p className="mt-2 text-sm font-medium" style={{ color: "var(--destructive)" }}>{error}</p>
         )}
-        <p className="mt-2 text-xs text-faint">
-          Create one in Figma → Settings → Security → Personal access tokens. Stored
-          encrypted; only workspace owners/admins can set it.
-        </p>
       </div>
     </div>
   );

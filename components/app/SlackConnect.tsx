@@ -71,10 +71,6 @@ export function SlackConnect({ connected }: { connected: boolean }) {
           )}
         </div>
         {error && <p className="mt-2 text-sm font-medium" style={{ color: "var(--destructive)" }}>{error}</p>}
-        <p className="mt-2 text-xs text-faint">
-          In Slack: <span className="text-muted">Apps → Incoming Webhooks → Add to Slack</span>, pick a channel, and copy the
-          <span className="font-mono"> https://hooks.slack.com/…</span> URL. Stored encrypted; only owners/admins can set it.
-        </p>
       </div>
     </div>
   );

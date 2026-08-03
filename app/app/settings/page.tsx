@@ -5,6 +5,34 @@ import { SlackConnect } from "@/components/app/SlackConnect";
 import { ThemeSettings } from "@/components/app/ThemeSettings";
 import { RemindersSettings } from "@/components/app/RemindersSettings";
 import { getReminderData } from "@/app/app/reminder-actions";
+import { SettingsShell, type SettingsSection } from "@/components/app/SettingsShell";
+
+function SectionHead({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div className="mb-5">
+      <h2 className="text-lg font-bold text-ink">{title}</h2>
+      <p className="mt-1 max-w-2xl text-sm text-muted">{desc}</p>
+    </div>
+  );
+}
+
+const PaletteIcon = (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <path d="M12 3a9 9 0 1 0 0 18c1 0 1.6-.9 1.6-1.7 0-.5-.3-.9-.3-1.4 0-.6.5-1 1.1-1H16a5 5 0 0 0 5-5c0-4.4-4-8-9-8Z" stroke="currentColor" strokeWidth="1.7" />
+    <circle cx="7.5" cy="11" r="1.1" fill="currentColor" /><circle cx="12" cy="7.5" r="1.1" fill="currentColor" /><circle cx="16" cy="11" r="1.1" fill="currentColor" />
+  </svg>
+);
+const BellIcon = (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+    <path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+  </svg>
+);
+const PlugIcon = (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <path d="M9 2v6M15 2v6M6 8h12v3a6 6 0 0 1-12 0V8ZM12 17v5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 
 export default async function SettingsPage() {
   const [{ connected }, { connected: slackConnected }, { settings, schedules }] = await Promise.all([
@@ -13,30 +41,55 @@ export default async function SettingsPage() {
     getReminderData(),
   ]);
 
+  const sections: SettingsSection[] = [
+    {
+      key: "appearance",
+      label: "Appearance",
+      icon: PaletteIcon,
+      content: (
+        <>
+          <SectionHead title="Appearance" desc="Choose how MarkUp looks for you — light or dark, and an accent color." />
+          <ThemeSettings />
+        </>
+      ),
+    },
+    {
+      key: "reminders",
+      label: "Client reminders",
+      icon: BellIcon,
+      content: (
+        <>
+          <SectionHead
+            title="Client reminders"
+            desc="Automatically follow up with clients until they leave feedback. Reminders only apply to mockups you send with “Send to client”."
+          />
+          <RemindersSettings initial={settings} schedules={schedules} />
+        </>
+      ),
+    },
+    {
+      key: "integrations",
+      label: "Integrations",
+      icon: PlugIcon,
+      content: (
+        <>
+          <SectionHead title="Integrations" desc="Connect the tools you already use." />
+          <div className="space-y-4">
+            <SlackConnect connected={slackConnected} />
+            <FigmaConnect connected={connected} />
+          </div>
+        </>
+      ),
+    },
+  ];
+
   return (
-    <div className="mx-auto max-w-4xl px-8 py-8">
+    <div className="mx-auto max-w-5xl px-8 py-8">
       <div className="mb-7">
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-        <p className="mt-1 text-sm text-muted">Appearance, reminders, integrations and connections.</p>
+        <p className="mt-1 text-sm text-muted">Manage your workspace and preferences.</p>
       </div>
-
-      <h2 className="mb-3 text-xs font-semibold tracking-wider text-faint uppercase">Appearance</h2>
-      <ThemeSettings />
-
-      <div className="mt-9 mb-3">
-        <h2 className="text-xs font-semibold tracking-wider text-faint uppercase">Client reminders</h2>
-        <p className="mt-1 max-w-2xl text-sm text-muted">
-          Automatically follow up with clients until they leave feedback. Reminders only apply to mockups you send with
-          <span className="font-medium text-ink"> Send to client</span> — a link you copy yourself won&apos;t trigger them.
-        </p>
-      </div>
-      <RemindersSettings initial={settings} schedules={schedules} />
-
-      <h2 className="mb-3 mt-9 text-xs font-semibold tracking-wider text-faint uppercase">Integrations</h2>
-      <div className="space-y-4">
-        <SlackConnect connected={slackConnected} />
-        <FigmaConnect connected={connected} />
-      </div>
+      <SettingsShell sections={sections} />
     </div>
   );
 }
