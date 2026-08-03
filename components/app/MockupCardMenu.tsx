@@ -7,12 +7,26 @@ import { ShareDialog } from "@/components/viewer/ShareDialog";
 import { useVersionUpload } from "@/components/viewer/useVersionUpload";
 import { CardMenu, MenuItem, ShareIcon, ArchiveIcon, TrashIcon } from "@/components/app/CardMenu";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { MoveToFolderDialog, type FolderOption } from "@/components/app/MoveToFolderDialog";
 import { useToast } from "@/components/ui/toast";
 
-export function MockupCardMenu({ mockupId, projectId, name }: { mockupId: string; projectId: string; name: string }) {
+export function MockupCardMenu({
+  mockupId,
+  projectId,
+  name,
+  folders = [],
+  currentFolderId = null,
+}: {
+  mockupId: string;
+  projectId: string;
+  name: string;
+  folders?: FolderOption[];
+  currentFolderId?: string | null;
+}) {
   const [pending, start] = useTransition();
   const [confirm, setConfirm] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [moveOpen, setMoveOpen] = useState(false);
   const router = useRouter();
   const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -58,6 +72,14 @@ export function MockupCardMenu({ mockupId, projectId, name }: { mockupId: string
             <MenuItem disabled={busy} onClick={() => { close(); inputRef.current?.click(); }}>
               <UploadIcon /> {uploading ? "Uploading…" : "Upload new version"}
             </MenuItem>
+            {folders.length > 0 && (
+              <MenuItem disabled={busy} onClick={() => { close(); setMoveOpen(true); }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+                </svg>
+                Move to folder
+              </MenuItem>
+            )}
             <MenuItem disabled={busy} onClick={() => { close(); run(() => archiveMockup(mockupId), `“${name}” archived`); }}>
               <ArchiveIcon /> Archive
             </MenuItem>
@@ -68,6 +90,14 @@ export function MockupCardMenu({ mockupId, projectId, name }: { mockupId: string
         )}
       </CardMenu>
       <ShareDialog mockupId={mockupId} hideTrigger open={shareOpen} onOpenChange={setShareOpen} />
+      <MoveToFolderDialog
+        open={moveOpen}
+        mockupId={mockupId}
+        mockupName={name}
+        folders={folders}
+        currentFolderId={currentFolderId}
+        onClose={() => setMoveOpen(false)}
+      />
       <ConfirmDialog
         open={confirm}
         title="Delete this file?"

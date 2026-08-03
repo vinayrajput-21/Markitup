@@ -1,0 +1,122 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { timeAgo } from "@/lib/format";
+import { FolderCard } from "@/components/app/FolderCard";
+import { MockupCardMenu } from "@/components/app/MockupCardMenu";
+import type { FolderOption } from "@/components/app/MoveToFolderDialog";
+
+type Folder = { id: string; name: string };
+export type FileItem = { id: string; name: string; url: string | null; version: number; count: number; isNew: boolean; createdAt: string };
+
+const TABS = [
+  { key: "all", label: "All" },
+  { key: "folders", label: "Folders" },
+  { key: "markups", label: "Markups" },
+] as const;
+type Tab = (typeof TABS)[number]["key"];
+
+export function ProjectBrowser({
+  projectId,
+  currentFolderId,
+  folders,
+  files,
+  allFolders,
+}: {
+  projectId: string;
+  currentFolderId: string | null;
+  folders: Folder[];
+  files: FileItem[];
+  allFolders: FolderOption[];
+}) {
+  const [q, setQ] = useState("");
+  const [tab, setTab] = useState<Tab>("all");
+  const query = q.trim().toLowerCase();
+
+  const shownFolders = useMemo(() => folders.filter((f) => !query || f.name.toLowerCase().includes(query)), [folders, query]);
+  const shownFiles = useMemo(() => files.filter((f) => !query || f.name.toLowerCase().includes(query)), [files, query]);
+
+  const showFolders = tab !== "markups";
+  const showFiles = tab !== "folders";
+  const nothing = (!showFolders || shownFolders.length === 0) && (!showFiles || shownFiles.length === 0);
+
+  return (
+    <>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="inline-flex rounded-md border bg-surface p-0.5">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className="rounded px-3 py-1 text-xs font-semibold transition-colors"
+              style={tab === t.key ? { background: "var(--primary)", color: "var(--primary-foreground)" } : { color: "var(--muted-foreground)" }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <div className="relative">
+          <svg className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-faint" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.7" />
+            <path d="m20 20-3.2-3.2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+          </svg>
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search this folder…" className="field h-9 w-56 pl-8" />
+        </div>
+      </div>
+
+      {nothing ? (
+        <div className="rise-in card grid place-items-center px-6 py-14 text-center text-sm text-faint">
+          {query ? "Nothing matches your search." : "This folder is empty. Create a folder or upload a mockup above."}
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {showFolders && shownFolders.length > 0 && (
+            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {shownFolders.map((f) => (
+                <li key={f.id}>
+                  <FolderCard id={f.id} name={f.name} href={`/app/projects/${projectId}?folder=${f.id}`} />
+                </li>
+              ))}
+            </ul>
+          )}
+          {showFiles && shownFiles.length > 0 && (
+            <ul className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+              {shownFiles.map((m) => (
+                <li key={m.id} className="relative">
+                  <div className="absolute top-2 right-2 z-10">
+                    <MockupCardMenu mockupId={m.id} projectId={projectId} name={m.name} folders={allFolders} currentFolderId={currentFolderId} />
+                  </div>
+                  <Link href={`/app/mockups/${m.id}`} className="card card-hover block overflow-hidden">
+                    <div className="relative aspect-[4/3] w-full overflow-hidden border-b bg-canvas">
+                      {m.isNew && (
+                        <span className="absolute top-2 left-2 z-10 rounded-full px-2 py-0.5 text-[0.625rem] font-bold tracking-wide text-white uppercase" style={{ background: "var(--color-brand)" }}>
+                          New
+                        </span>
+                      )}
+                      {m.url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={m.url} alt="" className="h-full w-full object-cover object-top" />
+                      ) : (
+                        <div className="h-full w-full bg-brand-soft" />
+                      )}
+                    </div>
+                    <div className="p-3">
+                      <div className="truncate text-sm font-semibold text-ink">{m.name}</div>
+                      <div className="mt-0.5 flex items-center gap-1.5 text-xs text-faint">
+                        {m.count > 1 && (
+                          <span className="rounded bg-brand-soft px-1.5 py-0.5 text-[0.625rem] font-bold text-brand-ink">V{m.version}</span>
+                        )}
+                        <span className="font-mono">{timeAgo(m.createdAt)}</span>
+                      </div>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </>
+  );
+}

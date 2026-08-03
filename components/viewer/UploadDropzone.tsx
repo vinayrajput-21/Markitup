@@ -10,7 +10,7 @@ import {
   finalizeMockup,
 } from "@/app/app/projects/[projectId]/actions";
 
-export function UploadDropzone({ projectId }: { projectId: string }) {
+export function UploadDropzone({ projectId, folderId = null }: { projectId: string; folderId?: string | null }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -52,7 +52,7 @@ export function UploadDropzone({ projectId }: { projectId: string }) {
         if (upErr) return fail(upErr.message, iv);
 
         // 3. Record the mockup row (reference only, no bytes).
-        const res = await finalizeMockup(projectId, target.path!, file.name);
+        const res = await finalizeMockup(projectId, target.path!, file.name, folderId);
         clearInterval(iv);
         if (res.error) return fail(res.error);
         setProgress(100);

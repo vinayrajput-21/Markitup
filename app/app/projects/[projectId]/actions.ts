@@ -42,6 +42,7 @@ export async function finalizeMockup(
   projectId: string,
   path: string,
   name: string,
+  folderId?: string | null,
 ) {
   const supabase = await createServerSupabase();
   const { data: userData } = await supabase.auth.getUser();
@@ -59,6 +60,7 @@ export async function finalizeMockup(
     type: "image",
     file_path: path,
     created_by: userData.user.id,
+    folder_id: folderId ?? null,
   });
   if (insErr) return { error: insErr.message };
 

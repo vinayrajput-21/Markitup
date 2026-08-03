@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { importFigmaFrame } from "@/app/app/figma-actions";
 import { useToast } from "@/components/ui/toast";
 
-export function FigmaImport({ projectId }: { projectId: string }) {
+export function FigmaImport({ projectId, folderId = null }: { projectId: string; folderId?: string | null }) {
   const [url, setUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -18,7 +18,7 @@ export function FigmaImport({ projectId }: { projectId: string }) {
     setError(null);
     const id = toast.push({ title: "Importing from Figma…", variant: "loading" });
     start(async () => {
-      const r = await importFigmaFrame(projectId, url);
+      const r = await importFigmaFrame(projectId, url, folderId);
       if (r?.error) {
         setError(r.error);
         toast.update(id, { variant: "error", title: "Import failed", description: r.error, duration: 4000 });

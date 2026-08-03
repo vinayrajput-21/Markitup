@@ -105,7 +105,7 @@ async function renderToStorage(
   return {};
 }
 
-export async function importFigmaFrame(projectId: string, figmaUrl: string) {
+export async function importFigmaFrame(projectId: string, figmaUrl: string, folderId?: string | null) {
   const ref = parseFigmaUrl(figmaUrl);
   if (!ref) return { error: "That doesn't look like a Figma link." };
 
@@ -132,6 +132,7 @@ export async function importFigmaFrame(projectId: string, figmaUrl: string) {
     type: "figma",
     file_path: path,
     created_by: userData.user!.id,
+    folder_id: folderId ?? null,
     figma_file_key: ref.fileKey,
     figma_node_id: ref.nodeId,
     figma_embed_url: buildEmbedUrl(ref.fileKey, ref.nodeId),
