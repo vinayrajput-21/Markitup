@@ -2,17 +2,29 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { archiveProject, deleteProject } from "@/app/app/folders-actions";
-import { CardMenu, MenuItem, LinkIcon, CheckIcon, ArchiveIcon, TrashIcon } from "@/components/app/CardMenu";
+import { archiveProject, deleteProject, renameProject } from "@/app/app/folders-actions";
+import { CardMenu, MenuItem, LinkIcon, CheckIcon, ArchiveIcon, TrashIcon, PencilIcon } from "@/components/app/CardMenu";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { RenameDialog } from "@/components/ui/RenameDialog";
 import { useToast } from "@/components/ui/toast";
 
 export function ProjectCardMenu({ projectId, name }: { projectId: string; name: string }) {
   const [pending, start] = useTransition();
   const [confirm, setConfirm] = useState(false);
+  const [renameOpen, setRenameOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const router = useRouter();
   const toast = useToast();
+
+  function doRename(next: string) {
+    start(async () => {
+      const res = (await renameProject(projectId, next)) as { error?: string } | undefined;
+      setRenameOpen(false);
+      if (res?.error) toast.error(res.error);
+      else toast.success("Project renamed");
+      router.refresh();
+    });
+  }
 
   function run(fn: () => Promise<unknown>, successMsg: string) {
     start(async () => {
@@ -50,6 +62,9 @@ export function ProjectCardMenu({ projectId, name }: { projectId: string; name: 
             <MenuItem onClick={() => copyLink(close)}>
               {copied ? (<><CheckIcon /> Link copied</>) : (<><LinkIcon /> Copy project link</>)}
             </MenuItem>
+            <MenuItem disabled={pending} onClick={() => { close(); setRenameOpen(true); }}>
+              <PencilIcon /> Rename
+            </MenuItem>
             <MenuItem disabled={pending} onClick={() => { close(); run(() => archiveProject(projectId), `“${name}” archived`); }}>
               <ArchiveIcon /> Archive
             </MenuItem>
@@ -70,6 +85,7 @@ export function ProjectCardMenu({ projectId, name }: { projectId: string; name: 
         onConfirm={confirmDelete}
         onCancel={() => setConfirm(false)}
       />
+      <RenameDialog open={renameOpen} label="Rename project" initial={name} pending={pending} onSave={doRename} onClose={() => setRenameOpen(false)} />
     </>
   );
 }

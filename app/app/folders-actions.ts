@@ -27,6 +27,18 @@ export async function unarchiveProject(projectId: string) {
   return {};
 }
 
+export async function renameProject(projectId: string, name: string) {
+  const clean = name.trim();
+  if (!clean) return { error: "Enter a project name" };
+  const supabase = await createServerSupabase();
+  const { error } = await supabase.from("projects").update({ name: clean.slice(0, 100) }).eq("id", projectId);
+  if (error) return { error: error.message };
+  revalidatePath("/app");
+  revalidatePath("/app/projects");
+  revalidatePath(`/app/projects/${projectId}`);
+  return {};
+}
+
 export async function deleteProject(projectId: string) {
   const supabase = await createServerSupabase();
 

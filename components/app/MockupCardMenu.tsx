@@ -2,11 +2,12 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { archiveMockup, deleteMockup } from "@/app/app/projects/[projectId]/actions";
+import { archiveMockup, deleteMockup, renameMockup } from "@/app/app/projects/[projectId]/actions";
 import { ShareDialog } from "@/components/viewer/ShareDialog";
 import { useVersionUpload } from "@/components/viewer/useVersionUpload";
-import { CardMenu, MenuItem, ShareIcon, ArchiveIcon, TrashIcon } from "@/components/app/CardMenu";
+import { CardMenu, MenuItem, ShareIcon, ArchiveIcon, TrashIcon, PencilIcon } from "@/components/app/CardMenu";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { RenameDialog } from "@/components/ui/RenameDialog";
 import { MoveToFolderDialog, type FolderOption } from "@/components/app/MoveToFolderDialog";
 import { useToast } from "@/components/ui/toast";
 
@@ -27,6 +28,17 @@ export function MockupCardMenu({
   const [confirm, setConfirm] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [moveOpen, setMoveOpen] = useState(false);
+  const [renameOpen, setRenameOpen] = useState(false);
+
+  function doRename(next: string) {
+    start(async () => {
+      const res = (await renameMockup(mockupId, next)) as { error?: string } | undefined;
+      setRenameOpen(false);
+      if (res?.error) toast.error(res.error);
+      else toast.success("File renamed");
+      router.refresh();
+    });
+  }
   const router = useRouter();
   const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -69,6 +81,9 @@ export function MockupCardMenu({
             <MenuItem onClick={() => { close(); setShareOpen(true); }}>
               <ShareIcon /> Share
             </MenuItem>
+            <MenuItem disabled={busy} onClick={() => { close(); setRenameOpen(true); }}>
+              <PencilIcon /> Rename
+            </MenuItem>
             <MenuItem disabled={busy} onClick={() => { close(); inputRef.current?.click(); }}>
               <UploadIcon /> {uploading ? "Uploading…" : "Upload new version"}
             </MenuItem>
@@ -98,6 +113,7 @@ export function MockupCardMenu({
         currentFolderId={currentFolderId}
         onClose={() => setMoveOpen(false)}
       />
+      <RenameDialog open={renameOpen} label="Rename file" initial={name} pending={busy} onSave={doRename} onClose={() => setRenameOpen(false)} />
       <ConfirmDialog
         open={confirm}
         title="Delete this file?"

@@ -153,6 +153,21 @@ export async function unarchiveMockup(mockupId: string) {
   return {};
 }
 
+export async function renameMockup(mockupId: string, name: string) {
+  const clean = name.trim();
+  if (!clean) return { error: "Enter a name" };
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase
+    .from("mockups")
+    .update({ name: clean.slice(0, 120) })
+    .eq("id", mockupId)
+    .select("project_id")
+    .maybeSingle();
+  if (error) return { error: error.message };
+  if (data?.project_id) revalidatePath(`/app/projects/${data.project_id}`);
+  return {};
+}
+
 export async function deleteMockup(mockupId: string) {
   const supabase = await createServerSupabase();
 
