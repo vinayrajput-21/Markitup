@@ -1,7 +1,116 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { htmlToPlainText } from "@/lib/sanitize";
 
 export type ProjectStats = { mockups: number; comments: number; resolved: number };
+
+export type Viewer = { name: string; email: string };
+export type ProjectViewers = { viewers: Viewer[]; lastAt: string | null };
+export type Activity = {
+  kind: "view" | "comment";
+  actor: string;
+  email: string;
+  mockupId: string;
+  mockupName: string;
+  at: string;
+  snippet?: string;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function one(x: any) {
+  return Array.isArray(x) ? x[0] : x;
+}
+
+// Who has viewed each project (distinct, latest first) + a workspace-wide
+// recent activity feed (views + comments), in a couple of queries.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getActivityData(supabase: SupabaseClient<any>, projectIds: string[]) {
+  const viewersByProject = new Map<string, ProjectViewers>();
+  let recent: Activity[] = [];
+  if (!projectIds.length) return { viewersByProject, recent };
+
+  const { data: mks } = await supabase.from("mockups").select("id, name, project_id").in("project_id", projectIds);
+  const mkList = (mks ?? []) as { id: string; name: string; project_id: string }[];
+  if (!mkList.length) return { viewersByProject, recent };
+  const mkMap = new Map(mkList.map((m) => [m.id, m]));
+  const mkIds = mkList.map((m) => m.id);
+
+  const [{ data: views }, { data: comments }] = await Promise.all([
+    supabase
+      .from("mockup_views")
+      .select("viewed_at, mockup_id, profiles:user_id(id, name, email)")
+      .in("mockup_id", mkIds)
+      .order("viewed_at", { ascending: false })
+      .limit(200),
+    supabase
+      .from("comments")
+      .select("created_at, body, pins!inner(mockup_id), profiles:author_id(name, email)")
+      .in("pins.mockup_id", mkIds)
+      .order("created_at", { ascending: false })
+      .limit(25),
+  ]);
+
+  // distinct viewers per project
+  const seen = new Map<string, Set<string>>();
+  for (const v of views ?? []) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const p = one((v as any).profiles);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mk = mkMap.get((v as any).mockup_id);
+    if (!mk || !p?.id) continue;
+    let pv = viewersByProject.get(mk.project_id);
+    if (!pv) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      pv = { viewers: [], lastAt: (v as any).viewed_at };
+      viewersByProject.set(mk.project_id, pv);
+      seen.set(mk.project_id, new Set());
+    }
+    const s = seen.get(mk.project_id)!;
+    if (!s.has(p.id) && pv.viewers.length < 6) {
+      s.add(p.id);
+      pv.viewers.push({ name: p.name || p.email || "Someone", email: p.email ?? "" });
+    }
+  }
+
+  // merge recent views + comments
+  const viewItems: Activity[] = (views ?? []).slice(0, 15).map((v) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const p = one((v as any).profiles);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mk = mkMap.get((v as any).mockup_id);
+    return {
+      kind: "view" as const,
+      actor: p?.name || p?.email || "Someone",
+      email: p?.email ?? "",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mockupId: (v as any).mockup_id,
+      mockupName: mk?.name ?? "a mockup",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      at: (v as any).viewed_at,
+    };
+  });
+  const commentItems: Activity[] = (comments ?? []).map((c) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const p = one((c as any).profiles);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mkId = one((c as any).pins)?.mockup_id as string | undefined;
+    const mk = mkId ? mkMap.get(mkId) : undefined;
+    return {
+      kind: "comment" as const,
+      actor: p?.name || p?.email || "Someone",
+      email: p?.email ?? "",
+      mockupId: mkId ?? "",
+      mockupName: mk?.name ?? "a mockup",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      at: (c as any).created_at,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      snippet: htmlToPlainText((c as any).body ?? "").slice(0, 90),
+    };
+  });
+  recent = [...viewItems, ...commentItems].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 8);
+
+  return { viewersByProject, recent };
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getWorkspaceStats(supabase: SupabaseClient<any>, projectIds: string[]) {

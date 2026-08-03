@@ -155,6 +155,7 @@ export function MockupViewer({
   const [query, setQuery] = useState("");
   const [zoom, setZoom] = useState<Zoom>({ mode: "fit-width", pct: 0 });
   const [zoomOpen, setZoomOpen] = useState(false);
+  const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [draft, setDraft] = useState<{ x: number; y: number; pinId?: string; number?: number } | null>(null);
   const [savingPin, setSavingPin] = useState(false);
   const [pinError, setPinError] = useState<string | null>(null);
@@ -216,13 +217,15 @@ export function MockupViewer({
     const pad = 48; // matches p-6 on both sides
     const availW = Math.max(0, box.w - pad);
     const availH = Math.max(0, box.h - pad);
+    // Mobile preview: pin the design to a phone-ish width regardless of zoom.
+    if (device === "mobile") return Math.min(390, availW);
     if (zoom.mode === "fit-width") return availW;
     if (zoom.mode === "fit-window") {
       const scale = Math.min(availW / nat.w, availH / nat.h);
       return nat.w * scale;
     }
     return nat.w * (zoom.pct / 100);
-  }, [nat, box, zoom]);
+  }, [nat, box, zoom, device]);
 
   const shownPct = nat.w && displayW ? Math.round((displayW / nat.w) * 100) : null;
   const zoomLabel =
@@ -436,6 +439,33 @@ export function MockupViewer({
 
         {/* zoom + actions + page-supplied actions (right) */}
         <div className="flex flex-1 items-center justify-end gap-1">
+          {/* device preview toggle */}
+          <div className="mr-1 hidden overflow-hidden rounded-md border md:flex">
+            <button
+              onClick={() => setDevice("desktop")}
+              title="Desktop view"
+              aria-label="Desktop view"
+              className="grid h-7 w-7 place-items-center transition-colors"
+              style={device === "desktop" ? { background: "var(--primary)", color: "var(--primary-foreground)" } : { color: "var(--muted-foreground)" }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <rect x="3" y="4" width="18" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
+                <path d="M9 20h6M12 16v4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setDevice("mobile")}
+              title="Mobile view"
+              aria-label="Mobile view"
+              className="grid h-7 w-7 place-items-center border-l transition-colors"
+              style={device === "mobile" ? { background: "var(--primary)", color: "var(--primary-foreground)" } : { color: "var(--muted-foreground)" }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <rect x="7" y="3" width="10" height="18" rx="2" stroke="currentColor" strokeWidth="1.7" />
+                <path d="M11 18h2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
           <span className="mr-1 hidden font-mono text-xs text-faint lg:inline">{shownPct ? `${shownPct}%` : ""}</span>
           <div className="relative">
             <button onClick={() => setZoomOpen((o) => !o)} className="btn-secondary btn-sm gap-1.5">

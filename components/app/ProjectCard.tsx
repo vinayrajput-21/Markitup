@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { timeAgo } from "@/lib/format";
+import { timeAgo, plural } from "@/lib/format";
+import { Avatar } from "@/components/app/AppSidebar";
 
 function Cover({ url, name }: { url?: string; name: string }) {
   if (url) {
@@ -29,6 +30,8 @@ export function ProjectCard({
   updatedAt,
   stats,
   menu,
+  viewers,
+  lastViewedAt,
 }: {
   id: string;
   name: string;
@@ -36,6 +39,8 @@ export function ProjectCard({
   updatedAt: string;
   stats: { mockups: number; comments: number; resolved: number };
   menu?: React.ReactNode;
+  viewers?: { name: string; email: string }[];
+  lastViewedAt?: string | null;
 }) {
   return (
     <div className="card card-hover group relative overflow-hidden">
@@ -64,6 +69,32 @@ export function ProjectCard({
               </svg>
             </Stat>
             <span className="ml-auto font-mono">{timeAgo(updatedAt)}</span>
+          </div>
+
+          <div className="mt-3 flex min-h-6 items-center gap-2 border-t pt-3">
+            {viewers && viewers.length > 0 ? (
+              <>
+                <div className="flex -space-x-2">
+                  {viewers.slice(0, 4).map((v, i) => (
+                    <span key={i} className="rounded-full ring-2 ring-[color:var(--color-surface)]">
+                      <Avatar name={v.name} email={v.email} size={22} />
+                    </span>
+                  ))}
+                </div>
+                <span className="text-xs text-faint">
+                  {plural(viewers.length, "viewer")}
+                  {lastViewedAt ? ` · seen ${timeAgo(lastViewedAt)}` : ""}
+                </span>
+              </>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 text-xs text-faint">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" stroke="currentColor" strokeWidth="1.6" />
+                  <circle cx="12" cy="12" r="2.6" stroke="currentColor" strokeWidth="1.6" />
+                </svg>
+                No views yet
+              </span>
+            )}
           </div>
         </div>
       </Link>
