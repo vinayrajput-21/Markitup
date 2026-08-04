@@ -6,9 +6,11 @@ import { ThemeSettings } from "@/components/app/ThemeSettings";
 import { RemindersSettings } from "@/components/app/RemindersSettings";
 import { getReminderData } from "@/app/app/reminder-actions";
 import { getTeamData } from "@/app/app/team-actions";
+import { getEmailTemplates } from "@/app/app/email-actions";
 import { TeamRoster } from "@/components/app/TeamRoster";
 import { TeamInviteDialog } from "@/components/app/TeamInviteDialog";
 import { RoleMatrix } from "@/components/app/RoleMatrix";
+import { TransactionalEmailSettings } from "@/components/app/TransactionalEmailSettings";
 import { SettingsShell, type SettingsSection } from "@/components/app/SettingsShell";
 
 function SectionHead({ title, desc }: { title: string; desc: string }) {
@@ -44,13 +46,20 @@ const TeamIcon = (
     <path d="M16 5.2a3.2 3.2 0 0 1 0 5.6M17 19a5.5 5.5 0 0 0-2.2-4.4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
   </svg>
 );
+const MailIcon = (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.7" />
+    <path d="m4 7 8 6 8-6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 
 export default async function SettingsPage() {
-  const [{ connected }, { connected: slackConnected }, { settings, schedules }, teamData] = await Promise.all([
+  const [{ connected }, { connected: slackConnected }, { settings, schedules }, teamData, emailTemplates] = await Promise.all([
     getFigmaConnection(),
     getSlackConnection(),
     getReminderData(),
     getTeamData(),
+    getEmailTemplates(),
   ]);
 
   const sections: SettingsSection[] = [
@@ -83,6 +92,20 @@ export default async function SettingsPage() {
           </div>
           <TeamRoster data={teamData} />
           <RoleMatrix />
+        </>
+      ),
+    },
+    {
+      key: "email",
+      label: "Transactional email",
+      icon: MailIcon,
+      content: (
+        <>
+          <SectionHead
+            title="Transactional email"
+            desc="The emails MarkUp sends on your behalf. Placeholders fill in automatically at send time."
+          />
+          <TransactionalEmailSettings initial={emailTemplates.templates} canManage={emailTemplates.canManage} />
         </>
       ),
     },

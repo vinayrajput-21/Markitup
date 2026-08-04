@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email/send";
-import { invitation } from "@/lib/email/templates";
+import { renderWorkspaceEmail } from "@/lib/email/workspace-templates";
 import { getCurrentWorkspace } from "@/app/app/actions";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://markitup-woad.vercel.app";
 
 // Workspace roles map onto the three team tiers shown in the UI:
 //   owner / admin  → "Admin"     manage everything, incl. settings & the team
@@ -93,6 +95,7 @@ export async function inviteTeamMember(email: string, role: "admin" | "member") 
   const clean = email.trim().toLowerCase();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clean)) return { error: "Enter a valid email address" };
   const safeRole: WorkspaceRole = role === "admin" ? "admin" : "member";
+  const roleLabel = safeRole === "admin" ? "Admin" : "Manager";
 
   const supabase = await createServerSupabase();
   const ws = await getCurrentWorkspace();
@@ -121,8 +124,14 @@ export async function inviteTeamMember(email: string, role: "admin" | "member") 
       .insert({ workspace_id: ws.id, user_id: profileId, role: safeRole });
     if (error) return { error: error.message };
     try {
-      const tpl = invitation({ inviterName, workspaceName: ws.name, isNewUser: false });
-      await sendEmail({ to: clean, ...tpl });
+      const content = await renderWorkspaceEmail(
+        supabase,
+        ws.id,
+        "team_invite",
+        { inviter: inviterName, role: roleLabel, workspace: ws.name },
+        `${APP_URL}/login`,
+      );
+      await sendEmail({ to: clean, ...content });
       await supabase.rpc("create_notification", {
         p_user_id: profileId,
         p_actor_id: me.id,
@@ -143,8 +152,14 @@ export async function inviteTeamMember(email: string, role: "admin" | "member") 
     .insert({ workspace_id: ws.id, email: clean, role: safeRole, invited_by: me.id });
   if (error) return { error: error.message };
   try {
-    const tpl = invitation({ inviterName, workspaceName: ws.name, isNewUser: true });
-    await sendEmail({ to: clean, ...tpl });
+    const content = await renderWorkspaceEmail(
+      supabase,
+      ws.id,
+      "team_invite",
+      { inviter: inviterName, role: roleLabel, workspace: ws.name },
+      `${APP_URL}/signup`,
+    );
+    await sendEmail({ to: clean, ...content });
   } catch (e) {
     console.error("[team invite] email failed", e);
   }

@@ -86,6 +86,18 @@ export function neverRespondedEmail(opts: { pageName: string; clientEmail: strin
   return { subject, html, text };
 }
 
+// Generic renderer for a workspace-customized template. Subject/message are
+// already placeholder-filled by the caller.
+export function templatedEmail(opts: { subject: string; message: string; buttonLabel: string; href: string }) {
+  const html = layout(
+    opts.subject,
+    `<p style="margin:0;font-size:14px;white-space:pre-line">${esc(opts.message)}</p>`,
+    { label: opts.buttonLabel || "Open MarkUp", href: opts.href },
+  );
+  const text = `${opts.message}\n\n${opts.href}`;
+  return { subject: opts.subject, html, text };
+}
+
 export function welcome(opts: { name: string }) {
   const href = `${APP_URL}/app`;
   const subject = "Welcome to MarkUp";

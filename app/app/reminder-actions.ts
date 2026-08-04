@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getCurrentWorkspace } from "./actions";
 import { sendEmail } from "@/lib/email/send";
-import { clientShareEmail, reminderEmail } from "@/lib/email/templates";
+import { reminderEmail } from "@/lib/email/templates";
+import { renderWorkspaceEmail } from "@/lib/email/workspace-templates";
 import { fillTemplate, REMINDER_DEFAULTS, type ReminderSettings } from "@/lib/reminders";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://markitup-woad.vercel.app";
@@ -113,6 +114,7 @@ export async function sendToClient(mockupId: string, email: string, name?: strin
   const proj = (mk as any)?.projects;
   const workspaceId = proj?.workspace_id as string | undefined;
   const pageName = (mk?.name as string) ?? "your design";
+  const projectName = (proj?.name as string) ?? "";
   if (!mk || !workspaceId) return { error: "File not found" };
 
   // get-or-create a public share link so the client can open it without an account
@@ -132,8 +134,15 @@ export async function sendToClient(mockupId: string, email: string, name?: strin
   const href = `${APP_URL}/s/${token}`;
   const senderName = (userData.user?.user_metadata?.name as string) || userData.user?.email || "Your designer";
 
-  // initial share email
-  await sendEmail({ to: clean, ...clientShareEmail({ sender: senderName, pageName, href }) });
+  // initial share email — uses the workspace's editable "Client invite" template
+  const clientEmail = await renderWorkspaceEmail(
+    supabase,
+    workspaceId,
+    "client_invite",
+    { sender: senderName, page_name: pageName, type: "file", project: projectName },
+    href,
+  );
+  await sendEmail({ to: clean, ...clientEmail });
 
   // schedule follow-ups only when reminders are enabled for this workspace
   const { data: st } = await supabase
