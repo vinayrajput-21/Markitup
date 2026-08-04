@@ -43,17 +43,6 @@ export default async function SettingsPage() {
 
   const sections: SettingsSection[] = [
     {
-      key: "appearance",
-      label: "Appearance",
-      icon: PaletteIcon,
-      content: (
-        <>
-          <SectionHead title="Appearance" desc="Choose how MarkUp looks for you — light or dark, and an accent color." />
-          <ThemeSettings />
-        </>
-      ),
-    },
-    {
       key: "reminders",
       label: "Client reminders",
       icon: BellIcon,
@@ -78,6 +67,17 @@ export default async function SettingsPage() {
             <SlackConnect connected={slackConnected} />
             <FigmaConnect connected={connected} />
           </div>
+        </>
+      ),
+    },
+    {
+      key: "appearance",
+      label: "Appearance",
+      icon: PaletteIcon,
+      content: (
+        <>
+          <SectionHead title="Appearance" desc="Choose how MarkUp looks for you — light or dark, and an accent color." />
+          <ThemeSettings />
         </>
       ),
     },
