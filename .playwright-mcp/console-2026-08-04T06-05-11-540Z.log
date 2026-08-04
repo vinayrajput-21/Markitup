@@ -1,5 +1,0 @@
-[   14069ms] Uncaught (in promise) Error: Timed out.
-    at <anonymous> (https://www.gstatic.com/recaptcha/releases/w_Yb7dGGXaKesJ7BMiqFJqBG/recaptcha__en.js:691:60)
-    at Q (https://www.gstatic.com/recaptcha/releases/w_Yb7dGGXaKesJ7BMiqFJqBG/recaptcha__en.js:249:213)
-[   16833ms] [ERROR] CAPTCHA load failed: TypeError: Cannot set properties of null (setting 'innerHTML')
-    at https://www.edupluscampus.com/reCAPTCHA/captcha.js:9:63 @ https://www.edupluscampus.com/reCAPTCHA/captcha.js:17

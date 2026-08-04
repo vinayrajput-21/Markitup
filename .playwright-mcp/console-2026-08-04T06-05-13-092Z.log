@@ -1,7 +1,0 @@
-[     642ms] [LOG] JQMIGRATE: Migrate is installed, version 3.4.1 @ https://www.eklavvya.com/blog/wp-includes/js/jquery/jquery-migrate.min.js:1
-[    3019ms] [ERROR] Refused to apply style from 'https://www.eklavvya.com/blog/onscreen-evaluation-paper-checking/wp-content/themes/Divi/includes/builder/styles/magnific_popup.css' because its MIME type ('text/html') is not a supported stylesheet MIME type, and strict MIME checking is enabled. @ https://www.eklavvya.com/blog/onscreen-evaluation-paper-checking/:0
-[    3029ms] [WARNING] Allow attribute will take precedence over 'allowfullscreen'. @ https://www.eklavvya.com/blog/onscreen-evaluation-paper-checking/:102
-[   11408ms] Uncaught (in promise) Error: IndexedDb Database Error
-    at FRc (https://static.canva.com/web/14daedf6143d0b15.js:6:307)
-    at lz (https://static.canva.com/web/14daedf6143d0b15.js:33:1105)
-[   11909ms] [WARNING] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently @ https://static.canva.com/web/7a0fd0dd4016a2c5.js:1457

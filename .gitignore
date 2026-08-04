@@ -48,3 +48,4 @@ next-env.d.ts
 
 # superpowers scratch (progress tracking, not part of the shipped project)
 .superpowers/
+.playwright-mcp/
