@@ -80,7 +80,7 @@ export function ProjectCardMenu({ projectId, name }: { projectId: string; name: 
       <ConfirmDialog
         open={confirm}
         title="Delete this project?"
-        message={<>This permanently deletes <b className="text-ink">“{name}”</b> and every mockup, version and comment inside it. This action cannot be undone.</>}
+        message={<>This permanently deletes <b className="text-ink">“{name}”</b> and every file, version and comment inside it. This action cannot be undone.</>}
         confirmLabel="Delete project"
         pendingLabel="Deleting…"
         pending={pending}

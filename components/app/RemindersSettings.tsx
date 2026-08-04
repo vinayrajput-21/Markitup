@@ -6,7 +6,7 @@ import { saveReminderSettings, sendTestReminder, type ScheduleRow } from "@/app/
 import { useToast } from "@/components/ui/toast";
 import { timeAgo } from "@/lib/format";
 
-const SAMPLE = { page_name: "Homepage mockup", sender: "Sajad Sheikh", type: "mockup", project: "Chorus" };
+const SAMPLE = { page_name: "Homepage file", sender: "Sajad Sheikh", type: "file", project: "Chorus" };
 
 function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
@@ -130,7 +130,7 @@ export function RemindersSettings({ initial, schedules }: { initial: ReminderSet
             <button type="button" onClick={() => set("max_count", Math.min(10, s.max_count + 1))} className="grid h-8 w-8 place-items-center text-muted hover:text-ink">+</button>
           </div>
         </Row>
-        <Row title="Stop when the client leaves feedback" desc="Any comment on the mockup cancels its remaining reminders.">
+        <Row title="Stop when the client leaves feedback" desc="Any comment on the file cancels its remaining reminders.">
           <Toggle on={s.stop_on_feedback} onChange={(v) => set("stop_on_feedback", v)} />
         </Row>
         <Row title="Weekdays only" desc="Never send on Saturdays or Sundays.">
@@ -154,7 +154,7 @@ export function RemindersSettings({ initial, schedules }: { initial: ReminderSet
         <h3 className="mb-2 text-xs font-semibold tracking-wider text-faint uppercase">Scheduled reminders</h3>
         {schedules.length === 0 ? (
           <div className="rounded-xl border bg-surface px-4 py-8 text-center text-sm text-faint">
-            No reminders scheduled yet. Use <span className="font-semibold text-muted">Send to client</span> on a mockup to start one.
+            No reminders scheduled yet. Use <span className="font-semibold text-muted">Send to client</span> on a file to start one.
           </div>
         ) : (
           <ul className="divide-y overflow-hidden rounded-xl border bg-surface">
@@ -163,7 +163,7 @@ export function RemindersSettings({ initial, schedules }: { initial: ReminderSet
                 <div className="min-w-0">
                   <div className="truncate text-sm font-medium text-ink">{r.recipientName || r.recipientEmail}</div>
                   <div className="truncate text-xs text-faint">
-                    {r.mockupName ?? "mockup"} · {r.sentCount} sent
+                    {r.mockupName ?? "file"} · {r.sentCount} sent
                     {r.status === "active" && ` · next ${timeAgo(r.nextDueAt)}`}
                   </div>
                 </div>

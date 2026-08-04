@@ -8,7 +8,7 @@ export function RecentActivity({ items }: { items: Activity[] }) {
     <aside className="rounded-xl border bg-surface p-4">
       <h2 className="mb-1 border-b pb-3 text-sm font-bold text-ink">Recent activity</h2>
       {items.length === 0 ? (
-        <p className="pt-3 text-sm text-faint">No activity yet. Send a mockup to a client to start collecting views and feedback.</p>
+        <p className="pt-3 text-sm text-faint">No activity yet. Send a file to a client to start collecting views and feedback.</p>
       ) : (
         <ul className="divide-y">
           {items.slice(0, 8).map((a, i) => (

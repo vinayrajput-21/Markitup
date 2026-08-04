@@ -132,7 +132,7 @@ export function ShareDialog({
           <div className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} />
           <div className="relative z-10 w-full max-w-lg rounded-xl border bg-surface-2 shadow-lg">
             <div className="flex items-center justify-between border-b px-5 py-4">
-              <h2 className="text-lg font-bold text-ink">Share this MarkUp</h2>
+              <h2 className="text-lg font-bold text-ink">Share this file</h2>
               <button
                 onClick={() => setOpen(false)}
                 className="grid h-8 w-8 place-items-center rounded-md text-faint transition-colors hover:bg-[color:var(--accent)] hover:text-ink"

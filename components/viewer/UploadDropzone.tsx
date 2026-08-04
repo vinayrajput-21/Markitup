@@ -56,7 +56,7 @@ export function UploadDropzone({ projectId, folderId = null, onDone }: { project
         clearInterval(iv);
         if (res.error) return fail(res.error);
         setProgress(100);
-        toast.success("Mockup uploaded", { description: file.name });
+        toast.success("File uploaded", { description: file.name });
         setTimeout(() => setProgress(0), 500);
         router.refresh();
         onDone?.();
@@ -114,7 +114,7 @@ export function UploadDropzone({ projectId, folderId = null, onDone }: { project
         </span>
         <span>
           <span className="block text-sm font-semibold text-ink">
-            {pending ? "Uploading…" : "Drop a mockup, or click to browse"}
+            {pending ? "Uploading…" : "Drop a file, or click to browse"}
           </span>
           {pending ? (
             <span className="mx-auto mt-2 block h-1.5 w-40 overflow-hidden rounded-full" style={{ background: "var(--color-brand-soft)" }}>

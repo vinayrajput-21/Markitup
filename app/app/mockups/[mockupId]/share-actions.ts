@@ -38,7 +38,7 @@ async function mockupContext(mockupId: string) {
 
 export async function getShareInfo(mockupId: string): Promise<ShareInfo | { error: string }> {
   const { supabase, projectId, workspaceName } = await mockupContext(mockupId);
-  if (!projectId) return { error: "Mockup not found" };
+  if (!projectId) return { error: "File not found" };
 
   // get-or-create the mockup's share link
   let { data: link } = await supabase
@@ -100,7 +100,7 @@ export async function inviteToProject(mockupId: string, email: string) {
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clean)) return { error: "Enter a valid email address" };
 
   const { supabase, projectId, workspaceId, workspaceName } = await mockupContext(mockupId);
-  if (!projectId || !workspaceId) return { error: "Mockup not found" };
+  if (!projectId || !workspaceId) return { error: "File not found" };
   const { data: userData } = await supabase.auth.getUser();
   const inviterName = (userData.user?.user_metadata?.name as string) || "A teammate";
 

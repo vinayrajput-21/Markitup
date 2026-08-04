@@ -63,7 +63,7 @@ export default async function ComparePage({
           <h1 className="truncate text-sm font-bold text-ink">Compare · {project.name}</h1>
         </header>
         <div className="grid min-h-0 flex-1 place-items-center px-6 text-center text-sm text-faint">
-          Add at least two mockups to this project to compare them side by side.
+          Add at least two files to this project to compare them side by side.
         </div>
       </div>
     );

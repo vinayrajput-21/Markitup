@@ -22,7 +22,7 @@ export function FolderCard({ id, name, href }: { id: string; name: string; href:
       const r = await renameFolder(id, value);
       setRenaming(false);
       if (r?.error) toast.error(r.error);
-      else { toast.success("Folder renamed"); router.refresh(); }
+      else { toast.success("Project renamed"); router.refresh(); }
     });
   }
   function doDelete() {
@@ -55,12 +55,12 @@ export function FolderCard({ id, name, href }: { id: string; name: string; href:
         ) : (
           <Link href={href} className="min-w-0 flex-1">
             <span className="block truncate font-semibold text-ink">{name}</span>
-            <span className="text-xs text-faint">Folder</span>
+            <span className="text-xs text-faint">Project</span>
           </Link>
         )}
 
         <div className="flex shrink-0 items-center gap-0.5">
-          <CardMenu label="Folder options">
+          <CardMenu label="Project options">
             {(close) => (
               <>
                 <MenuItem onClick={() => { close(); setValue(name); setRenaming(true); }}>
@@ -81,9 +81,9 @@ export function FolderCard({ id, name, href }: { id: string; name: string; href:
 
       <ConfirmDialog
         open={confirm}
-        title="Delete this folder?"
-        message={<>Deleting <b className="text-ink">“{name}”</b> removes the folder and any sub-folders. Files inside are moved to the project root — nothing is lost.</>}
-        confirmLabel="Delete folder"
+        title="Delete this project?"
+        message={<>Deleting <b className="text-ink">“{name}”</b> removes the project and any sub-projects. Files inside are moved to the project root — nothing is lost.</>}
+        confirmLabel="Delete project"
         pendingLabel="Deleting…"
         pending={pending}
         onConfirm={doDelete}

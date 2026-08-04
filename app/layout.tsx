@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "MarkUp — visual feedback for Apexure",
   description:
-    "Upload mockups and collect pinned, contextual feedback from clients directly on the design.",
+    "Upload files and collect pinned, contextual feedback from clients directly on the design.",
 };
 
 export default function RootLayout({

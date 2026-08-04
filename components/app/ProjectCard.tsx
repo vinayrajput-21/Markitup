@@ -52,7 +52,7 @@ export function ProjectCard({
         <div className="p-4">
           <h3 className="truncate font-semibold text-ink">{name}</h3>
           <div className="mt-2 flex items-center gap-3 text-xs text-faint">
-            <Stat label="mockups" value={stats.mockups}>
+            <Stat label="files" value={stats.mockups}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="1.7" />
                 <path d="m4 17 5-4 4 3 3-2 4 3" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />

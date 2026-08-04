@@ -68,7 +68,7 @@ export function AuthShell({
             Feedback that lands exactly where it matters.
           </h2>
           <p className="mt-3 max-w-md text-base text-white/80">
-            Upload a mockup, share a link, and let clients pin comments right on
+            Upload a file, share a link, and let clients pin comments right on
             the design. No more guessing which button they meant.
           </p>
         </div>

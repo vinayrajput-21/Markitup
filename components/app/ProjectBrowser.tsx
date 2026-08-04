@@ -5,6 +5,8 @@ import Link from "next/link";
 import { timeAgo } from "@/lib/format";
 import { FolderCard } from "@/components/app/FolderCard";
 import { MockupCardMenu } from "@/components/app/MockupCardMenu";
+import { UploadDropzone } from "@/components/viewer/UploadDropzone";
+import { FigmaImport } from "@/components/viewer/FigmaImport";
 import type { FolderOption } from "@/components/app/MoveToFolderDialog";
 
 type Folder = { id: string; name: string };
@@ -12,8 +14,8 @@ export type FileItem = { id: string; name: string; url: string | null; version: 
 
 const TABS = [
   { key: "all", label: "All" },
-  { key: "folders", label: "Folders" },
-  { key: "markups", label: "Markups" },
+  { key: "folders", label: "Projects" },
+  { key: "markups", label: "Files" },
 ] as const;
 type Tab = (typeof TABS)[number]["key"];
 
@@ -61,14 +63,24 @@ export function ProjectBrowser({
             <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.7" />
             <path d="m20 20-3.2-3.2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
           </svg>
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search this folder…" className="field h-9 w-56 pl-8" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search this project…" className="field h-9 w-56 pl-8" />
         </div>
       </div>
 
-      {nothing ? (
-        <div className="rise-in card grid place-items-center px-6 py-14 text-center text-sm text-faint">
-          {query ? "Nothing matches your search." : "This folder is empty. Create a folder or upload a mockup above."}
+      {/* Add files — always open, no popup. Drop an image (left) or paste a Figma link (right). */}
+      {!query && (
+        <div className="mb-6 grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
+          <UploadDropzone projectId={projectId} folderId={currentFolderId} />
+          <FigmaImport projectId={projectId} folderId={currentFolderId} />
         </div>
+      )}
+
+      {nothing ? (
+        query ? (
+          <div className="rise-in card grid place-items-center px-6 py-14 text-center text-sm text-faint">
+            Nothing matches your search.
+          </div>
+        ) : null
       ) : (
         <div className="space-y-6">
           {showFolders && shownFolders.length > 0 && (

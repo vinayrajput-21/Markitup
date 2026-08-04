@@ -58,7 +58,7 @@ export function FigmaImport({ projectId, folderId = null, onDone }: { projectId:
         <p className="mt-2 text-sm font-medium" style={{ color: "var(--destructive)" }}>{error}</p>
       ) : (
         <p className="mt-2 text-xs text-faint">
-          Imports the frame as a pinnable mockup with a live Browse mode. Needs Figma connected in Settings.
+          Imports the frame as a pinnable file with a live Browse mode. Needs Figma connected in Settings.
         </p>
       )}
     </div>

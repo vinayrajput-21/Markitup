@@ -61,7 +61,7 @@ export default async function SettingsPage() {
         <>
           <SectionHead
             title="Client reminders"
-            desc="Automatically follow up with clients until they leave feedback. Reminders only apply to mockups you send with “Send to client”."
+            desc="Automatically follow up with clients until they leave feedback. Reminders only apply to files you send with “Send to client”."
           />
           <RemindersSettings initial={settings} schedules={schedules} />
         </>

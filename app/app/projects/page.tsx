@@ -33,7 +33,7 @@ export default async function ProjectsPage() {
       {items.length === 0 ? (
         <div className="rise-in card grid place-items-center px-6 py-16 text-center">
           <h3 className="text-lg font-semibold">No projects yet</h3>
-          <p className="mt-1 mb-4 max-w-sm text-sm text-muted">Create your first project, upload a mockup, and start collecting pinned feedback.</p>
+          <p className="mt-1 mb-4 max-w-sm text-sm text-muted">Create your first project, upload a file, and start collecting pinned feedback.</p>
           <NewProjectDialog />
         </div>
       ) : (

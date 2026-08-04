@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { AddContentDialog } from "@/components/app/AddContentDialog";
+import { NewSubProjectDialog } from "@/components/app/NewSubProjectDialog";
 import { ProjectBrowser, type FileItem } from "@/components/app/ProjectBrowser";
 import type { FolderOption } from "@/components/app/MoveToFolderDialog";
 import { plural } from "@/lib/format";
@@ -128,9 +128,9 @@ export default async function ProjectPage({
       <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{here}</h1>
-          <p className="mt-1 text-sm text-muted">{plural(subfolders.length, "folder")} · {plural(files.length, "mockup")}</p>
+          <p className="mt-1 text-sm text-muted">{plural(subfolders.length, "project")} · {plural(files.length, "file")}</p>
         </div>
-        <AddContentDialog projectId={projectId} folderId={currentFolderId} />
+        <NewSubProjectDialog projectId={projectId} parentId={currentFolderId} />
       </div>
 
       <ProjectBrowser projectId={projectId} currentFolderId={currentFolderId} folders={subfolders} files={files} allFolders={allFolders} />

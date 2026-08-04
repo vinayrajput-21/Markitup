@@ -141,7 +141,7 @@ export async function getActivityData(supabase: SupabaseClient<any>, projectIds:
       email: p?.email ?? "",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockupId: (v as any).mockup_id,
-      mockupName: mk?.name ?? "a mockup",
+      mockupName: mk?.name ?? "a file",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       project: projectOf((v as any).mockup_id),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -159,7 +159,7 @@ export async function getActivityData(supabase: SupabaseClient<any>, projectIds:
       actor: p?.name || p?.email || "Someone",
       email: p?.email ?? "",
       mockupId: mkId ?? "",
-      mockupName: mk?.name ?? "a mockup",
+      mockupName: mk?.name ?? "a file",
       project: mkId ? projectOf(mkId) : "",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       at: (c as any).created_at,

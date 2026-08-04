@@ -55,7 +55,7 @@ export default async function DashboardPage() {
         <>
           <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <StatTile label={plural(items.length, "project")} value={items.length} />
-            <StatTile label={plural(totalMockups, "mockup")} value={totalMockups} />
+            <StatTile label={plural(totalMockups, "file")} value={totalMockups} />
             <StatTile label="Open comments" value={openComments} accent={openComments > 0 ? "var(--color-brand)" : undefined} />
             <StatTile label="Resolved" value={totalResolved} accent={totalResolved > 0 ? "var(--color-success)" : undefined} />
           </div>

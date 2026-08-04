@@ -45,7 +45,7 @@ export function invitation(opts: {
   const subject = `${opts.inviterName} invited you to ${opts.workspaceName}`;
   const html = layout(
     subject,
-    `<p style="margin:0;font-size:14px"><strong>${esc(opts.inviterName)}</strong> invited you to collaborate in <strong>${esc(opts.workspaceName)}</strong> on MarkUp — upload mockups, drop pins, and review designs together.</p>`,
+    `<p style="margin:0;font-size:14px"><strong>${esc(opts.inviterName)}</strong> invited you to collaborate in <strong>${esc(opts.workspaceName)}</strong> on MarkUp — upload files, drop pins, and review designs together.</p>`,
     { label: opts.isNewUser ? "Create your account" : "Open MarkUp", href },
   );
   const text = `${opts.inviterName} invited you to ${opts.workspaceName} on MarkUp.\n\n${href}`;
@@ -91,7 +91,7 @@ export function welcome(opts: { name: string }) {
   const subject = "Welcome to MarkUp";
   const html = layout(
     `Welcome, ${opts.name}!`,
-    `<p style="margin:0;font-size:14px">Your workspace is ready. Create a project, upload a mockup, and share a link to start collecting pinned feedback.</p>`,
+    `<p style="margin:0;font-size:14px">Your workspace is ready. Create a project, upload a file, and share a link to start collecting pinned feedback.</p>`,
     { label: "Go to your workspace", href },
   );
   const text = `Welcome to MarkUp, ${opts.name}!\n\nGet started: ${href}`;

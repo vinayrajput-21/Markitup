@@ -318,7 +318,7 @@ export function MockupViewer({
       const blob = await res.blob();
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = imageName || "mockup";
+      a.download = imageName || "file";
       a.click();
       URL.revokeObjectURL(a.href);
     } catch {

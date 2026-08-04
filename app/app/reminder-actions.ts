@@ -87,7 +87,7 @@ export async function sendTestReminder(settings: ReminderSettings) {
   const email = userData.user?.email;
   if (!email) return { error: "No email on your account" };
   const senderName = (userData.user?.user_metadata?.name as string) || email;
-  const vars = { page_name: "Homepage mockup", sender: senderName, type: "mockup", project: ws?.name ?? "Demo project" };
+  const vars = { page_name: "Homepage file", sender: senderName, type: "file", project: ws?.name ?? "Demo project" };
   const tpl = reminderEmail({
     subject: fillTemplate(settings.subject, vars),
     message: fillTemplate(settings.message, vars),
@@ -113,7 +113,7 @@ export async function sendToClient(mockupId: string, email: string, name?: strin
   const proj = (mk as any)?.projects;
   const workspaceId = proj?.workspace_id as string | undefined;
   const pageName = (mk?.name as string) ?? "your design";
-  if (!mk || !workspaceId) return { error: "Mockup not found" };
+  if (!mk || !workspaceId) return { error: "File not found" };
 
   // get-or-create a public share link so the client can open it without an account
   let { data: link } = await supabase.from("share_links").select("token, visibility").eq("mockup_id", mockupId).maybeSingle();

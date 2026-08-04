@@ -44,7 +44,7 @@ export function MoveToFolderDialog({
       <div className="fade-anim absolute inset-0 bg-black/30" onClick={onClose} />
       <div className="pop-anim relative z-10 w-full max-w-sm rounded-2xl border bg-surface-2 p-5 shadow-lg">
         <h2 className="truncate text-base font-bold text-ink">Move “{mockupName}”</h2>
-        <p className="mt-1 text-xs text-muted">Choose a destination folder.</p>
+        <p className="mt-1 text-xs text-muted">Choose a destination project.</p>
         <div className="mt-3 max-h-64 space-y-0.5 overflow-y-auto rounded-lg border p-1">
           <Option label="Project root" active={target === null} onClick={() => setTarget(null)} depth={0} />
           {folders.map((f) => (

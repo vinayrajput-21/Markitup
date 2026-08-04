@@ -201,7 +201,7 @@ export default async function MockupPage({
           />
         ) : (
           <div className="grid h-full place-items-center text-sm text-faint">
-            Could not load this mockup.
+            Could not load this file.
           </div>
         )}
       </div>

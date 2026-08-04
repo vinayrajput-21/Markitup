@@ -44,7 +44,7 @@ export function FigmaConnect({ connected }: { connected: boolean }) {
           </span>
           <div>
             <h3 className="font-semibold text-ink">Figma</h3>
-            <p className="text-sm text-muted">Import prototype frames as reviewable mockups.</p>
+            <p className="text-sm text-muted">Import prototype frames as reviewable files.</p>
           </div>
         </div>
         {connected && (
