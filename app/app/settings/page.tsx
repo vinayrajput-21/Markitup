@@ -5,6 +5,10 @@ import { SlackConnect } from "@/components/app/SlackConnect";
 import { ThemeSettings } from "@/components/app/ThemeSettings";
 import { RemindersSettings } from "@/components/app/RemindersSettings";
 import { getReminderData } from "@/app/app/reminder-actions";
+import { getTeamData } from "@/app/app/team-actions";
+import { TeamRoster } from "@/components/app/TeamRoster";
+import { TeamInviteDialog } from "@/components/app/TeamInviteDialog";
+import { RoleMatrix } from "@/components/app/RoleMatrix";
 import { SettingsShell, type SettingsSection } from "@/components/app/SettingsShell";
 
 function SectionHead({ title, desc }: { title: string; desc: string }) {
@@ -33,12 +37,20 @@ const PlugIcon = (
     <path d="M9 2v6M15 2v6M6 8h12v3a6 6 0 0 1-12 0V8ZM12 17v5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
+const TeamIcon = (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <circle cx="9" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.7" />
+    <path d="M3.5 19a5.5 5.5 0 0 1 11 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    <path d="M16 5.2a3.2 3.2 0 0 1 0 5.6M17 19a5.5 5.5 0 0 0-2.2-4.4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+  </svg>
+);
 
 export default async function SettingsPage() {
-  const [{ connected }, { connected: slackConnected }, { settings, schedules }] = await Promise.all([
+  const [{ connected }, { connected: slackConnected }, { settings, schedules }, teamData] = await Promise.all([
     getFigmaConnection(),
     getSlackConnection(),
     getReminderData(),
+    getTeamData(),
   ]);
 
   const sections: SettingsSection[] = [
@@ -53,6 +65,24 @@ export default async function SettingsPage() {
             desc="Automatically follow up with clients until they leave feedback. Reminders only apply to files you send with “Send to client”."
           />
           <RemindersSettings initial={settings} schedules={schedules} />
+        </>
+      ),
+    },
+    {
+      key: "team",
+      label: "Team",
+      icon: TeamIcon,
+      content: (
+        <>
+          <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-ink">Team</h2>
+              <p className="mt-1 max-w-2xl text-sm text-muted">Invite people and manage what they can access.</p>
+            </div>
+            {teamData.canManage && <TeamInviteDialog />}
+          </div>
+          <TeamRoster data={teamData} />
+          <RoleMatrix />
         </>
       ),
     },

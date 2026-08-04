@@ -86,18 +86,6 @@ const NAV = [
     ),
   },
   {
-    href: "/app/members",
-    label: "Team",
-    match: (p: string) => p.startsWith("/app/members"),
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <circle cx="9" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.7" />
-        <path d="M3.5 19a5.5 5.5 0 0 1 11 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-        <path d="M16 5.2a3.2 3.2 0 0 1 0 5.6M17 19a5.5 5.5 0 0 0-2.2-4.4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      </svg>
-    ),
-  },
-  {
     href: "/app/archive",
     label: "Archive",
     match: (p: string) => p.startsWith("/app/archive"),

@@ -134,7 +134,7 @@ export async function inviteTeamMember(email: string, role: "admin" | "member") 
     } catch (e) {
       console.error("[team invite] email failed", e);
     }
-    revalidatePath("/app/members");
+    revalidatePath("/app/settings");
     return { ok: true, invited: false };
   }
 
@@ -148,6 +148,6 @@ export async function inviteTeamMember(email: string, role: "admin" | "member") 
   } catch (e) {
     console.error("[team invite] email failed", e);
   }
-  revalidatePath("/app/members");
+  revalidatePath("/app/settings");
   return { ok: true, invited: true };
 }
