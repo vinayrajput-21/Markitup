@@ -116,7 +116,7 @@ export function ProjectBrowser({
                         </>
                       ) : m.url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={m.url} alt="" className="h-full w-full object-cover object-top" />
+                        <img src={m.url} alt="" loading="lazy" className="media-in h-full w-full object-cover object-top" />
                       ) : (
                         <div className="h-full w-full bg-brand-soft" />
                       )}

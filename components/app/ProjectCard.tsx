@@ -9,7 +9,7 @@ function Cover({ url, name, isHtml }: { url?: string; name: string; isHtml?: boo
   }
   if (url) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={url} alt="" className="h-full w-full object-cover object-top" />;
+    return <img src={url} alt="" loading="lazy" className="media-in h-full w-full object-cover object-top" />;
   }
   return (
     <div className="grid h-full w-full place-items-center bg-brand-soft">

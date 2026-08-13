@@ -157,6 +157,7 @@ export function MockupViewer({
   const [htmlMode, setHtmlMode] = useState<"browse" | "comment">("browse");
   const [htmlDoc, setHtmlDoc] = useState<string | null>(null);
   const [htmlError, setHtmlError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
   const htmlFrameRef = useRef<HTMLIFrameElement>(null);
   const [activePinId, setActivePinId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
@@ -732,14 +733,16 @@ export function MockupViewer({
               ) : (
                 <>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {!imgLoaded && <div className="skeleton absolute inset-0 rounded-lg" />}
                   <img
                     ref={imgRef}
                     src={imageUrl}
                     alt="mockup"
-                    onLoad={(e) => setNat({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })}
+                    onLoad={(e) => { setNat({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight }); setImgLoaded(true); }}
                     onClick={handleSurfaceClick}
                     draggable={false}
                     className="block w-full cursor-crosshair rounded-lg shadow-lg ring-1 ring-border select-none"
+                    style={{ opacity: imgLoaded ? 1 : 0, transition: "opacity 0.3s var(--ease-out-quart)" }}
                   />
                   {pinsOverlay}
                 </>

@@ -33,9 +33,11 @@ export function HtmlThumbnail({ url, className = "" }: { url: string; className?
     return () => ro.disconnect();
   }, []);
 
+  const ready = !!doc && scale > 0;
   return (
     <div ref={ref} className={`relative overflow-hidden bg-white ${className}`}>
-      {doc && scale > 0 && (
+      {!ready && <div className="skeleton absolute inset-0 !rounded-none" />}
+      {ready && (
         <iframe
           srcDoc={doc}
           title="HTML preview"
@@ -43,6 +45,7 @@ export function HtmlThumbnail({ url, className = "" }: { url: string; className?
           scrolling="no"
           tabIndex={-1}
           aria-hidden
+          className="media-in"
           style={{
             width: DESIGN_W,
             height: DESIGN_W,
