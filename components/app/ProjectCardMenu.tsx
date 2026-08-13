@@ -8,7 +8,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { RenameDialog } from "@/components/ui/RenameDialog";
 import { useToast } from "@/components/ui/toast";
 
-export function ProjectCardMenu({ projectId, name }: { projectId: string; name: string }) {
+export function ProjectCardMenu({ projectId, name, openUp = false }: { projectId: string; name: string; openUp?: boolean }) {
   const [pending, start] = useTransition();
   const [confirm, setConfirm] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
@@ -58,7 +58,7 @@ export function ProjectCardMenu({ projectId, name }: { projectId: string; name: 
 
   return (
     <>
-      <CardMenu label="Project options">
+      <CardMenu label="Project options" openUp={openUp}>
         {(close) => (
           <>
             <MenuItem onClick={() => copyLink(close)}>

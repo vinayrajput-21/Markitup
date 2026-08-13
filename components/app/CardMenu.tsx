@@ -9,10 +9,12 @@ import { useEffect, useRef, useState } from "react";
 export function CardMenu({
   label,
   onClose,
+  openUp = false,
   children,
 }: {
   label: string;
   onClose?: () => void;
+  openUp?: boolean;
   children: (close: () => void) => React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -67,7 +69,7 @@ export function CardMenu({
         </svg>
       </button>
       {open && (
-        <div className="absolute right-0 z-50 mt-1 w-48 overflow-hidden rounded-lg border bg-surface-2 p-1 shadow-lg">
+        <div className={`absolute right-0 z-50 w-48 overflow-hidden rounded-lg border bg-surface-2 p-1 shadow-lg ${openUp ? "bottom-full mb-1" : "mt-1"}`}>
           {children(close)}
         </div>
       )}

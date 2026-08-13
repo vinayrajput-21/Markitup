@@ -4,7 +4,6 @@ import { getCurrentWorkspace } from "./actions";
 import { getProjectItems } from "./dashboard-data";
 import { plural, emailLocalPart } from "@/lib/format";
 import { ProjectGrid } from "@/components/app/ProjectGrid";
-import { RecentActivity } from "@/components/app/RecentActivity";
 import { NotificationBell } from "@/components/app/NotificationBell";
 import { ProfileMenu } from "@/components/app/ProfileMenu";
 
@@ -24,7 +23,7 @@ export default async function DashboardPage() {
   const userEmail = authData.user?.email ?? "";
   const userName = (authData.user?.user_metadata?.name as string) || emailLocalPart(userEmail) || "";
 
-  const { items, recent, stats } = await getProjectItems(supabase, ws?.id ?? "");
+  const { items, stats } = await getProjectItems(supabase, ws?.id ?? "");
 
   let totalMockups = 0, totalThreads = 0, totalResolved = 0;
   for (const s of stats.values()) { totalMockups += s.mockups; totalThreads += s.comments; totalResolved += s.resolved; }
@@ -60,15 +59,12 @@ export default async function DashboardPage() {
             <StatTile label="Resolved" value={totalResolved} accent={totalResolved > 0 ? "var(--color-success)" : undefined} />
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[1fr_330px]">
-            <div>
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-bold text-ink">Recent projects</h2>
-                <Link href="/app/projects" className="text-sm font-medium text-brand-ink transition-colors hover:text-brand-hover">View all →</Link>
-              </div>
-              <ProjectGrid items={recentProjects} />
+          <div>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-sm font-bold text-ink">Recent projects</h2>
+              <Link href="/app/projects" className="text-sm font-medium text-brand-ink transition-colors hover:text-brand-hover">View all →</Link>
             </div>
-            <RecentActivity items={recent} />
+            <ProjectGrid items={recentProjects} />
           </div>
         </>
       )}

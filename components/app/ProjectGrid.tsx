@@ -4,7 +4,7 @@ import type { ProjectItem } from "@/app/app/dashboard-data";
 
 export function ProjectGrid({ items }: { items: ProjectItem[] }) {
   return (
-    <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-x-6 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((p) => (
         <li key={p.id}>
           <ProjectCard
@@ -16,7 +16,7 @@ export function ProjectGrid({ items }: { items: ProjectItem[] }) {
             stats={p.stats}
             viewers={p.viewers}
             lastViewedAt={p.lastViewedAt}
-            menu={<ProjectCardMenu projectId={p.id} name={p.name} />}
+            menu={<ProjectCardMenu projectId={p.id} name={p.name} openUp />}
           />
         </li>
       ))}
