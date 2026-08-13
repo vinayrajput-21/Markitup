@@ -202,6 +202,11 @@ export function CompareView({
       </header>
 
       <div className="flex min-h-0 flex-1">
+        {showComments && (
+          <aside className="w-80 shrink-0 border-r">
+            <CompareComments groups={commentGroups} />
+          </aside>
+        )}
         <div className="flex min-w-0 flex-1 flex-col">
 
       {mode === "overlay" ? (
@@ -225,12 +230,6 @@ export function CompareView({
         </div>
       )}
         </div>
-
-        {showComments && (
-          <aside className="w-80 shrink-0 border-l">
-            <CompareComments groups={commentGroups} />
-          </aside>
-        )}
       </div>
     </div>
   );

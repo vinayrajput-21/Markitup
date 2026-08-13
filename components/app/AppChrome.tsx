@@ -12,7 +12,10 @@ export function AppChrome({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isViewer = (pathname ?? "").startsWith("/app/mockups/");
+  const path = pathname ?? "";
+  // Immersive routes hide the app nav (revealable): the mockup viewer and the
+  // compare screen (whose left rail is the comments panel instead).
+  const isViewer = path.startsWith("/app/mockups/") || path.endsWith("/compare");
   const [reveal, setReveal] = useState(false);
   useEffect(() => {
     setReveal(false);
