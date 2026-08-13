@@ -26,6 +26,7 @@ export type ProjectItem = {
   id: string;
   name: string;
   coverUrl?: string;
+  coverIsHtml?: boolean;
   updatedAt: string;
   stats: ProjectStats;
   viewers?: Viewer[];
@@ -52,18 +53,19 @@ export async function getProjectItems(supabase: SupabaseClient<any>, workspaceId
     getActivityData(supabase, ids),
     signCovers(
       supabase,
-      projects.map((p) => [...p.mockups].filter((m) => m.type !== "html").sort((a, b) => b.created_at.localeCompare(a.created_at))[0]?.file_path).filter(Boolean) as string[],
+      projects.map((p) => [...p.mockups].sort((a, b) => b.created_at.localeCompare(a.created_at))[0]?.file_path).filter(Boolean) as string[],
     ),
   ]);
 
   const zero: ProjectStats = { mockups: 0, comments: 0, resolved: 0 };
   const items: ProjectItem[] = projects.map((p) => {
-    const latest = [...p.mockups].filter((m) => m.type !== "html").sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+    const latest = [...p.mockups].sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
     const pv = activity.viewersByProject.get(p.id);
     return {
       id: p.id,
       name: p.name,
       coverUrl: latest ? covers.get(latest.file_path) : undefined,
+      coverIsHtml: latest?.type === "html",
       updatedAt: p.created_at,
       stats: stats.get(p.id) ?? zero,
       viewers: pv?.viewers,

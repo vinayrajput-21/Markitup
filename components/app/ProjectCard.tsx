@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { timeAgo, plural } from "@/lib/format";
 import { Avatar } from "@/components/app/AppSidebar";
+import { HtmlThumbnail } from "@/components/viewer/HtmlThumbnail";
 
-function Cover({ url, name }: { url?: string; name: string }) {
+function Cover({ url, name, isHtml }: { url?: string; name: string; isHtml?: boolean }) {
+  if (url && isHtml) {
+    return <HtmlThumbnail url={url} className="h-full w-full" />;
+  }
   if (url) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={url} alt="" className="h-full w-full object-cover object-top" />;
@@ -27,6 +31,7 @@ export function ProjectCard({
   id,
   name,
   coverUrl,
+  coverIsHtml,
   updatedAt,
   stats,
   menu,
@@ -36,6 +41,7 @@ export function ProjectCard({
   id: string;
   name: string;
   coverUrl?: string;
+  coverIsHtml?: boolean;
   updatedAt: string;
   stats: { mockups: number; comments: number; resolved: number };
   menu?: React.ReactNode;
@@ -47,7 +53,7 @@ export function ProjectCard({
       {menu && <div className="absolute right-2 top-2 z-10">{menu}</div>}
       <Link href={`/app/projects/${id}`} className="block">
         <div className="aspect-[16/10] w-full overflow-hidden border-b bg-canvas">
-          <Cover url={coverUrl} name={name} />
+          <Cover url={coverUrl} name={name} isHtml={coverIsHtml} />
         </div>
         <div className="p-4">
           <h3 className="truncate font-semibold text-ink">{name}</h3>

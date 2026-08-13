@@ -7,6 +7,7 @@ import { FolderCard } from "@/components/app/FolderCard";
 import { MockupCardMenu } from "@/components/app/MockupCardMenu";
 import { UploadDropzone } from "@/components/viewer/UploadDropzone";
 import { FigmaImport } from "@/components/viewer/FigmaImport";
+import { HtmlThumbnail } from "@/components/viewer/HtmlThumbnail";
 import type { FolderOption } from "@/components/app/MoveToFolderDialog";
 
 type Folder = { id: string; name: string };
@@ -106,16 +107,13 @@ export function ProjectBrowser({
                           New
                         </span>
                       )}
-                      {m.type === "html" ? (
-                        <div className="grid h-full w-full place-items-center bg-brand-soft text-brand-ink">
-                          <div className="flex flex-col items-center gap-1.5">
-                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden>
-                              <path d="M4 4h16v16H4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-                              <path d="m9.5 10-2 2 2 2M14.5 10l2 2-2 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                            <span className="text-[0.625rem] font-bold tracking-wider uppercase">HTML</span>
-                          </div>
-                        </div>
+                      {m.type === "html" && m.url ? (
+                        <>
+                          <HtmlThumbnail url={m.url} className="h-full w-full" />
+                          <span className="absolute bottom-1.5 left-1.5 z-10 rounded px-1.5 py-0.5 text-[0.5625rem] font-bold tracking-wider text-white uppercase" style={{ background: "color-mix(in srgb, var(--color-ink) 72%, transparent)" }}>
+                            HTML
+                          </span>
+                        </>
                       ) : m.url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={m.url} alt="" className="h-full w-full object-cover object-top" />
