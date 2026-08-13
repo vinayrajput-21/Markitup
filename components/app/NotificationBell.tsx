@@ -4,6 +4,35 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { getNotifications, markNotificationsRead, type NotificationItem } from "@/app/app/notifications-actions";
 import { timeAgo } from "@/lib/format";
+import { Avatar } from "@/components/app/AppSidebar";
+
+// Render a notification body with the load-bearing words emphasized: the actor's
+// name (leading), any quoted text, and file names.
+function renderBody(body: string, actorName: string): React.ReactNode {
+  const parts: React.ReactNode[] = [];
+  const bold = (text: string, key: string) => (
+    <strong key={key} className="font-semibold text-ink">{text}</strong>
+  );
+
+  let rest = body;
+  let k = 0;
+  if (actorName && body.toLowerCase().startsWith(actorName.toLowerCase())) {
+    parts.push(bold(body.slice(0, actorName.length), `a${k++}`));
+    rest = body.slice(actorName.length);
+  }
+
+  const re = /("[^"]+"|\S+\.(?:png|jpe?g|html?|pdf|gif|webp|svg))/gi;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(rest)) !== null) {
+    if (m.index > last) parts.push(<span key={`t${k}`}>{rest.slice(last, m.index)}</span>);
+    parts.push(bold(m[0], `b${k}`));
+    last = m.index + m[0].length;
+    k++;
+  }
+  if (last < rest.length) parts.push(<span key={`t${k}`}>{rest.slice(last)}</span>);
+  return parts;
+}
 
 export function NotificationBell() {
   const [items, setItems] = useState<NotificationItem[]>([]);
@@ -64,9 +93,12 @@ export function NotificationBell() {
               ) : (
                 items.map((n) => {
                   const inner = (
-                    <div className="flex flex-col gap-0.5 px-3 py-2.5 transition-colors hover:bg-[color:var(--accent)]">
-                      <span className="text-sm text-ink">{n.body}</span>
-                      <span className="font-mono text-[0.6875rem] text-faint">{timeAgo(n.createdAt)}</span>
+                    <div className="flex items-start gap-2.5 px-3 py-2.5 transition-colors hover:bg-[color:var(--accent)]">
+                      <Avatar name={n.actorName} email={n.actorEmail} size={30} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm leading-snug text-muted">{renderBody(n.body, n.actorName)}</p>
+                        <span className="mt-0.5 block font-mono text-[0.6875rem] text-faint">{timeAgo(n.createdAt)}</span>
+                      </div>
                     </div>
                   );
                   return n.mockupId ? (

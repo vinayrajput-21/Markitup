@@ -4,7 +4,7 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 const { getNotifications, markNotificationsRead } = vi.hoisted(() => ({
   getNotifications: vi.fn().mockResolvedValue({
     items: [
-      { id: "n1", type: "comment", body: "Jane commented on Home", mockupId: "m1", readAt: null, createdAt: new Date().toISOString(), actorName: "Jane" },
+      { id: "n1", type: "comment", body: "Jane commented on Home", mockupId: "m1", readAt: null, createdAt: new Date().toISOString(), actorName: "Jane", actorEmail: "jane@example.com" },
     ],
     unreadCount: 1,
   }),
@@ -19,7 +19,8 @@ describe("NotificationBell", () => {
     render(<NotificationBell />);
     await waitFor(() => expect(screen.getByText("1")).toBeTruthy()); // unread badge
     fireEvent.click(screen.getByRole("button", { name: /notifications/i }));
-    expect(screen.getByText(/Jane commented on Home/)).toBeTruthy();
+    expect(screen.getByText("Jane")).toBeTruthy(); // actor name is emphasized
+    expect(screen.getByText(/commented on Home/)).toBeTruthy();
     await waitFor(() => expect(markNotificationsRead).toHaveBeenCalled());
   });
 });

@@ -10,6 +10,7 @@ export type NotificationItem = {
   readAt: string | null;
   createdAt: string;
   actorName: string;
+  actorEmail: string;
 };
 
 export async function getNotifications(): Promise<{
@@ -22,7 +23,7 @@ export async function getNotifications(): Promise<{
 
   const { data } = await supabase
     .from("notifications")
-    .select("id, type, body, mockup_id, read_at, created_at, actor:actor_id(name)")
+    .select("id, type, body, mockup_id, read_at, created_at, actor:actor_id(name, email)")
     .eq("user_id", userData.user.id)
     .order("created_at", { ascending: false })
     .limit(20);
@@ -36,6 +37,8 @@ export async function getNotifications(): Promise<{
     createdAt: n.created_at as string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     actorName: ((n as any).actor?.name as string) || "Someone",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    actorEmail: ((n as any).actor?.email as string) || "",
   }));
   const unreadCount = items.filter((i) => !i.readAt).length;
   return { items, unreadCount };
