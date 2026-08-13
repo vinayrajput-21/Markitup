@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CommentFilter, type Filter } from "./CommentFilter";
 import type { ViewerPin, ViewerComment } from "./MockupViewer";
 import { Avatar } from "@/components/app/AppSidebar";
@@ -78,8 +78,12 @@ function PinListItem({ pin, open, onSelect }: { pin: FlatPin; open: boolean; onS
   const roots = pin.comments.filter((c) => !c.parentCommentId);
   const repliesOf = (id: string) => pin.comments.filter((c) => c.parentCommentId === id);
   const resolved = pin.status === "resolved";
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (open) ref.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [open]);
   return (
-    <div className={open ? "bg-[color:var(--accent)]" : ""}>
+    <div ref={ref} className={open ? "bg-[color:var(--accent)]" : ""}>
       <button
         onClick={onSelect}
         className="flex w-full items-start gap-2.5 px-3 py-2.5 text-left transition-colors duration-150 hover:bg-[color:var(--accent)]"
@@ -124,13 +128,25 @@ function PinListItem({ pin, open, onSelect }: { pin: FlatPin; open: boolean; onS
   );
 }
 
-export function CompareComments({ groups }: { groups: CompareCommentGroup[] }) {
+export function CompareComments({
+  groups,
+  openPin: openPinProp,
+  onOpenPin,
+}: {
+  groups: CompareCommentGroup[];
+  openPin?: string | null;
+  onOpenPin?: (id: string | null) => void;
+}) {
   const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState<SortKey>("pins");
   const [sortOpen, setSortOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [openPin, setOpenPin] = useState<string | null>(null);
+  const [openPinState, setOpenPinState] = useState<string | null>(null);
+  // Controlled when the parent passes openPin/onOpenPin (so image pins and the
+  // list stay in sync); otherwise self-managed.
+  const openPin = openPinProp !== undefined ? openPinProp : openPinState;
+  const setOpenPin = onOpenPin ?? setOpenPinState;
 
   // Flatten every version's pins into one list (tagged with its version).
   const allPins: FlatPin[] = groups.flatMap((g) => g.pins.map((p) => ({ ...p, versionLabel: g.label.replace(/^Version\s+/i, "V") })));
@@ -223,7 +239,7 @@ export function CompareComments({ groups }: { groups: CompareCommentGroup[] }) {
           </div>
         ) : (
           visible.map((p) => (
-            <PinListItem key={p.id} pin={p} open={openPin === p.id} onSelect={() => setOpenPin((o) => (o === p.id ? null : p.id))} />
+            <PinListItem key={p.id} pin={p} open={openPin === p.id} onSelect={() => setOpenPin(openPin === p.id ? null : p.id)} />
           ))
         )}
       </div>

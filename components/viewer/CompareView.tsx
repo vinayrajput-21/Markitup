@@ -3,8 +3,29 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CompareComments, type CompareCommentGroup } from "./CompareComments";
+import { PinMarker } from "./PinMarker";
+import type { ViewerPin } from "./MockupViewer";
 
 export type CompareMockup = { id: string; name: string; url: string; version?: number };
+
+// Pins overlaid on a compare image, positioned by their normalized x/y.
+function PinOverlay({ pins, openPin, onPinClick }: { pins: ViewerPin[]; openPin: string | null; onPinClick: (id: string) => void }) {
+  return (
+    <>
+      {pins.map((p) => (
+        <PinMarker
+          key={p.id}
+          number={p.number}
+          x={p.x}
+          y={p.y}
+          status={p.status}
+          selected={openPin === p.id}
+          onClick={() => onPinClick(p.id)}
+        />
+      ))}
+    </>
+  );
+}
 
 function label(m?: CompareMockup) {
   if (!m) return "";
@@ -26,6 +47,9 @@ function Panel({
   scrollRef,
   onScroll,
   side,
+  pins,
+  openPin,
+  onPinClick,
 }: {
   value: string;
   onChange: (id: string) => void;
@@ -33,6 +57,9 @@ function Panel({
   scrollRef: React.RefObject<HTMLDivElement | null>;
   onScroll: () => void;
   side: "Previous" | "Latest";
+  pins: ViewerPin[];
+  openPin: string | null;
+  onPinClick: (id: string) => void;
 }) {
   const m = mockups.find((x) => x.id === value);
   return (
@@ -50,8 +77,11 @@ function Panel({
       </div>
       <div ref={scrollRef} onScroll={onScroll} className="min-h-0 flex-1 overflow-auto bg-canvas p-4">
         {m?.url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={m.url} alt={m.name} className="mx-auto block w-full rounded-lg shadow-lg ring-1 ring-border" />
+          <div className="relative mx-auto w-full">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={m.url} alt={m.name} className="block w-full rounded-lg shadow-lg ring-1 ring-border" />
+            <PinOverlay pins={pins} openPin={openPin} onPinClick={onPinClick} />
+          </div>
         ) : (
           <div className="grid h-full place-items-center text-sm text-faint">No preview.</div>
         )}
@@ -81,12 +111,14 @@ export function CompareView({
   const [peek, setPeek] = useState(false);
   const [synced, setSynced] = useState(true);
   const [showComments, setShowComments] = useState(true);
+  const [openPin, setOpenPin] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
-
-  const commentCount = commentGroups.reduce((n, g) => n + g.pins.reduce((m, p) => m + p.comments.length, 0), 0);
 
   const newM = mockups.find((m) => m.id === newId);
   const oldM = mockups.find((m) => m.id === oldId);
+
+  const pinsFor = (id?: string) => commentGroups.find((g) => g.key === id)?.pins ?? [];
+  const togglePin = (id: string) => setOpenPin((o) => (o === id ? null : id));
 
   // Hold Space to peek at the old version (ignored while a form control is focused).
   useEffect(() => {
@@ -204,7 +236,7 @@ export function CompareView({
       <div className="flex min-h-0 flex-1">
         {showComments && (
           <aside className="w-80 shrink-0 border-r">
-            <CompareComments groups={commentGroups} />
+            <CompareComments groups={commentGroups} openPin={openPin} onOpenPin={setOpenPin} />
           </aside>
         )}
         <div className="flex min-w-0 flex-1 flex-col">
@@ -214,19 +246,27 @@ export function CompareView({
           {/* full-size: fills the available width, same as the normal viewer */}
           <div className="relative mx-auto w-full">
             {newM?.url && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={newM.url} alt="" className="block w-full rounded-lg shadow-lg ring-1 ring-border" style={{ opacity: peek ? 0 : 1 }} />
+              <div className="relative" style={{ opacity: peek ? 0 : 1, pointerEvents: peek ? "none" : "auto" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={newM.url} alt="" className="block w-full rounded-lg shadow-lg ring-1 ring-border" />
+                <PinOverlay pins={pinsFor(newM.id)} openPin={openPin} onPinClick={togglePin} />
+              </div>
             )}
             {oldM?.url && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={oldM.url} alt="" className="absolute inset-x-0 top-0 block w-full rounded-lg shadow-lg ring-1 ring-border" style={{ opacity: peek ? 1 : 0 }} />
+              <div className="absolute inset-x-0 top-0" style={{ opacity: peek ? 1 : 0, pointerEvents: peek ? "auto" : "none" }}>
+                <div className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={oldM.url} alt="" className="block w-full rounded-lg shadow-lg ring-1 ring-border" />
+                  <PinOverlay pins={pinsFor(oldM.id)} openPin={openPin} onPinClick={togglePin} />
+                </div>
+              </div>
             )}
           </div>
         </div>
       ) : (
         <div className="grid min-h-0 flex-1 grid-cols-2 divide-x">
-          <Panel side="Previous" value={oldId} onChange={setOldId} mockups={mockups} scrollRef={leftRef} onScroll={() => sync("l")} />
-          <Panel side="Latest" value={newId} onChange={setNewId} mockups={mockups} scrollRef={rightRef} onScroll={() => sync("r")} />
+          <Panel side="Previous" value={oldId} onChange={setOldId} mockups={mockups} scrollRef={leftRef} onScroll={() => sync("l")} pins={pinsFor(oldId)} openPin={openPin} onPinClick={togglePin} />
+          <Panel side="Latest" value={newId} onChange={setNewId} mockups={mockups} scrollRef={rightRef} onScroll={() => sync("r")} pins={pinsFor(newId)} openPin={openPin} onPinClick={togglePin} />
         </div>
       )}
         </div>
