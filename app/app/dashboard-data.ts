@@ -39,7 +39,7 @@ export type ProjectItem = {
 export async function getProjectItems(supabase: SupabaseClient<any>, workspaceId: string) {
   const { data } = await supabase
     .from("projects")
-    .select("id, name, created_at, mockups(id, file_path, created_at)")
+    .select("id, name, created_at, mockups(id, file_path, created_at, type)")
     .eq("workspace_id", workspaceId)
     .is("archived_at", null)
     .order("created_at", { ascending: false });
@@ -52,13 +52,13 @@ export async function getProjectItems(supabase: SupabaseClient<any>, workspaceId
     getActivityData(supabase, ids),
     signCovers(
       supabase,
-      projects.map((p) => [...p.mockups].sort((a, b) => b.created_at.localeCompare(a.created_at))[0]?.file_path).filter(Boolean) as string[],
+      projects.map((p) => [...p.mockups].filter((m) => m.type !== "html").sort((a, b) => b.created_at.localeCompare(a.created_at))[0]?.file_path).filter(Boolean) as string[],
     ),
   ]);
 
   const zero: ProjectStats = { mockups: 0, comments: 0, resolved: 0 };
   const items: ProjectItem[] = projects.map((p) => {
-    const latest = [...p.mockups].sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+    const latest = [...p.mockups].filter((m) => m.type !== "html").sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
     const pv = activity.viewersByProject.get(p.id);
     return {
       id: p.id,

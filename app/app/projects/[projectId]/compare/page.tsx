@@ -30,6 +30,7 @@ export default async function ComparePage({
     .select("id, name, file_path, created_at, version")
     .eq("project_id", projectId)
     .is("archived_at", null)
+    .neq("type", "html") // compare renders images side-by-side; HTML isn't comparable here
     .order("created_at", { ascending: true });
   const mockups = rows ?? [];
 

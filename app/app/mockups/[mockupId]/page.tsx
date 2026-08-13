@@ -196,6 +196,7 @@ export default async function MockupPage({
             members={members}
             currentUserName={currentUserName}
             figmaEmbedUrl={figmaEmbedUrl}
+            htmlUrl={mockup.type === "html" ? url : null}
             titleSlot={titleSlot}
             actionsSlot={actionsSlot}
           />

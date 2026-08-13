@@ -2,7 +2,8 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { validateUpload } from "@/lib/validation";
+import { validateUpload, HTML_MIME } from "@/lib/validation";
+import { injectHeightReporter } from "@/lib/html-embed";
 import { createBrowserSupabase } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/toast";
 import {
@@ -27,28 +28,35 @@ export function UploadDropzone({ projectId, folderId = null, onDone }: { project
   }
 
   function onFile(file: File) {
-    const check = validateUpload({ size: file.size, type: file.type });
+    const check = validateUpload({ size: file.size, type: file.type, name: file.name });
     if (!check.ok) {
       setError(check.error);
       toast.error(check.error);
       return;
     }
+    const isHtml = check.kind === "html";
     setError(null);
     setProgress(6);
     start(async () => {
       // Smooth simulated progress that eases toward ~92% and snaps to 100% on done.
       const iv = setInterval(() => setProgress((p) => (p < 92 ? p + (92 - p) * 0.14 : p)), 160);
       try {
+        const uploadType = isHtml ? HTML_MIME : file.type;
+
         // 1. Ask the server for a signed upload URL (tiny request).
-        const target = await createMockupUploadUrl(projectId, file.type);
+        const target = await createMockupUploadUrl(projectId, uploadType);
         if ("error" in target && target.error) return fail(target.error, iv);
 
         // 2. Send the bytes straight to Supabase Storage, bypassing the Server
-        // Action body limit so files up to 25 MB upload from anywhere.
+        // Action body limit so files up to 25 MB upload from anywhere. For HTML,
+        // inject a height-reporter so the viewer can size the sandboxed frame.
+        const body: Blob = isHtml
+          ? new Blob([injectHeightReporter(await file.text())], { type: HTML_MIME })
+          : file;
         const supabase = createBrowserSupabase();
         const { error: upErr } = await supabase.storage
           .from("mockups")
-          .uploadToSignedUrl(target.path!, target.token!, file, { contentType: file.type });
+          .uploadToSignedUrl(target.path!, target.token!, body, { contentType: uploadType });
         if (upErr) return fail(upErr.message, iv);
 
         // 3. Record the mockup row (reference only, no bytes).
@@ -56,7 +64,7 @@ export function UploadDropzone({ projectId, folderId = null, onDone }: { project
         clearInterval(iv);
         if (res.error) return fail(res.error);
         setProgress(100);
-        toast.success("File uploaded", { description: file.name });
+        toast.success(isHtml ? "HTML page uploaded" : "File uploaded", { description: file.name });
         setTimeout(() => setProgress(0), 500);
         router.refresh();
         onDone?.();
@@ -71,7 +79,7 @@ export function UploadDropzone({ projectId, folderId = null, onDone }: { project
       <input
         ref={inputRef}
         type="file"
-        accept="image/png,image/jpeg"
+        accept="image/png,image/jpeg,text/html,.html,.htm"
         className="hidden"
         onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
       />
@@ -121,7 +129,7 @@ export function UploadDropzone({ projectId, folderId = null, onDone }: { project
               <span className="block h-full rounded-full transition-[width] duration-200" style={{ width: `${progress}%`, background: "var(--color-brand)" }} />
             </span>
           ) : (
-            <span className="mt-0.5 block text-xs text-faint">PNG or JPG, up to 25 MB</span>
+            <span className="mt-0.5 block text-xs text-faint">PNG, JPG or HTML · up to 25 MB</span>
           )}
         </span>
       </button>

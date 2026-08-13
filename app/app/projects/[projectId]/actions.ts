@@ -2,10 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { ACCEPTED_IMAGE_TYPES } from "@/lib/validation";
+import { ACCEPTED_IMAGE_TYPES, HTML_MIME } from "@/lib/validation";
 
 function extForType(type: string) {
+  if (type === HTML_MIME) return "html";
   return type === "image/png" ? "png" : "jpg";
+}
+
+function typeForPath(path: string): "image" | "html" {
+  return /\.html?$/i.test(path) ? "html" : "image";
 }
 
 // Step 1 of the upload. The browser sends only the file *type* here; the action
@@ -18,8 +23,9 @@ function extForType(type: string) {
 // mockup objects" RLS policy (can_see_project) is enforced here: a non-member
 // cannot obtain a token for a project's folder.
 export async function createMockupUploadUrl(projectId: string, fileType: string) {
-  if (!ACCEPTED_IMAGE_TYPES.includes(fileType as (typeof ACCEPTED_IMAGE_TYPES)[number])) {
-    return { error: "Only PNG and JPG images are supported." };
+  const isImage = ACCEPTED_IMAGE_TYPES.includes(fileType as (typeof ACCEPTED_IMAGE_TYPES)[number]);
+  if (!isImage && fileType !== HTML_MIME) {
+    return { error: "Only PNG, JPG or HTML files are supported." };
   }
 
   const supabase = await createServerSupabase();
@@ -57,7 +63,7 @@ export async function finalizeMockup(
   const { error: insErr } = await supabase.from("mockups").insert({
     project_id: projectId,
     name,
-    type: "image",
+    type: typeForPath(path),
     file_path: path,
     created_by: userData.user.id,
     folder_id: folderId ?? null,
@@ -102,7 +108,7 @@ export async function addMockupVersion(baseMockupId: string, path: string) {
     .insert({
       project_id: base.project_id,
       name: base.name,
-      type: "image",
+      type: typeForPath(path),
       file_path: path,
       created_by: userData.user.id,
       version: nextVersion,

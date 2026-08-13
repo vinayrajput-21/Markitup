@@ -20,7 +20,7 @@ describe("createMockupUploadUrl", () => {
   it("rejects a non-image type before issuing a token", async () => {
     const { createMockupUploadUrl } = await import("./[projectId]/actions");
     const result = await createMockupUploadUrl("proj1", "image/gif");
-    expect(result.error).toBe("Only PNG and JPG images are supported.");
+    expect(result.error).toBe("Only PNG, JPG or HTML files are supported.");
   });
 
   it("returns a signed upload target for an image type", async () => {

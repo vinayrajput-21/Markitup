@@ -6,6 +6,7 @@ import { toNormalized } from "@/lib/coords";
 import { PinMarker } from "./PinMarker";
 import { PinComposer } from "./PinComposer";
 import { CommentThread, type Member } from "./CommentThread";
+import { HTML_HEIGHT_MESSAGE } from "@/lib/html-embed";
 import type { PendingAttachment } from "./RichCommentInput";
 import { CommentFilter, type Filter } from "./CommentFilter";
 import { createPin, addComment } from "@/app/app/mockups/[mockupId]/actions";
@@ -126,6 +127,7 @@ export function MockupViewer({
   members,
   currentUserName,
   figmaEmbedUrl,
+  htmlUrl,
   titleSlot,
   actionsSlot,
 }: {
@@ -140,13 +142,22 @@ export function MockupViewer({
   // When set, the canvas is a live Figma prototype embed (animations/video play)
   // with a transparent pin-capture overlay on top, instead of a static image.
   figmaEmbedUrl?: string | null;
+  // When set, the canvas is an uploaded HTML page rendered live in a sandboxed
+  // iframe. Browse mode lets the client interact; Comment mode drops pins.
+  htmlUrl?: string | null;
   // Rendered into the single top bar: the left title area and the right-hand
   // actions (share, notifications, profile). Supplied by the page.
   titleSlot?: React.ReactNode;
   actionsSlot?: React.ReactNode;
 }) {
   const isFigma = !!figmaEmbedUrl;
+  const isHtml = !!htmlUrl;
   const [pins, setPins] = useState<ViewerPin[]>(initialPins);
+  const [htmlHeight, setHtmlHeight] = useState(0);
+  const [htmlMode, setHtmlMode] = useState<"browse" | "comment">("browse");
+  const [htmlDoc, setHtmlDoc] = useState<string | null>(null);
+  const [htmlError, setHtmlError] = useState(false);
+  const htmlFrameRef = useRef<HTMLIFrameElement>(null);
   const [activePinId, setActivePinId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState<SortKey>("pins");
@@ -210,6 +221,42 @@ export function MockupViewer({
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+
+  // Storage serves the uploaded .html as text/plain, so an <iframe src> would
+  // show source. Fetch the markup and render it via srcdoc, which is always
+  // parsed as HTML and stays in the sandbox's opaque origin.
+  useEffect(() => {
+    if (!isHtml || !htmlUrl) return;
+    let alive = true;
+    setHtmlDoc(null);
+    setHtmlError(false);
+    fetch(htmlUrl)
+      .then((r) => r.text())
+      .then((text) => { if (alive) setHtmlDoc(text); })
+      .catch(() => { if (alive) setHtmlError(true); });
+    return () => { alive = false; };
+  }, [isHtml, htmlUrl]);
+
+  // HTML frame reports its own page height (it's cross-origin/opaque, so we
+  // can't read it directly). Size the frame to it so pins line up.
+  useEffect(() => {
+    if (!isHtml) return;
+    function onMsg(e: MessageEvent) {
+      if (e.source !== htmlFrameRef.current?.contentWindow) return;
+      const d = e.data;
+      if (d && d.type === HTML_HEIGHT_MESSAGE && typeof d.height === "number") {
+        setHtmlHeight(Math.min(60000, Math.max(200, Math.ceil(d.height))));
+      }
+    }
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, [isHtml]);
+
+  // Width of the HTML page: full canvas on desktop, phone width on mobile.
+  const htmlWidth = useMemo(() => {
+    const availW = Math.max(0, box.w - 48);
+    return device === "mobile" ? Math.min(390, availW) : availW;
+  }, [box.w, device]);
 
   // displayed width of the image for the current zoom mode
   const displayW = useMemo(() => {
@@ -603,9 +650,29 @@ export function MockupViewer({
 
       {/* canvas */}
       <div ref={canvasRef} className="relative min-h-0 min-w-0 flex-1 overflow-hidden bg-canvas">
+        {isHtml && (
+          <div className="absolute top-3 left-1/2 z-30 flex -translate-x-1/2 overflow-hidden rounded-lg border bg-surface shadow-md">
+            <button
+              onClick={() => setHtmlMode("browse")}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-colors"
+              style={htmlMode === "browse" ? { background: "var(--primary)", color: "var(--primary-foreground)" } : { color: "var(--muted-foreground)" }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" stroke="currentColor" strokeWidth="1.7" /><circle cx="12" cy="12" r="2.6" stroke="currentColor" strokeWidth="1.7" /></svg>
+              Browse
+            </button>
+            <button
+              onClick={() => setHtmlMode("comment")}
+              className="flex items-center gap-1.5 border-l px-3 py-1.5 text-xs font-semibold transition-colors"
+              style={htmlMode === "comment" ? { background: "var(--primary)", color: "var(--primary-foreground)" } : { color: "var(--muted-foreground)" }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M4 5h16v10H9l-5 4V5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /></svg>
+              Comment
+            </button>
+          </div>
+        )}
         <div ref={scrollRef} className="relative h-full overflow-auto">
           <div className="flex min-h-full min-w-full items-center justify-center p-6">
-            <div ref={surfaceRef} className="relative shrink-0" style={{ width: displayW || "100%" }}>
+            <div ref={surfaceRef} className="relative shrink-0" style={{ width: isHtml ? htmlWidth || "100%" : displayW || "100%" }}>
               {isFigma ? (
                 <>
                   {/* hidden probe: read the rendered frame's aspect ratio so the
@@ -635,6 +702,33 @@ export function MockupViewer({
                     </div>
                   </div>
                 </>
+              ) : isHtml ? (
+                <>
+                  {/* Untrusted uploaded HTML: sandboxed (no same-origin), so it
+                      runs isolated in an opaque origin, cross-origin to the app. */}
+                  {htmlError ? (
+                    <div className="grid h-96 w-full place-items-center rounded-lg bg-surface text-sm text-faint ring-1 ring-border">
+                      Couldn&apos;t load this HTML page.
+                    </div>
+                  ) : htmlDoc === null ? (
+                    <div className="grid h-96 w-full place-items-center rounded-lg bg-surface text-sm text-faint ring-1 ring-border">
+                      Loading page…
+                    </div>
+                  ) : (
+                    <iframe
+                      ref={htmlFrameRef}
+                      srcDoc={htmlDoc}
+                      title={imageName}
+                      sandbox="allow-scripts allow-popups allow-forms allow-modals allow-popups-to-escape-sandbox allow-pointer-lock"
+                      referrerPolicy="no-referrer"
+                      className="block w-full rounded-lg bg-white shadow-lg ring-1 ring-border"
+                      style={{ height: htmlHeight || 900, pointerEvents: htmlMode === "comment" ? "none" : "auto" }}
+                    />
+                  )}
+                  {/* Comment mode: capture clicks to drop pins (page interaction off). */}
+                  {htmlMode === "comment" && <div className="absolute inset-0 cursor-crosshair" onClick={handleSurfaceClick} />}
+                  {pinsOverlay}
+                </>
               ) : (
                 <>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -653,13 +747,23 @@ export function MockupViewer({
             </div>
           </div>
 
-          {counts.all === 0 && (
+          {counts.all === 0 && (!isHtml || htmlMode === "comment") && (
             <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center">
               <span
                 className="rounded-full px-4 py-2 text-xs font-medium shadow-lg"
                 style={{ background: "var(--foreground)", color: "var(--background)" }}
               >
                 Click anywhere on the design to leave a comment
+              </span>
+            </div>
+          )}
+          {isHtml && htmlMode === "browse" && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center">
+              <span
+                className="rounded-full px-4 py-2 text-xs font-medium shadow-lg"
+                style={{ background: "var(--foreground)", color: "var(--background)" }}
+              >
+                Interacting with the live page — switch to Comment to leave feedback
               </span>
             </div>
           )}

@@ -64,7 +64,7 @@ export default async function ProjectPage({
   // mockups at the current level (root = folder_id null)
   let mq = supabase
     .from("mockups")
-    .select("id, name, file_path, created_at, version, version_group")
+    .select("id, name, file_path, created_at, version, version_group, type")
     .eq("project_id", projectId)
     .is("archived_at", null)
     .order("version", { ascending: false });
@@ -104,6 +104,7 @@ export default async function ProjectPage({
     count: m.count,
     isNew: !viewedIds.has(m.id),
     createdAt: m.created_at,
+    type: (m.type as string) ?? "image",
   }));
 
   const here = chain.length ? chain[chain.length - 1].name : project?.name ?? "Project";

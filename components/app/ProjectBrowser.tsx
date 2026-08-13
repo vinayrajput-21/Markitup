@@ -10,7 +10,7 @@ import { FigmaImport } from "@/components/viewer/FigmaImport";
 import type { FolderOption } from "@/components/app/MoveToFolderDialog";
 
 type Folder = { id: string; name: string };
-export type FileItem = { id: string; name: string; url: string | null; version: number; count: number; isNew: boolean; createdAt: string };
+export type FileItem = { id: string; name: string; url: string | null; version: number; count: number; isNew: boolean; createdAt: string; type?: string };
 
 const TABS = [
   { key: "all", label: "All" },
@@ -106,7 +106,17 @@ export function ProjectBrowser({
                           New
                         </span>
                       )}
-                      {m.url ? (
+                      {m.type === "html" ? (
+                        <div className="grid h-full w-full place-items-center bg-brand-soft text-brand-ink">
+                          <div className="flex flex-col items-center gap-1.5">
+                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden>
+                              <path d="M4 4h16v16H4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                              <path d="m9.5 10-2 2 2 2M14.5 10l2 2-2 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            <span className="text-[0.625rem] font-bold tracking-wider uppercase">HTML</span>
+                          </div>
+                        </div>
+                      ) : m.url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={m.url} alt="" className="h-full w-full object-cover object-top" />
                       ) : (
