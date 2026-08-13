@@ -2,6 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { CompareView, type CompareMockup } from "@/components/viewer/CompareView";
+import type { CompareCommentGroup } from "@/components/viewer/CompareComments";
+import type { ViewerPin } from "@/components/viewer/MockupViewer";
+import { sanitizeCommentHtml } from "@/lib/sanitize";
+import { emailLocalPart } from "@/lib/format";
 
 export default async function ComparePage({
   params,
@@ -69,6 +73,67 @@ export default async function ComparePage({
     );
   }
 
+  // All comments across every version of this file, for the read-only sidebar.
+  const ids = list.map((m) => m.id);
+  const { data: pinRows } = await supabase
+    .from("pins")
+    .select(
+      "id, mockup_id, x, y, number, status, comments(id, body, parent_comment_id, created_at, profiles(name, email), comment_attachments(file_path, type, name))",
+    )
+    .in("mockup_id", ids)
+    .order("number", { ascending: true });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const attachmentPaths = (pinRows ?? []).flatMap((p: any) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (p.comments ?? []).flatMap((c: any) => (c.comment_attachments ?? []).map((a: any) => a.file_path as string)),
+  );
+  const signedAttachmentUrls = new Map<string, string>();
+  if (attachmentPaths.length) {
+    const { data: urls } = await supabase.storage.from("comment-files").createSignedUrls(attachmentPaths, 3600);
+    for (const u of urls ?? []) if (u.signedUrl && u.path) signedAttachmentUrls.set(u.path, u.signedUrl);
+  }
+
+  const pinsByMockup = new Map<string, ViewerPin[]>();
+  for (const p of pinRows ?? []) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const row = p as any;
+    const vp: ViewerPin = {
+      id: row.id,
+      x: row.x,
+      y: row.y,
+      number: row.number,
+      status: row.status,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      comments: (row.comments ?? []).map((c: any) => ({
+        id: c.id,
+        body: sanitizeCommentHtml((c.body as string) ?? ""),
+        parentCommentId: c.parent_comment_id,
+        createdAt: c.created_at,
+        authorName: c.profiles?.name || emailLocalPart(c.profiles?.email ?? "") || "Unknown",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        attachments: (c.comment_attachments ?? []).map((a: any) => ({
+          url: signedAttachmentUrls.get(a.file_path) ?? "",
+          type: a.type,
+          name: a.name,
+        })),
+      })),
+    };
+    const arr = pinsByMockup.get(row.mockup_id) ?? [];
+    arr.push(vp);
+    pinsByMockup.set(row.mockup_id, arr);
+  }
+
+  // Newest version first, only versions that actually have comments.
+  const commentGroups: CompareCommentGroup[] = [...list]
+    .reverse()
+    .map((m) => ({
+      key: m.id,
+      label: m.version ? `Version ${m.version}` : m.name,
+      pins: pinsByMockup.get(m.id) ?? [],
+    }))
+    .filter((g) => g.pins.some((p) => p.comments.length > 0));
+
   return (
     <CompareView
       mockups={list}
@@ -76,6 +141,7 @@ export default async function ComparePage({
       initialRight={initialRight}
       projectId={projectId}
       projectName={project.name}
+      commentGroups={commentGroups}
     />
   );
 }

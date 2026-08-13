@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { CompareComments, type CompareCommentGroup } from "./CompareComments";
 
 export type CompareMockup = { id: string; name: string; url: string; version?: number };
 
@@ -65,19 +66,24 @@ export function CompareView({
   initialRight,
   projectId,
   projectName,
+  commentGroups = [],
 }: {
   mockups: CompareMockup[];
   initialLeft: string; // previous / old
   initialRight: string; // latest / new
   projectId: string;
   projectName: string;
+  commentGroups?: CompareCommentGroup[];
 }) {
   const [mode, setMode] = useState<"overlay" | "side">("overlay");
   const [newId, setNewId] = useState(initialRight);
   const [oldId, setOldId] = useState(initialLeft);
   const [peek, setPeek] = useState(false);
   const [synced, setSynced] = useState(true);
+  const [showComments, setShowComments] = useState(true);
   const rootRef = useRef<HTMLDivElement>(null);
+
+  const commentCount = commentGroups.reduce((n, g) => n + g.pins.reduce((m, p) => m + p.comments.length, 0), 0);
 
   const newM = mockups.find((m) => m.id === newId);
   const oldM = mockups.find((m) => m.id === oldId);
@@ -180,9 +186,23 @@ export function CompareView({
               <path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 0-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
+          <button
+            onClick={() => setShowComments((v) => !v)}
+            aria-label={showComments ? "Hide comments" : "Show comments"}
+            title={showComments ? "Hide comments" : "Show comments"}
+            className="grid h-8 w-8 place-items-center rounded-md transition-colors hover:bg-[color:var(--accent)]"
+            style={showComments ? { background: "var(--color-brand-soft)", color: "var(--color-brand-ink)" } : { color: "var(--color-muted)" }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M4 5h16v10H9l-5 4V5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+            </svg>
+          </button>
           {ModeToggle}
         </div>
       </header>
+
+      <div className="flex min-h-0 flex-1">
+        <div className="flex min-w-0 flex-1 flex-col">
 
       {mode === "overlay" ? (
         <div className="min-h-0 flex-1 overflow-auto bg-canvas p-3">
@@ -204,6 +224,14 @@ export function CompareView({
           <Panel side="Latest" value={newId} onChange={setNewId} mockups={mockups} scrollRef={rightRef} onScroll={() => sync("r")} />
         </div>
       )}
+        </div>
+
+        {showComments && (
+          <aside className="w-80 shrink-0 border-l">
+            <CompareComments groups={commentGroups} />
+          </aside>
+        )}
+      </div>
     </div>
   );
 }
