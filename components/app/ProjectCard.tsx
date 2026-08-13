@@ -13,7 +13,7 @@ function Cover({ url, name, isHtml }: { url?: string; name: string; isHtml?: boo
   }
   return (
     <div className="grid h-full w-full place-items-center bg-brand-soft">
-      <span className="font-mono text-3xl font-bold text-brand/40">{name.slice(0, 1).toUpperCase()}</span>
+      <span className="font-mono text-3xl font-bold text-brand-ink/40">{name.slice(0, 1).toUpperCase()}</span>
     </div>
   );
 }

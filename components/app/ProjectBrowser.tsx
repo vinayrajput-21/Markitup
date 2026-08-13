@@ -103,7 +103,7 @@ export function ProjectBrowser({
                   <Link href={`/app/mockups/${m.id}`} className="card card-hover block overflow-hidden">
                     <div className="relative aspect-[4/3] w-full overflow-hidden border-b bg-canvas">
                       {m.isNew && (
-                        <span className="absolute top-2 left-2 z-10 rounded-full px-2 py-0.5 text-[0.625rem] font-bold tracking-wide text-white uppercase" style={{ background: "var(--color-brand)" }}>
+                        <span className="absolute top-2 left-2 z-10 rounded-full px-2 py-0.5 text-[0.625rem] font-bold tracking-wide text-[color:var(--primary-foreground)] uppercase" style={{ background: "var(--color-brand)" }}>
                           New
                         </span>
                       )}

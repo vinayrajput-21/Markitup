@@ -222,7 +222,7 @@ export function RichCommentInput({
           onDragOver={(e) => e.preventDefault()}
           onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); submit(); } }}
           data-project={projectId}
-          className="min-h-[3.5rem] w-full px-3 py-2 text-sm leading-relaxed text-ink outline-none [&_a]:text-brand [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5"
+          className="min-h-[3.5rem] w-full px-3 py-2 text-sm leading-relaxed text-ink outline-none [&_a]:text-brand-ink [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5"
         />
       </div>
       {attachments.length > 0 && (

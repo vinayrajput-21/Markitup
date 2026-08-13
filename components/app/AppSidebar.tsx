@@ -54,7 +54,7 @@ export function Avatar({
 function LogoMark() {
   return (
     <span
-      className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-white"
+      className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-[color:var(--primary-foreground)]"
       style={{ background: "var(--color-brand)" }}
     >
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -152,7 +152,7 @@ export function AppSidebar({ workspaceName }: { workspaceName: string }) {
             return (
               <li key={item.href}>
                 <Link href={item.href} className={active ? "nav-item-active" : "nav-item"}>
-                  <span className={active ? "text-brand" : "text-faint"}>{item.icon}</span>
+                  <span className={active ? "text-brand-ink" : "text-faint"}>{item.icon}</span>
                   {item.label}
                 </Link>
               </li>

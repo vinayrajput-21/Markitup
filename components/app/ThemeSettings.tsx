@@ -10,7 +10,7 @@ const ACCENTS: Accent[] = [
   { id: "blue", label: "Blue", swatch: "#2563eb" },
   { id: "sky", label: "Sky", swatch: "#0ea5e9" },
   { id: "slate", label: "Slate", swatch: "#5b5bd6" },
-  { id: "green", label: "Green", swatch: "#16a34a" },
+  { id: "green", label: "Lime", swatch: "#c4f73c" },
   { id: "yellow", label: "Yellow", swatch: "#eab308" },
   { id: "orange", label: "Orange", swatch: "#f97316" },
   { id: "stone", label: "Stone", swatch: "#78716c" },

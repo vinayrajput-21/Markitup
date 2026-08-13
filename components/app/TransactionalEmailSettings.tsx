@@ -56,7 +56,7 @@ export function TransactionalEmailSettings({ initial, canManage, sample }: { ini
               key={m.key}
               onClick={() => setActive(m.key)}
               className="rounded px-3 py-1 text-xs font-semibold transition-colors"
-              style={on ? { background: "var(--color-brand)", color: "#fff" } : { color: "var(--color-muted)" }}
+              style={on ? { background: "var(--color-brand)", color: "var(--primary-foreground)" } : { color: "var(--color-muted)" }}
             >
               {m.label}
             </button>
@@ -105,7 +105,7 @@ export function TransactionalEmailSettings({ initial, canManage, sample }: { ini
             <div className="my-3 h-px bg-[color:var(--color-border)]" />
             <p className="text-sm font-semibold" style={{ color: "var(--color-brand-ink)" }}>MarkUp</p>
             <p className="mt-2 text-sm whitespace-pre-line text-muted">{previewMessage || "Your message…"}</p>
-            <span className="mt-3 inline-block rounded-md px-3.5 py-1.5 text-sm font-semibold text-white" style={{ background: "var(--color-brand)" }}>
+            <span className="mt-3 inline-block rounded-md px-3.5 py-1.5 text-sm font-semibold text-[color:var(--primary-foreground)]" style={{ background: "var(--color-brand)" }}>
               {tpl.button_label || "Open MarkUp"}
             </span>
             <p className="mt-4 text-xs text-faint">Sent with MarkUp · visual feedback for your team</p>

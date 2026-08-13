@@ -67,7 +67,7 @@ export default async function ArchivePage() {
                       <span className="block truncate font-semibold text-ink">{m.name}</span>
                       <span className="font-mono text-xs text-faint">
                         in{" "}
-                        <Link href={`/app/projects/${m.project_id}`} className="text-brand hover:underline">
+                        <Link href={`/app/projects/${m.project_id}`} className="text-brand-ink hover:underline">
                           {m.projects?.name ?? "project"}
                         </Link>{" "}
                         · archived {timeAgo(m.archived_at)}

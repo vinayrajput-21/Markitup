@@ -587,7 +587,7 @@ export function MockupViewer({
                             >
                               {s.label}
                               {sort === s.key && (
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className="text-brand" aria-hidden>
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className="text-brand-ink" aria-hidden>
                                   <path d="m5 12 4.5 4.5L19 7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
                               )}

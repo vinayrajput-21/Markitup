@@ -22,7 +22,7 @@ function CommentRow({ c, small = false }: { c: ViewerComment; small?: boolean })
           <span className="shrink-0 font-mono text-[0.6875rem] text-faint" title={formatDateTime(c.createdAt)}>{timeAgo(c.createdAt)}</span>
         </div>
         <div
-          className="mt-0.5 text-sm leading-relaxed break-words text-muted [&_a]:text-brand [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5"
+          className="mt-0.5 text-sm leading-relaxed break-words text-muted [&_a]:text-brand-ink [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5"
           dangerouslySetInnerHTML={{ __html: c.body }}
         />
         {c.attachments?.length > 0 && (
@@ -186,7 +186,7 @@ export function CommentThread({
               ))}
               <button
                 onClick={() => setReplyTo(c.id)}
-                className="text-xs font-semibold text-brand transition-colors hover:text-brand-hover"
+                className="text-xs font-semibold text-brand-ink transition-colors hover:text-brand-hover"
               >
                 Reply
               </button>

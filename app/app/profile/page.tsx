@@ -32,7 +32,7 @@ export default async function ProfilePage() {
         </div>
         <div className="flex items-center gap-3">
           <button type="submit" className="btn-primary">Save changes</button>
-          <Link href="/forgot-password" className="text-sm font-semibold text-brand hover:text-brand-hover">
+          <Link href="/forgot-password" className="text-sm font-semibold text-brand-ink hover:text-brand-hover">
             Change password
           </Link>
         </div>

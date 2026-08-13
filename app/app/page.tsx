@@ -49,7 +49,7 @@ export default async function DashboardPage() {
       {items.length === 0 ? (
         <div className="rise-in card grid place-items-center px-6 py-16 text-center">
           <h3 className="text-lg font-semibold">No projects yet</h3>
-          <p className="mt-1 max-w-sm text-sm text-muted">Head to <Link href="/app/projects" className="font-semibold text-brand">Projects</Link> to create one and start collecting pinned feedback.</p>
+          <p className="mt-1 max-w-sm text-sm text-muted">Head to <Link href="/app/projects" className="font-semibold text-brand-ink">Projects</Link> to create one and start collecting pinned feedback.</p>
         </div>
       ) : (
         <>
@@ -64,7 +64,7 @@ export default async function DashboardPage() {
             <div>
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-sm font-bold text-ink">Recent projects</h2>
-                <Link href="/app/projects" className="text-sm font-medium text-brand transition-colors hover:text-brand-hover">View all →</Link>
+                <Link href="/app/projects" className="text-sm font-medium text-brand-ink transition-colors hover:text-brand-hover">View all →</Link>
               </div>
               <ProjectGrid items={recentProjects} />
             </div>

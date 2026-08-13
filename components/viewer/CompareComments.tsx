@@ -48,7 +48,7 @@ function CommentRow({ c, small = false }: { c: ViewerComment; small?: boolean })
           <span className="shrink-0 font-mono text-[0.6875rem] text-faint" title={formatDateTime(c.createdAt)}>{timeAgo(c.createdAt)}</span>
         </div>
         <div
-          className="mt-0.5 text-sm leading-relaxed break-words text-muted [&_a]:text-brand [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5"
+          className="mt-0.5 text-sm leading-relaxed break-words text-muted [&_a]:text-brand-ink [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5"
           dangerouslySetInnerHTML={{ __html: c.body }}
         />
         {c.attachments?.length > 0 && (
@@ -195,7 +195,7 @@ export function CompareComments({
                       >
                         {s.label}
                         {sort === s.key && (
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className="text-brand" aria-hidden>
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className="text-brand-ink" aria-hidden>
                             <path d="m5 12 4.5 4.5L19 7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         )}
