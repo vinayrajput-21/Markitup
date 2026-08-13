@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Kebab (⋯) button + dropdown used on project and file cards. Renders its items
 // via a render prop so each caller can compose its own actions (and inline
@@ -16,12 +16,44 @@ export function CardMenu({
   children: (close: () => void) => React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
   function close() {
     setOpen(false);
     onClose?.();
   }
+
+  // Close on any click outside the menu (a fixed backdrop can't be used here —
+  // the card's hover-transform + overflow-hidden would trap it to the card) or
+  // on Escape.
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(e: PointerEvent) {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
+        close();
+        // Swallow the click this outside-press produces, so dismissing the menu
+        // doesn't also navigate the card / trigger the thing underneath.
+        const swallow = (ce: Event) => {
+          ce.preventDefault();
+          ce.stopPropagation();
+          document.removeEventListener("click", swallow, true);
+        };
+        document.addEventListener("click", swallow, true);
+      }
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") close();
+    }
+    document.addEventListener("pointerdown", onPointerDown, true);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      document.removeEventListener("keydown", onKey);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
   return (
-    <div className="relative">
+    <div ref={rootRef} className="relative">
       <button
         type="button"
         aria-label={label}
@@ -35,12 +67,9 @@ export function CardMenu({
         </svg>
       </button>
       {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={(e) => { e.preventDefault(); close(); }} />
-          <div className="absolute right-0 z-50 mt-1 w-48 overflow-hidden rounded-lg border bg-surface-2 p-1 shadow-lg">
-            {children(close)}
-          </div>
-        </>
+        <div className="absolute right-0 z-50 mt-1 w-48 overflow-hidden rounded-lg border bg-surface-2 p-1 shadow-lg">
+          {children(close)}
+        </div>
       )}
     </div>
   );

@@ -3,17 +3,32 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-// Number of cartoon avatars available under /public/avatars.
-const AVATAR_COUNT = 30;
+// Vivid, evenly-spaced hues — all readable with white text.
+const AVATAR_COLORS = [
+  "#dc2626", "#ea580c", "#d97706", "#ca8a04", "#65a30d", "#16a34a",
+  "#059669", "#0d9488", "#0891b2", "#0284c7", "#2563eb", "#4f46e5",
+  "#7c3aed", "#9333ea", "#c026d3", "#db2777", "#e11d48",
+];
 
-// Deterministic 1..AVATAR_COUNT from a seed, so each person keeps a stable
-// (but varied) cartoon avatar.
-function avatarIndex(seed: string) {
+function seedHash(seed: string) {
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
-  return (h % AVATAR_COUNT) + 1;
+  return h;
 }
 
+// One or two letters: initials of a name, else the first letters of the email.
+function initialsOf(name: string, email: string) {
+  const clean = (name || "").trim();
+  if (clean) {
+    const parts = clean.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    return clean.slice(0, 2).toUpperCase();
+  }
+  const local = (email || "").split("@")[0];
+  return local ? local.slice(0, 2).toUpperCase() : "?";
+}
+
+// A colored circle with the person's initials — deterministic per person.
 export function Avatar({
   name,
   email,
@@ -23,22 +38,15 @@ export function Avatar({
   email: string;
   size?: number;
 }) {
-  const n = avatarIndex((email || name || "?").toLowerCase());
+  const seed = (email || name || "?").toLowerCase();
+  const bg = AVATAR_COLORS[seedHash(seed) % AVATAR_COLORS.length];
   return (
     <span
-      className="inline-block shrink-0 overflow-hidden rounded-full bg-canvas"
-      style={{ width: size, height: size }}
+      className="inline-grid shrink-0 place-items-center rounded-full leading-none font-semibold text-white select-none"
+      style={{ width: size, height: size, background: bg, fontSize: Math.max(9, Math.round(size * 0.4)) }}
       aria-hidden
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={`/avatars/${n}.png`}
-        alt=""
-        width={size}
-        height={size}
-        draggable={false}
-        className="h-full w-full object-cover"
-      />
+      {initialsOf(name, email)}
     </span>
   );
 }
