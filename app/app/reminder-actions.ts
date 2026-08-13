@@ -7,6 +7,58 @@ import { sendEmail } from "@/lib/email/send";
 import { reminderEmail } from "@/lib/email/templates";
 import { renderWorkspaceEmail } from "@/lib/email/workspace-templates";
 import { fillTemplate, REMINDER_DEFAULTS, type ReminderSettings } from "@/lib/reminders";
+import { emailLocalPart } from "@/lib/format";
+
+export type EmailSample = {
+  sender: string;
+  inviter: string;
+  page_name: string;
+  project: string;
+  type: string;
+  role: string;
+  workspace: string;
+};
+
+// Real values for email previews / test sends: the signed-in user as the sender,
+// and their most recent real file + project (falls back to friendly defaults).
+export async function getEmailSampleContext(): Promise<EmailSample> {
+  const supabase = await createServerSupabase();
+  const ws = await getCurrentWorkspace();
+  const { data: userData } = await supabase.auth.getUser();
+  const senderName =
+    (userData.user?.user_metadata?.name as string) || emailLocalPart(userData.user?.email ?? "") || "You";
+
+  let pageName = "your design";
+  let projectName = ws?.name ?? "your project";
+  if (ws?.id) {
+    const { data: projs } = await supabase.from("projects").select("id, name").eq("workspace_id", ws.id);
+    const nameById = new Map((projs ?? []).map((p) => [p.id as string, p.name as string]));
+    const projectIds = (projs ?? []).map((p) => p.id as string);
+    if (projectIds.length) {
+      const { data: mk } = await supabase
+        .from("mockups")
+        .select("name, project_id")
+        .in("project_id", projectIds)
+        .is("archived_at", null)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (mk?.[0]) {
+        pageName = mk[0].name as string;
+        projectName = nameById.get(mk[0].project_id as string) ?? projectName;
+      }
+    }
+  }
+
+  return {
+    sender: senderName,
+    inviter: senderName,
+    page_name: pageName,
+    project: projectName,
+    type: "file",
+    role: "Manager",
+    workspace: ws?.name ?? "your workspace",
+  };
+}
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://markitup-woad.vercel.app";
 
@@ -82,13 +134,12 @@ export async function saveReminderSettings(input: ReminderSettings) {
 }
 
 export async function sendTestReminder(settings: ReminderSettings) {
-  const ws = await getCurrentWorkspace();
   const supabase = await createServerSupabase();
   const { data: userData } = await supabase.auth.getUser();
   const email = userData.user?.email;
   if (!email) return { error: "No email on your account" };
-  const senderName = (userData.user?.user_metadata?.name as string) || email;
-  const vars = { page_name: "Homepage file", sender: senderName, type: "file", project: ws?.name ?? "Demo project" };
+  const sample = await getEmailSampleContext();
+  const vars = { page_name: sample.page_name, sender: sample.sender, type: sample.type, project: sample.project };
   const tpl = reminderEmail({
     subject: fillTemplate(settings.subject, vars),
     message: fillTemplate(settings.message, vars),
@@ -142,7 +193,15 @@ export async function sendToClient(mockupId: string, email: string, name?: strin
     { sender: senderName, page_name: pageName, type: "file", project: projectName },
     href,
   );
-  await sendEmail({ to: clean, ...clientEmail });
+  const sent = await sendEmail({ to: clean, ...clientEmail });
+  if (!sent.ok) {
+    // The share link exists — the client just wasn't emailed (email not configured
+    // or the address was rejected). Tell the user honestly instead of a false success.
+    return {
+      error: "The share link is ready, but the email couldn't be sent — email delivery isn't set up yet. Use “Copy link” to share it manually.",
+      token,
+    };
+  }
 
   // schedule follow-ups only when reminders are enabled for this workspace
   const { data: st } = await supabase

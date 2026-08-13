@@ -7,11 +7,11 @@ import { sendEmail } from "@/lib/email/send";
 import { templatedEmail } from "@/lib/email/templates";
 import {
   EMAIL_TEMPLATE_DEFAULTS,
-  EMAIL_TEMPLATE_META,
   fillEmailTemplate,
   type EmailTemplate,
   type EmailTemplateKey,
 } from "@/lib/email-templates";
+import { getEmailSampleContext } from "@/app/app/reminder-actions";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://markitup-woad.vercel.app";
 const KEYS: EmailTemplateKey[] = ["client_invite", "team_invite"];
@@ -85,20 +85,14 @@ export async function sendTestTemplate(key: EmailTemplateKey, tpl: EmailTemplate
   const to = userData.user?.email;
   if (!to) return { error: "No email on your account" };
 
-  const meta = EMAIL_TEMPLATE_META.find((m) => m.key === key)!;
-  const vars = { ...meta.sample };
-  const href = `${APP_URL}/app`;
+  const vars = await getEmailSampleContext();
   const content = templatedEmail({
     subject: `[Test] ${fillEmailTemplate(tpl.subject, vars)}`,
     message: fillEmailTemplate(tpl.message, vars),
     buttonLabel: tpl.button_label,
-    href,
+    href: `${APP_URL}/app`,
   });
-  try {
-    await sendEmail({ to, ...content });
-  } catch (e) {
-    console.error("[email test] failed", e);
-    return { error: "Could not send the test email." };
-  }
+  const res = await sendEmail({ to, ...content });
+  if (!res.ok) return { error: "Could not send — check that email is configured (RESEND_API_KEY + a verified EMAIL_FROM)." };
   return { ok: true, sentTo: to };
 }

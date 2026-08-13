@@ -2,11 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { fillTemplate, REMINDER_PLACEHOLDERS, type ReminderSettings } from "@/lib/reminders";
-import { saveReminderSettings, sendTestReminder, type ScheduleRow } from "@/app/app/reminder-actions";
+import { saveReminderSettings, sendTestReminder, type ScheduleRow, type EmailSample } from "@/app/app/reminder-actions";
 import { useToast } from "@/components/ui/toast";
 import { timeAgo } from "@/lib/format";
-
-const SAMPLE = { page_name: "Homepage file", sender: "Sajad Sheikh", type: "file", project: "Chorus" };
 
 function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
@@ -39,7 +37,7 @@ function Row({ title, desc, children }: { title: string; desc: string; children:
   );
 }
 
-export function RemindersSettings({ initial, schedules }: { initial: ReminderSettings; schedules: ScheduleRow[] }) {
+export function RemindersSettings({ initial, schedules, sample }: { initial: ReminderSettings; schedules: ScheduleRow[]; sample: EmailSample }) {
   const [s, setS] = useState<ReminderSettings>(initial);
   const [saving, startSave] = useTransition();
   const [testing, startTest] = useTransition();
@@ -104,9 +102,9 @@ export function RemindersSettings({ initial, schedules }: { initial: ReminderSet
               <span className="h-2 w-2 rounded-full bg-[color:var(--color-border-strong)]" />
               <span className="h-2 w-2 rounded-full bg-[color:var(--color-border-strong)]" />
             </div>
-            <p className="text-sm font-bold text-ink">{fillTemplate(s.subject, SAMPLE) || "Subject…"}</p>
+            <p className="text-sm font-bold text-ink">{fillTemplate(s.subject, sample) || "Subject…"}</p>
             <p className="mt-0.5 text-xs text-faint">From MarkUp · to client@email.com</p>
-            <p className="mt-3 text-sm whitespace-pre-line text-muted">{fillTemplate(s.message, SAMPLE) || "Your message…"}</p>
+            <p className="mt-3 text-sm whitespace-pre-line text-muted">{fillTemplate(s.message, sample) || "Your message…"}</p>
             <span className="mt-3 inline-block rounded-md px-3.5 py-1.5 text-sm font-semibold text-white" style={{ background: "var(--color-brand)" }}>
               {s.button_label || "Leave feedback"}
             </span>

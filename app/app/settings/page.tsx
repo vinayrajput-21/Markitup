@@ -4,7 +4,7 @@ import { FigmaConnect } from "@/components/app/FigmaConnect";
 import { SlackConnect } from "@/components/app/SlackConnect";
 import { ThemeSettings } from "@/components/app/ThemeSettings";
 import { RemindersSettings } from "@/components/app/RemindersSettings";
-import { getReminderData } from "@/app/app/reminder-actions";
+import { getReminderData, getEmailSampleContext } from "@/app/app/reminder-actions";
 import { getTeamData } from "@/app/app/team-actions";
 import { getEmailTemplates } from "@/app/app/email-actions";
 import { TeamRoster } from "@/components/app/TeamRoster";
@@ -54,12 +54,13 @@ const MailIcon = (
 );
 
 export default async function SettingsPage() {
-  const [{ connected }, { connected: slackConnected }, { settings, schedules }, teamData, emailTemplates] = await Promise.all([
+  const [{ connected }, { connected: slackConnected }, { settings, schedules }, teamData, emailTemplates, emailSample] = await Promise.all([
     getFigmaConnection(),
     getSlackConnection(),
     getReminderData(),
     getTeamData(),
     getEmailTemplates(),
+    getEmailSampleContext(),
   ]);
 
   const sections: SettingsSection[] = [
@@ -73,7 +74,7 @@ export default async function SettingsPage() {
             title="Client reminders"
             desc="Automatically follow up with clients until they leave feedback. Reminders only apply to files you send with “Send to client”."
           />
-          <RemindersSettings initial={settings} schedules={schedules} />
+          <RemindersSettings initial={settings} schedules={schedules} sample={emailSample} />
         </>
       ),
     },
@@ -105,7 +106,7 @@ export default async function SettingsPage() {
             title="Transactional email"
             desc="The emails MarkUp sends on your behalf. Placeholders fill in automatically at send time."
           />
-          <TransactionalEmailSettings initial={emailTemplates.templates} canManage={emailTemplates.canManage} />
+          <TransactionalEmailSettings initial={emailTemplates.templates} canManage={emailTemplates.canManage} sample={emailSample} />
         </>
       ),
     },

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useToast } from "@/components/ui/toast";
 import { saveEmailTemplate, sendTestTemplate } from "@/app/app/email-actions";
+import type { EmailSample } from "@/app/app/reminder-actions";
 import {
   EMAIL_TEMPLATE_META,
   fillEmailTemplate,
@@ -12,7 +13,7 @@ import {
 
 type Templates = Record<EmailTemplateKey, EmailTemplate>;
 
-export function TransactionalEmailSettings({ initial, canManage }: { initial: Templates; canManage: boolean }) {
+export function TransactionalEmailSettings({ initial, canManage, sample }: { initial: Templates; canManage: boolean; sample: EmailSample }) {
   const [templates, setTemplates] = useState<Templates>(initial);
   const [active, setActive] = useState<EmailTemplateKey>("client_invite");
   const [saving, startSave] = useTransition();
@@ -41,8 +42,8 @@ export function TransactionalEmailSettings({ initial, canManage }: { initial: Te
     set({ message: `${tpl.message} {{${name}}}`.replace(/\s+\{\{/g, " {{") });
   }
 
-  const previewSubject = fillEmailTemplate(tpl.subject, meta.sample);
-  const previewMessage = fillEmailTemplate(tpl.message, meta.sample);
+  const previewSubject = fillEmailTemplate(tpl.subject, sample);
+  const previewMessage = fillEmailTemplate(tpl.message, sample);
 
   return (
     <div className="space-y-5">
