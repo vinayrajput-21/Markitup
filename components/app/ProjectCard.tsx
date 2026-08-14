@@ -51,18 +51,15 @@ export function ProjectCard({
   return (
     <div className="group relative">
       <Link href={`/app/projects/${id}`} className="block transition-transform duration-200 ease-out group-hover:-translate-y-0.5">
-        {/* folder: a tab + body holding the inset preview */}
-        <div className="relative">
-          <div className="h-4 w-[42%] rounded-t-[14px]" style={{ background: "var(--secondary)" }} aria-hidden />
-          <div className="rounded-2xl rounded-tl-none p-2.5 transition-colors group-hover:brightness-[0.99]" style={{ background: "var(--secondary)" }}>
-            <div className="aspect-[16/10] w-full overflow-hidden rounded-xl bg-canvas ring-1 ring-[color:var(--border)]">
-              <Cover url={coverUrl} name={name} isHtml={coverIsHtml} />
-            </div>
+        {/* folder: a tab + a body that wraps the whole card */}
+        <div className="h-4 w-[40%] rounded-t-[8px]" style={{ background: "var(--secondary)" }} aria-hidden />
+        <div className="rounded-[8px] rounded-tl-none p-4 transition-colors group-hover:brightness-[0.985]" style={{ background: "var(--secondary)" }}>
+          <div className="aspect-[16/10] w-full overflow-hidden rounded-[6px] bg-canvas ring-1 ring-[color:var(--border)]">
+            <Cover url={coverUrl} name={name} isHtml={coverIsHtml} />
           </div>
-        </div>
 
-        {/* meta */}
-        <div className="px-2 pt-4">
+          {/* meta */}
+          <div className="px-0.5 pt-4">
           <h3 className="truncate text-[0.95rem] font-semibold text-ink">{name}</h3>
           <div className="mt-2.5 flex items-center gap-3.5 text-xs text-faint">
             <Stat label="files" value={stats.mockups}>
@@ -90,7 +87,7 @@ export function ProjectCard({
                 <>
                   <div className="flex -space-x-2">
                     {viewers.slice(0, 4).map((v, i) => (
-                      <span key={i} className="rounded-full ring-2 ring-[color:var(--color-canvas)]">
+                      <span key={i} className="rounded-full ring-2 ring-[color:var(--secondary)]">
                         <Avatar name={v.name} email={v.email} size={22} />
                       </span>
                     ))}
@@ -111,6 +108,7 @@ export function ProjectCard({
               )}
             </div>
             {menu && <div className="shrink-0">{menu}</div>}
+          </div>
           </div>
         </div>
       </Link>

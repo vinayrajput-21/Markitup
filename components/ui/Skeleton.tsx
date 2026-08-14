@@ -16,21 +16,22 @@ export function SkeletonStatTile() {
 export function SkeletonProjectCard() {
   return (
     <div>
-      {/* folder */}
-      <div className="h-4 w-[42%] rounded-t-[14px]" style={{ background: "var(--secondary)" }} />
-      <div className="rounded-2xl rounded-tl-none p-2.5" style={{ background: "var(--secondary)" }}>
-        <Skeleton className="aspect-[16/10] w-full rounded-xl" />
-      </div>
-      <div className="space-y-3 px-2 pt-4">
-        <Skeleton className="h-4 w-2/3 rounded" />
-        <div className="flex gap-3">
-          <Skeleton className="h-3 w-9 rounded" />
-          <Skeleton className="h-3 w-9 rounded" />
-          <Skeleton className="h-3 w-9 rounded" />
-        </div>
-        <div className="flex items-center gap-2 border-t pt-4">
-          <Skeleton className="h-6 w-6 rounded-full" />
-          <Skeleton className="h-3 w-24 rounded" />
+      {/* folder tab */}
+      <div className="h-4 w-[40%] rounded-t-[8px]" style={{ background: "var(--secondary)" }} />
+      {/* folder body wraps the whole card */}
+      <div className="rounded-[8px] rounded-tl-none p-4" style={{ background: "var(--secondary)" }}>
+        <Skeleton className="aspect-[16/10] w-full rounded-[6px]" />
+        <div className="space-y-3 px-0.5 pt-4">
+          <Skeleton className="h-4 w-2/3 rounded" />
+          <div className="flex gap-3">
+            <Skeleton className="h-3 w-9 rounded" />
+            <Skeleton className="h-3 w-9 rounded" />
+            <Skeleton className="h-3 w-9 rounded" />
+          </div>
+          <div className="flex items-center gap-2 border-t pt-4">
+            <Skeleton className="h-6 w-6 rounded-full" />
+            <Skeleton className="h-3 w-24 rounded" />
+          </div>
         </div>
       </div>
     </div>
