@@ -70,7 +70,7 @@ export function ProjectBrowser({
 
       {/* Add files — always open, no popup. Drop an image (left) or paste a Figma link (right). */}
       {!query && (
-        <div className="mb-6 grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
+        <div className="mb-6 grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2">
           <UploadDropzone projectId={projectId} folderId={currentFolderId} />
           <FigmaImport projectId={projectId} folderId={currentFolderId} />
         </div>

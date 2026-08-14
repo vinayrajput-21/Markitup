@@ -75,7 +75,7 @@ export function UploadDropzone({ projectId, folderId = null, onDone }: { project
   }
 
   return (
-    <div>
+    <div className="flex h-full flex-col">
       <input
         ref={inputRef}
         type="file"
@@ -98,7 +98,7 @@ export function UploadDropzone({ projectId, folderId = null, onDone }: { project
           const f = e.dataTransfer.files?.[0];
           if (f) onFile(f);
         }}
-        className="group flex w-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed px-6 py-10 text-center transition-colors duration-150 disabled:opacity-70"
+        className="group flex w-full flex-1 flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed px-6 py-10 text-center transition-colors duration-150 disabled:opacity-70"
         style={{
           borderColor: dragging ? "var(--color-brand-ring)" : "var(--color-border-strong)",
           background: dragging ? "var(--color-brand-soft)" : "var(--color-surface)",
@@ -106,7 +106,7 @@ export function UploadDropzone({ projectId, folderId = null, onDone }: { project
       >
         <span
           className="grid h-12 w-12 place-items-center rounded-full transition-colors"
-          style={{ background: "var(--color-brand-soft)", color: "var(--color-brand)" }}
+          style={{ background: "var(--color-brand-soft)", color: "var(--color-brand-ink)" }}
         >
           {pending ? (
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="animate-spin" aria-hidden>

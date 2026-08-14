@@ -32,7 +32,7 @@ export function FigmaImport({ projectId, folderId = null, onDone }: { projectId:
   }
 
   return (
-    <div className="rounded-lg border bg-surface p-4">
+    <div className="h-full rounded-lg border bg-surface p-4">
       <div className="mb-2.5 flex items-center gap-2">
         <svg width="13" height="19" viewBox="0 0 38 57" aria-hidden>
           <path d="M19 28.5a9.5 9.5 0 1 1 19 0 9.5 9.5 0 0 1-19 0Z" fill="#1abcfe" />

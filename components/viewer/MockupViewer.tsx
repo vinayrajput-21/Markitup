@@ -6,7 +6,7 @@ import { toNormalized } from "@/lib/coords";
 import { PinMarker } from "./PinMarker";
 import { PinComposer } from "./PinComposer";
 import { CommentThread, type Member } from "./CommentThread";
-import { HTML_HEIGHT_MESSAGE } from "@/lib/html-embed";
+import { HTML_HEIGHT_MESSAGE, injectHeightReporter, stripHeightReporter } from "@/lib/html-embed";
 import type { PendingAttachment } from "./RichCommentInput";
 import { CommentFilter, type Filter } from "./CommentFilter";
 import { createPin, addComment } from "@/app/app/mockups/[mockupId]/actions";
@@ -233,7 +233,7 @@ export function MockupViewer({
     setHtmlError(false);
     fetch(htmlUrl)
       .then((r) => r.text())
-      .then((text) => { if (alive) setHtmlDoc(text); })
+      .then((text) => { if (alive) setHtmlDoc(injectHeightReporter(stripHeightReporter(text))); })
       .catch(() => { if (alive) setHtmlError(true); });
     return () => { alive = false; };
   }, [isHtml, htmlUrl]);
@@ -672,7 +672,7 @@ export function MockupViewer({
           </div>
         )}
         <div ref={scrollRef} className="relative h-full overflow-auto">
-          <div className="flex min-h-full min-w-full items-center justify-center p-6">
+          <div className={`flex min-h-full min-w-full items-center justify-center px-6 pb-6 ${isHtml ? "pt-16" : "pt-6"}`}>
             <div ref={surfaceRef} className="relative shrink-0" style={{ width: isHtml ? htmlWidth || "100%" : displayW || "100%" }}>
               {isFigma ? (
                 <>
