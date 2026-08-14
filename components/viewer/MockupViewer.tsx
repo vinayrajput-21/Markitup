@@ -229,13 +229,16 @@ export function MockupViewer({
   useEffect(() => {
     if (!isHtml || !htmlUrl) return;
     let alive = true;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 20000);
     setHtmlDoc(null);
     setHtmlError(false);
-    fetch(htmlUrl)
-      .then((r) => r.text())
+    fetch(htmlUrl, { signal: ctrl.signal })
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.text(); })
       .then((text) => { if (alive) setHtmlDoc(injectHeightReporter(stripHeightReporter(text))); })
-      .catch(() => { if (alive) setHtmlError(true); });
-    return () => { alive = false; };
+      .catch(() => { if (alive) setHtmlError(true); })
+      .finally(() => clearTimeout(timer));
+    return () => { alive = false; ctrl.abort(); clearTimeout(timer); };
   }, [isHtml, htmlUrl]);
 
   // HTML frame reports its own page height (it's cross-origin/opaque, so we

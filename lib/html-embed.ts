@@ -21,6 +21,12 @@ export function injectHeightReporter(html: string): string {
 
 // Remove any previously-injected reporter so we can re-inject the current one
 // (lets already-uploaded mockups pick up measurement fixes at view time).
+// The tempered `(?:(?!</script>)[\s\S])*?` tokens stop at the first </script>,
+// so we only ever remove the single reporter script — never other page scripts
+// or the markup between them.
 export function stripHeightReporter(html: string): string {
-  return html.replace(/<script\b[^>]*>[\s\S]*?markitup:height[\s\S]*?<\/script>/gi, "");
+  return html.replace(
+    /<script\b[^>]*>(?:(?!<\/script>)[\s\S])*?markitup:height(?:(?!<\/script>)[\s\S])*?<\/script>/gi,
+    "",
+  );
 }
