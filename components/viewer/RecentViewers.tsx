@@ -43,7 +43,7 @@ export function RecentViewers({ viewers }: { viewers: Viewer[] }) {
             <div className="border-b px-3 py-2 text-xs font-semibold text-muted">Recently viewed by</div>
             <ul className="max-h-80 divide-y overflow-y-auto">
               {viewers.map((v) => (
-                <li key={v.id} className="flex items-center gap-2.5 px-3 py-2">
+                <li key={v.id} className="flex items-center gap-3 px-3 py-2">
                   <Avatar name={v.name} email={v.email} size={28} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm text-ink">{v.name}</span>

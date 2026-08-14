@@ -147,14 +147,14 @@ export function CompareView({
     <div className="flex overflow-hidden rounded-md border">
       <button
         onClick={() => setMode("overlay")}
-        className="px-2.5 py-1 text-xs font-semibold transition-colors"
+        className="px-3 py-1 text-xs font-semibold transition-colors"
         style={mode === "overlay" ? { background: "var(--primary)", color: "var(--primary-foreground)" } : { color: "var(--muted-foreground)" }}
       >
         Overlay
       </button>
       <button
         onClick={() => setMode("side")}
-        className="border-l px-2.5 py-1 text-xs font-semibold transition-colors"
+        className="border-l px-3 py-1 text-xs font-semibold transition-colors"
         style={mode === "side" ? { background: "var(--primary)", color: "var(--primary-foreground)" } : { color: "var(--muted-foreground)" }}
       >
         Side by side
@@ -200,7 +200,7 @@ export function CompareView({
               onPointerDown={(e) => { e.preventDefault(); setPeek(true); }}
               onPointerUp={() => setPeek(false)}
               onPointerLeave={() => setPeek(false)}
-              className="btn-secondary btn-sm select-none gap-1.5"
+              className="btn-secondary btn-sm select-none gap-2"
               title="Hold (or press Space) to see the old version"
             >
               <CompareIcon />
@@ -208,7 +208,7 @@ export function CompareView({
             </button>
           )}
           {mode === "side" && (
-            <label className="flex cursor-pointer items-center gap-1.5 text-xs font-medium text-muted">
+            <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-muted">
               <input type="checkbox" checked={synced} onChange={(e) => setSynced(e.target.checked)} className="h-3.5 w-3.5 accent-[color:var(--primary)]" />
               Sync scroll
             </label>

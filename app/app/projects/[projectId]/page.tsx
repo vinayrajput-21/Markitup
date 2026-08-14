@@ -113,10 +113,10 @@ export default async function ProjectPage({
     <div className="mx-auto max-w-6xl px-8 py-8">
       {/* breadcrumb — only when inside a sub-folder, so you can navigate up */}
       {chain.length > 0 && (
-        <nav className="mb-4 flex flex-wrap items-center gap-1.5 text-sm text-muted">
+        <nav className="mb-4 flex flex-wrap items-center gap-2 text-sm text-muted">
           <Link href={`/app/projects/${projectId}`} className="transition-colors hover:text-brand-ink">{project?.name ?? "Project"}</Link>
           {chain.map((c, i) => (
-            <span key={c.id} className="flex items-center gap-1.5">
+            <span key={c.id} className="flex items-center gap-2">
               <Chevron />
               <Link href={`/app/projects/${projectId}?folder=${c.id}`} className={i === chain.length - 1 ? "font-semibold text-ink" : "transition-colors hover:text-brand-ink"}>
                 {c.name}

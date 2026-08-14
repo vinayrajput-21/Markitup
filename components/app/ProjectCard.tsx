@@ -20,7 +20,7 @@ function Cover({ url, name, isHtml }: { url?: string; name: string; isHtml?: boo
 
 function Stat({ label, value, children }: { label: string; value: number; children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5" title={label}>
+    <span className="inline-flex items-center gap-2" title={label}>
       {children}
       {value}
     </span>
@@ -61,7 +61,7 @@ export function ProjectCard({
           {/* meta */}
           <div className="px-0.5 pt-4">
           <h3 className="truncate text-[0.95rem] font-semibold text-ink">{name}</h3>
-          <div className="mt-2.5 flex items-center gap-3.5 text-xs text-faint">
+          <div className="mt-3 flex items-center gap-4 text-xs text-faint">
             <Stat label="files" value={stats.mockups}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="1.7" />
@@ -98,7 +98,7 @@ export function ProjectCard({
                   </span>
                 </>
               ) : (
-                <span className="inline-flex items-center gap-1.5 text-xs text-faint">
+                <span className="inline-flex items-center gap-2 text-xs text-faint">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
                     <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" stroke="currentColor" strokeWidth="1.6" />
                     <circle cx="12" cy="12" r="2.6" stroke="currentColor" strokeWidth="1.6" />

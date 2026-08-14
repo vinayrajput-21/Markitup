@@ -159,7 +159,7 @@ export function ShareDialog({
                   {sendingClient ? "Sending…" : "Send"}
                 </button>
               </form>
-              <p className="mt-1.5 text-xs text-faint">
+              <p className="mt-2 text-xs text-faint">
                 Emails a view-and-comment link (no account needed). If reminders are on, we&apos;ll auto-follow-up until they respond.
               </p>
 
@@ -187,7 +187,7 @@ export function ShareDialog({
                 {loading && <p className="text-sm text-faint">Loading…</p>}
                 <ul className="max-h-56 space-y-1 overflow-y-auto">
                   {info?.invited.map((m, i) => (
-                    <li key={m.id ?? `inv-${i}`} className="flex items-center gap-3 rounded-md px-1 py-1.5">
+                    <li key={m.id ?? `inv-${i}`} className="flex items-center gap-3 rounded-md px-1 py-2">
                       <Avatar name={m.name} email={m.email} size={34} />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-medium text-ink">{m.name}</span>
@@ -211,7 +211,7 @@ export function ShareDialog({
             </div>
 
             <div className="flex items-center justify-between gap-3 border-t px-5 py-4">
-              <label className="flex cursor-pointer items-center gap-2.5 text-sm font-medium text-ink">
+              <label className="flex cursor-pointer items-center gap-3 text-sm font-medium text-ink">
                 <input
                   type="checkbox"
                   checked={info?.visibility === "public"}

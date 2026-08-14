@@ -125,7 +125,7 @@ function ToastCard({ t, onClose }: { t: ToastItem; onClose: () => void }) {
       className="toast-card overflow-hidden rounded-xl shadow-lg"
       style={{ background: softBg, border: `1px solid ${borderCol}`, borderLeft: `4px solid ${tone.fg}` }}
     >
-      <div className="flex items-start gap-3 p-3 pr-2.5">
+      <div className="flex items-start gap-3 p-3 pr-3">
         <span
           className="pop-anim mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full"
           style={{ background: tone.fg, color: "#fff" }}

@@ -110,7 +110,7 @@ export function ProjectBrowser({
                       {m.type === "html" && m.url ? (
                         <>
                           <HtmlThumbnail url={m.url} className="h-full w-full" />
-                          <span className="absolute bottom-1.5 left-1.5 z-10 rounded px-1.5 py-0.5 text-[0.5625rem] font-bold tracking-wider text-white uppercase" style={{ background: "color-mix(in srgb, var(--color-ink) 72%, transparent)" }}>
+                          <span className="absolute bottom-1.5 left-1.5 z-10 rounded px-2 py-0.5 text-[0.5625rem] font-bold tracking-wider text-white uppercase" style={{ background: "color-mix(in srgb, var(--color-ink) 72%, transparent)" }}>
                             HTML
                           </span>
                         </>
@@ -123,9 +123,9 @@ export function ProjectBrowser({
                     </div>
                     <div className="p-3">
                       <div className="truncate text-sm font-semibold text-ink">{m.name}</div>
-                      <div className="mt-0.5 flex items-center gap-1.5 text-xs text-faint">
+                      <div className="mt-0.5 flex items-center gap-2 text-xs text-faint">
                         {m.count > 1 && (
-                          <span className="rounded bg-brand-soft px-1.5 py-0.5 text-[0.625rem] font-bold text-brand-ink">V{m.version}</span>
+                          <span className="rounded bg-brand-soft px-2 py-0.5 text-[0.625rem] font-bold text-brand-ink">V{m.version}</span>
                         )}
                         <span className="font-mono">{timeAgo(m.createdAt)}</span>
                       </div>

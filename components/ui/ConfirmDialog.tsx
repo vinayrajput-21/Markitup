@@ -72,10 +72,10 @@ export function ConfirmDialog({
           </span>
           <div className="min-w-0 pt-0.5">
             <h2 className="text-lg font-bold text-ink">{title}</h2>
-            <p className="mt-1.5 text-sm leading-relaxed text-muted">{message}</p>
+            <p className="mt-2 text-sm leading-relaxed text-muted">{message}</p>
           </div>
         </div>
-        <div className="mt-6 flex justify-end gap-2.5">
+        <div className="mt-6 flex justify-end gap-3">
           <button ref={cancelRef} type="button" onClick={onCancel} disabled={pending} className="btn-secondary">
             {cancelLabel}
           </button>

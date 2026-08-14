@@ -181,7 +181,7 @@ export function RichCommentInput({
 
   return (
     <div className="rounded-lg border bg-surface">
-      <div className="flex items-center gap-0.5 border-b px-1.5 py-1">
+      <div className="flex items-center gap-0.5 border-b px-2 py-1">
         <ToolBtn label="Bold" onClick={() => exec("bold")}><span className="text-sm font-bold">B</span></ToolBtn>
         <ToolBtn label="Italic" onClick={() => exec("italic")}><span className="text-sm italic">I</span></ToolBtn>
         <ToolBtn label="Underline" onClick={() => exec("underline")}><span className="text-sm underline">U</span></ToolBtn>
@@ -226,7 +226,7 @@ export function RichCommentInput({
         />
       </div>
       {attachments.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 border-t px-2 py-1.5">
+        <div className="flex flex-wrap gap-2 border-t px-2 py-2">
           {attachments.map((a) => (
             <span
               key={a.path}
@@ -250,7 +250,7 @@ export function RichCommentInput({
           {uploadError}
         </p>
       )}
-      <div className="flex items-center justify-between gap-2 border-t px-2 py-1.5">
+      <div className="flex items-center justify-between gap-2 border-t px-2 py-2">
         <span className="text-xs text-faint">{uploading ? "Uploading…" : ""}</span>
         <button
           type="button"

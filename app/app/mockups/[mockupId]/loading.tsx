@@ -4,7 +4,7 @@ export default function MockupLoading() {
   return (
     <div className="flex h-full flex-col">
       {/* top bar */}
-      <div className="flex h-11 shrink-0 items-center gap-2 border-b bg-surface px-2.5">
+      <div className="flex h-11 shrink-0 items-center gap-2 border-b bg-surface px-3">
         <Skeleton className="h-7 w-7 rounded-md" />
         <Skeleton className="h-4 w-40 rounded" />
         <div className="ml-auto flex items-center gap-2">
@@ -23,9 +23,9 @@ export default function MockupLoading() {
           </div>
           <div className="space-y-4 p-3">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex items-start gap-2.5">
+              <div key={i} className="flex items-start gap-3">
                 <Skeleton className="h-6 w-6 shrink-0 rounded-full" />
-                <div className="flex-1 space-y-1.5">
+                <div className="flex-1 space-y-2">
                   <Skeleton className="h-3.5 w-1/2 rounded" />
                   <Skeleton className="h-3 w-full rounded" />
                 </div>

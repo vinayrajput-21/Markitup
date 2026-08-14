@@ -21,7 +21,7 @@ export function SettingsShell({ sections }: { sections: SettingsSection[] }) {
             <button
               key={s.key}
               onClick={() => setActive(s.key)}
-              className="flex shrink-0 items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors"
+              className="flex shrink-0 items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors"
               style={
                 on
                   ? { background: "var(--color-brand-soft)", color: "var(--color-brand-ink)", fontWeight: 600 }

@@ -86,14 +86,14 @@ export function NotificationBell() {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-lg border bg-surface-2 shadow-lg">
-            <div className="border-b px-3 py-2.5 text-sm font-semibold text-ink">Notifications</div>
+            <div className="border-b px-3 py-3 text-sm font-semibold text-ink">Notifications</div>
             <div className="max-h-96 divide-y overflow-y-auto">
               {items.length === 0 ? (
                 <p className="px-3 py-8 text-center text-sm text-faint">You're all caught up.</p>
               ) : (
                 items.map((n) => {
                   const inner = (
-                    <div className="flex items-start gap-2.5 px-3 py-2.5 transition-colors hover:bg-[color:var(--accent)]">
+                    <div className="flex items-start gap-3 px-3 py-3 transition-colors hover:bg-[color:var(--accent)]">
                       <Avatar name={n.actorName} email={n.actorEmail} size={30} />
                       <div className="min-w-0 flex-1">
                         <p className="text-sm leading-snug text-muted">{renderBody(n.body, n.actorName)}</p>

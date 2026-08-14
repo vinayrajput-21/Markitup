@@ -32,7 +32,7 @@ export function VersionSwitcher({
       : null;
 
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-2">
       <div className="relative">
       <input
         ref={inputRef}
@@ -45,7 +45,7 @@ export function VersionSwitcher({
         type="button"
         onClick={() => setOpen((o) => !o)}
         disabled={pending}
-        className="btn-secondary btn-sm gap-1.5"
+        className="btn-secondary btn-sm gap-2"
         title="Versions"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -54,7 +54,7 @@ export function VersionSwitcher({
         </svg>
         {pending ? "Uploading…" : `Version ${current?.version ?? 1}`}
         {versions.length > 1 && (
-          <span className="rounded-full bg-brand-soft px-1.5 text-[0.625rem] font-bold text-brand-ink">{versions.length}</span>
+          <span className="rounded-full bg-brand-soft px-2 text-[0.625rem] font-bold text-brand-ink">{versions.length}</span>
         )}
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden><path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
@@ -63,14 +63,14 @@ export function VersionSwitcher({
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute left-0 z-50 mt-1 w-60 overflow-hidden rounded-lg border bg-surface-2 p-1 shadow-lg">
-            <p className="px-2.5 pb-1 pt-1.5 text-[0.6875rem] font-semibold tracking-wider text-faint uppercase">Versions</p>
+            <p className="px-3 pb-1 pt-2 text-[0.6875rem] font-semibold tracking-wider text-faint uppercase">Versions</p>
             <div className="max-h-64 overflow-y-auto">
               {versions.map((v) => (
                 <Link
                   key={v.id}
                   href={`/app/mockups/${v.id}`}
                   onClick={() => setOpen(false)}
-                  className="flex items-center justify-between rounded-md px-2.5 py-1.5 text-sm transition-colors hover:bg-[color:var(--accent)]"
+                  className="flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors hover:bg-[color:var(--accent)]"
                   style={v.id === currentId ? { color: "var(--primary)", fontWeight: 600 } : { color: "var(--foreground)" }}
                 >
                   <span>Version {v.version}{v.id === latest?.id ? " · Latest" : ""}</span>
@@ -84,7 +84,7 @@ export function VersionSwitcher({
             <button
               type="button"
               onClick={() => { setOpen(false); inputRef.current?.click(); }}
-              className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-[color:var(--accent)]"
+              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-[color:var(--accent)]"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path d="M12 16V5m0 0 4 4m-4-4-4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
@@ -100,7 +100,7 @@ export function VersionSwitcher({
       )}
       </div>
       {compareHref && (
-        <Link href={compareHref} className="btn-secondary btn-sm gap-1.5" title="Compare previous vs latest — hold Space to flip">
+        <Link href={compareHref} className="btn-secondary btn-sm gap-2" title="Compare previous vs latest — hold Space to flip">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
             <rect x="3" y="4" width="8" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
             <rect x="13" y="4" width="8" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.7" />

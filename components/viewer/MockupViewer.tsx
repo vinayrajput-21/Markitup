@@ -62,7 +62,7 @@ function PinListItem({ pin, onSelect }: { pin: ViewerPin; onSelect: () => void }
   return (
     <button
       onClick={onSelect}
-      className="flex w-full items-start gap-2.5 px-3 py-2.5 text-left transition-colors duration-150 hover:bg-[color:var(--accent)]"
+      className="flex w-full items-start gap-3 px-3 py-3 text-left transition-colors duration-150 hover:bg-[color:var(--accent)]"
     >
       <span
         className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full font-mono text-xs font-bold"
@@ -458,7 +458,7 @@ export function MockupViewer({
   return (
     <div className="flex h-full flex-col">
       {/* single top bar: title | pagination | zoom + actions */}
-      <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-surface px-2.5">
+      <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-surface px-3">
         <div className="flex min-w-0 flex-1 items-center gap-2">{titleSlot}</div>
 
         {/* pagination (center) */}
@@ -519,7 +519,7 @@ export function MockupViewer({
           </div>
           <span className="mr-1 hidden font-mono text-xs text-faint lg:inline">{shownPct ? `${shownPct}%` : ""}</span>
           <div className="relative">
-            <button onClick={() => setZoomOpen((o) => !o)} className="btn-secondary btn-sm gap-1.5">
+            <button onClick={() => setZoomOpen((o) => !o)} className="btn-secondary btn-sm gap-2">
               {zoomLabel}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden><path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
@@ -530,7 +530,7 @@ export function MockupViewer({
                   {ZOOM_OPTIONS.map((o) => {
                     const on = o.value.mode === zoom.mode && (o.value.mode !== "percent" || o.value.pct === zoom.pct);
                     return (
-                      <button key={o.label} onClick={() => { setZoom(o.value); setZoomOpen(false); }} className="flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-[color:var(--accent)]" style={on ? { color: "var(--primary)", fontWeight: 600 } : { color: "var(--foreground)" }}>
+                      <button key={o.label} onClick={() => { setZoom(o.value); setZoomOpen(false); }} className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-[color:var(--accent)]" style={on ? { color: "var(--primary)", fontWeight: 600 } : { color: "var(--foreground)" }}>
                         {o.label}
                         {on && (<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden><path d="m5 12 4.5 4.5L19 7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>)}
                       </button>
@@ -568,7 +568,7 @@ export function MockupViewer({
         {(
           <>
             <div className="border-b p-3">
-              <div className="mb-2.5 flex items-center justify-between">
+              <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-sm font-bold text-ink">Comments</h2>
                 <div className="flex items-center gap-0.5">
                   {/* sort */}
@@ -586,7 +586,7 @@ export function MockupViewer({
                             <button
                               key={s.key}
                               onClick={() => { setSort(s.key); setSortOpen(false); }}
-                              className="flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-sm text-ink transition-colors hover:bg-[color:var(--accent)]"
+                              className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm text-ink transition-colors hover:bg-[color:var(--accent)]"
                             >
                               {s.label}
                               {sort === s.key && (
@@ -658,7 +658,7 @@ export function MockupViewer({
           <div className="absolute top-3 left-1/2 z-30 flex -translate-x-1/2 overflow-hidden rounded-lg border bg-surface shadow-md">
             <button
               onClick={() => setHtmlMode("browse")}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-colors"
               style={htmlMode === "browse" ? { background: "var(--primary)", color: "var(--primary-foreground)" } : { color: "var(--muted-foreground)" }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" stroke="currentColor" strokeWidth="1.7" /><circle cx="12" cy="12" r="2.6" stroke="currentColor" strokeWidth="1.7" /></svg>
@@ -666,7 +666,7 @@ export function MockupViewer({
             </button>
             <button
               onClick={() => setHtmlMode("comment")}
-              className="flex items-center gap-1.5 border-l px-3 py-1.5 text-xs font-semibold transition-colors"
+              className="flex items-center gap-2 border-l px-3 py-2 text-xs font-semibold transition-colors"
               style={htmlMode === "comment" ? { background: "var(--primary)", color: "var(--primary-foreground)" } : { color: "var(--muted-foreground)" }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M4 5h16v10H9l-5 4V5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /></svg>

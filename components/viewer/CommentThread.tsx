@@ -14,7 +14,7 @@ export type Member = { id: string; name: string };
 
 function CommentRow({ c, small = false }: { c: ViewerComment; small?: boolean }) {
   return (
-    <div className="flex gap-2.5">
+    <div className="flex gap-3">
       <Avatar name={c.authorName} email={c.authorName} size={small ? 24 : 30} />
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
@@ -34,7 +34,7 @@ function CommentRow({ c, small = false }: { c: ViewerComment; small?: boolean })
                   <img src={a.url} alt={a.name} className="h-24 w-24 rounded-md border object-cover" />
                 </a>
               ) : (
-                <a key={i} href={a.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium text-ink hover:bg-[color:var(--accent)]">
+                <a key={i} href={a.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-medium text-ink hover:bg-[color:var(--accent)]">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M7 3h7l4 4v14H7z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M14 3v4h4" stroke="currentColor" strokeWidth="1.6" /></svg>
                   {a.name}
                 </a>
@@ -180,7 +180,7 @@ export function CommentThread({
         {roots.map((c) => (
           <div key={c.id}>
             <CommentRow c={c} />
-            <div className="mt-2 ml-3.5 space-y-3 border-l pl-4">
+            <div className="mt-2 ml-4 space-y-3 border-l pl-4">
               {repliesOf(c.id).map((r) => (
                 <CommentRow key={r.id} c={r} small />
               ))}
@@ -197,7 +197,7 @@ export function CommentThread({
 
       <div className="relative shrink-0 border-t p-3">
         {replyTo && (
-          <div className="mb-2 flex items-center justify-between rounded-md bg-brand-soft px-2.5 py-1.5 text-xs font-medium text-brand-ink">
+          <div className="mb-2 flex items-center justify-between rounded-md bg-brand-soft px-3 py-2 text-xs font-medium text-brand-ink">
             Replying to a comment
             <button onClick={() => setReplyTo(null)} className="text-brand-ink/70 hover:text-brand-ink">Cancel</button>
           </div>

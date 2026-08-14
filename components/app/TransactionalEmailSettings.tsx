@@ -75,7 +75,7 @@ export function TransactionalEmailSettings({ initial, canManage, sample }: { ini
           <textarea className="field field-textarea min-h-32" value={tpl.message} disabled={!canManage} onChange={(e) => set({ message: e.target.value })} />
           <label className="field-label mt-3">Button label</label>
           <input className="field" value={tpl.button_label} disabled={!canManage} onChange={(e) => set({ button_label: e.target.value })} />
-          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="text-xs text-faint">Insert:</span>
             {meta.placeholders.map((p) => (
               <button
@@ -95,7 +95,7 @@ export function TransactionalEmailSettings({ initial, canManage, sample }: { ini
         <div className="rounded-xl border bg-surface p-4">
           <p className="mb-3 text-xs font-semibold tracking-wider text-faint uppercase">Live preview</p>
           <div className="rounded-lg border bg-canvas p-4">
-            <div className="mb-2 flex items-center gap-1.5">
+            <div className="mb-2 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-[color:var(--color-border-strong)]" />
               <span className="h-2 w-2 rounded-full bg-[color:var(--color-border-strong)]" />
               <span className="h-2 w-2 rounded-full bg-[color:var(--color-border-strong)]" />
@@ -105,7 +105,7 @@ export function TransactionalEmailSettings({ initial, canManage, sample }: { ini
             <div className="my-3 h-px bg-[color:var(--color-border)]" />
             <p className="text-sm font-semibold" style={{ color: "var(--color-brand-ink)" }}>MarkUp</p>
             <p className="mt-2 text-sm whitespace-pre-line text-muted">{previewMessage || "Your message…"}</p>
-            <span className="mt-3 inline-block rounded-md px-3.5 py-1.5 text-sm font-semibold text-[color:var(--primary-foreground)]" style={{ background: "var(--color-brand)" }}>
+            <span className="mt-3 inline-block rounded-md px-4 py-2 text-sm font-semibold text-[color:var(--primary-foreground)]" style={{ background: "var(--color-brand)" }}>
               {tpl.button_label || "Open MarkUp"}
             </span>
             <p className="mt-4 text-xs text-faint">Sent with MarkUp · visual feedback for your team</p>
@@ -114,7 +114,7 @@ export function TransactionalEmailSettings({ initial, canManage, sample }: { ini
       </div>
 
       {canManage ? (
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <button onClick={save} disabled={saving} className="btn-primary">{saving ? "Saving…" : "Save changes"}</button>
           <button onClick={test} disabled={testing} className="btn-secondary">{testing ? "Sending…" : "Send test to me"}</button>
         </div>

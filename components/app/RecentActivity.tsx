@@ -13,7 +13,7 @@ export function RecentActivity({ items }: { items: Activity[] }) {
         <ul className="divide-y">
           {items.slice(0, 8).map((a, i) => (
             <li key={i} className="py-3 last:pb-0">
-              <Link href={a.mockupId ? `/app/mockups/${a.mockupId}` : "#"} className="group flex items-start gap-2.5">
+              <Link href={a.mockupId ? `/app/mockups/${a.mockupId}` : "#"} className="group flex items-start gap-3">
                 <Avatar name={a.actor} email={a.email} size={26} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm text-ink">

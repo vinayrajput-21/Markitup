@@ -45,7 +45,7 @@ export function TeamInviteDialog() {
 
   return (
     <>
-      <button onClick={() => setOpen(true)} className="btn-primary btn-sm gap-1.5">
+      <button onClick={() => setOpen(true)} className="btn-primary btn-sm gap-2">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
           <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
         </svg>
@@ -82,7 +82,7 @@ export function TeamInviteDialog() {
                       className="rounded-xl border p-3 text-left transition-colors"
                       style={active ? { borderColor: "var(--color-brand-ring)", background: "var(--color-brand-soft)" } : undefined}
                     >
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         <span className="grid h-4 w-4 place-items-center rounded-full border" style={active ? { borderColor: "var(--color-brand)", background: "var(--color-brand)" } : undefined}>
                           {active && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
                         </span>

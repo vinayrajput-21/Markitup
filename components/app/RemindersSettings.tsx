@@ -27,7 +27,7 @@ function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean
 
 function Row({ title, desc, children }: { title: string; desc: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-t px-4 py-3.5 first:border-t-0">
+    <div className="flex items-center justify-between gap-4 border-t px-4 py-4 first:border-t-0">
       <div className="min-w-0">
         <div className="text-sm font-medium text-ink">{title}</div>
         <div className="mt-0.5 text-xs text-muted">{desc}</div>
@@ -65,7 +65,7 @@ export function RemindersSettings({ initial, schedules, sample }: { initial: Rem
   return (
     <div className="space-y-6">
       {/* master status */}
-      <div className="flex items-center justify-between rounded-xl border bg-surface px-4 py-3.5">
+      <div className="flex items-center justify-between rounded-xl border bg-surface px-4 py-4">
         <div>
           <div className="text-sm font-semibold text-ink">Send reminders</div>
           <div className="mt-0.5 text-xs text-muted">Automatically follow up with clients who haven&apos;t left feedback yet.</div>
@@ -83,7 +83,7 @@ export function RemindersSettings({ initial, schedules, sample }: { initial: Rem
           <textarea className="field field-textarea min-h-28" value={s.message} onChange={(e) => set("message", e.target.value)} />
           <label className="field-label mt-3">Button label</label>
           <input className="field" value={s.button_label} onChange={(e) => set("button_label", e.target.value)} />
-          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="text-xs text-faint">Insert:</span>
             {REMINDER_PLACEHOLDERS.map((p) => (
               <button key={p} type="button" onClick={() => insertVar(p)} className="rounded-md bg-brand-soft px-2 py-0.5 font-mono text-[0.6875rem] font-semibold text-brand-ink transition-colors hover:brightness-95">
@@ -97,7 +97,7 @@ export function RemindersSettings({ initial, schedules, sample }: { initial: Rem
         <div className="rounded-xl border bg-surface p-4">
           <p className="mb-3 text-xs font-semibold tracking-wider text-faint uppercase">Live preview</p>
           <div className="rounded-lg border bg-canvas p-4">
-            <div className="mb-1 flex items-center gap-1.5">
+            <div className="mb-1 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-[color:var(--color-border-strong)]" />
               <span className="h-2 w-2 rounded-full bg-[color:var(--color-border-strong)]" />
               <span className="h-2 w-2 rounded-full bg-[color:var(--color-border-strong)]" />
@@ -105,7 +105,7 @@ export function RemindersSettings({ initial, schedules, sample }: { initial: Rem
             <p className="text-sm font-bold text-ink">{fillTemplate(s.subject, sample) || "Subject…"}</p>
             <p className="mt-0.5 text-xs text-faint">From MarkUp · to client@email.com</p>
             <p className="mt-3 text-sm whitespace-pre-line text-muted">{fillTemplate(s.message, sample) || "Your message…"}</p>
-            <span className="mt-3 inline-block rounded-md px-3.5 py-1.5 text-sm font-semibold text-[color:var(--primary-foreground)]" style={{ background: "var(--color-brand)" }}>
+            <span className="mt-3 inline-block rounded-md px-4 py-2 text-sm font-semibold text-[color:var(--primary-foreground)]" style={{ background: "var(--color-brand)" }}>
               {s.button_label || "Leave feedback"}
             </span>
           </div>
@@ -142,7 +142,7 @@ export function RemindersSettings({ initial, schedules, sample }: { initial: Rem
         </Row>
       </div>
 
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-3">
         <button onClick={save} disabled={saving} className="btn-primary">{saving ? "Saving…" : "Save changes"}</button>
         <button onClick={test} disabled={testing} className="btn-secondary">{testing ? "Sending…" : "Send test to me"}</button>
       </div>

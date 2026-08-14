@@ -9,7 +9,7 @@ export default function SettingsLoading() {
       </div>
       <div className="grid gap-8 md:grid-cols-[13rem_1fr]">
         {/* left nav */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-9 w-full rounded-md" />
           ))}

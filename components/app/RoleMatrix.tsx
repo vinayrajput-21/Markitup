@@ -38,10 +38,10 @@ export function RoleMatrix() {
             <tbody className="divide-y">
               {ROWS.map((r) => (
                 <tr key={r.label}>
-                  <td className="px-4 py-3.5 text-ink">{r.label}</td>
-                  <td className="px-4 py-3.5"><Cell on={r.admin} /></td>
-                  <td className="px-4 py-3.5"><Cell on={r.manager} /></td>
-                  <td className="px-4 py-3.5"><Cell on={r.guest} /></td>
+                  <td className="px-4 py-4 text-ink">{r.label}</td>
+                  <td className="px-4 py-4"><Cell on={r.admin} /></td>
+                  <td className="px-4 py-4"><Cell on={r.manager} /></td>
+                  <td className="px-4 py-4"><Cell on={r.guest} /></td>
                 </tr>
               ))}
             </tbody>

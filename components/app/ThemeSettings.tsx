@@ -51,7 +51,7 @@ export function ThemeSettings() {
           <button
             key={m.label}
             onClick={() => applyMode(m.k)}
-            className="flex-1 rounded px-3 py-1.5 text-sm font-semibold transition-colors duration-150"
+            className="flex-1 rounded px-3 py-2 text-sm font-semibold transition-colors duration-150"
             style={dark === m.k ? { background: "var(--card)", color: "var(--foreground)", boxShadow: "var(--shadow-xs)" } : { color: "var(--muted-foreground)" }}
           >
             {m.label}

@@ -66,7 +66,7 @@ function Option({ label, active, onClick, depth }: { label: string; active: bool
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-2 rounded-md py-2 pr-2.5 text-left text-sm transition-colors hover:bg-[color:var(--accent)]"
+      className="flex w-full items-center gap-2 rounded-md py-2 pr-3 text-left text-sm transition-colors hover:bg-[color:var(--accent)]"
       style={{ paddingLeft: 10 + depth * 16, ...(active ? { background: "var(--color-brand-soft)", color: "var(--color-brand-ink)", fontWeight: 600 } : {}) }}
     >
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>

@@ -40,7 +40,7 @@ function ToolbarButton({ onClick, label, children }: { onClick?: () => void; lab
 
 function CommentRow({ c, small = false }: { c: ViewerComment; small?: boolean }) {
   return (
-    <div className="flex gap-2.5">
+    <div className="flex gap-3">
       <Avatar name={c.authorName} email={c.authorName} size={small ? 22 : 28} />
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
@@ -60,7 +60,7 @@ function CommentRow({ c, small = false }: { c: ViewerComment; small?: boolean })
                   <img src={a.url} alt={a.name} className="h-20 w-20 rounded-md border object-cover" />
                 </a>
               ) : (
-                <a key={i} href={a.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium text-ink hover:bg-[color:var(--accent)]">
+                <a key={i} href={a.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-medium text-ink hover:bg-[color:var(--accent)]">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M7 3h7l4 4v14H7z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M14 3v4h4" stroke="currentColor" strokeWidth="1.6" /></svg>
                   {a.name}
                 </a>
@@ -86,7 +86,7 @@ function PinListItem({ pin, open, onSelect }: { pin: FlatPin; open: boolean; onS
     <div ref={ref} className={open ? "bg-[color:var(--accent)]" : ""}>
       <button
         onClick={onSelect}
-        className="flex w-full items-start gap-2.5 px-3 py-2.5 text-left transition-colors duration-150 hover:bg-[color:var(--accent)]"
+        className="flex w-full items-start gap-3 px-3 py-3 text-left transition-colors duration-150 hover:bg-[color:var(--accent)]"
       >
         <span
           className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full font-mono text-xs font-bold"
@@ -97,7 +97,7 @@ function PinListItem({ pin, open, onSelect }: { pin: FlatPin; open: boolean; onS
         <span className="min-w-0 flex-1">
           <span className="flex items-baseline justify-between gap-2">
             <span className="truncate text-sm font-semibold text-ink">{first ? first.authorName : "Empty pin"}</span>
-            <span className="flex shrink-0 items-baseline gap-1.5">
+            <span className="flex shrink-0 items-baseline gap-2">
               <span className="rounded bg-canvas px-1 py-px font-mono text-[0.625rem] font-semibold text-faint">{pin.versionLabel}</span>
               {first && <span className="font-mono text-[0.6875rem] text-faint">{timeAgo(first.createdAt)}</span>}
             </span>
@@ -114,7 +114,7 @@ function PinListItem({ pin, open, onSelect }: { pin: FlatPin; open: boolean; onS
             <div key={c.id}>
               <CommentRow c={c} />
               {repliesOf(c.id).length > 0 && (
-                <div className="mt-2 ml-3 space-y-3 border-l pl-3.5">
+                <div className="mt-2 ml-3 space-y-3 border-l pl-4">
                   {repliesOf(c.id).map((r) => (
                     <CommentRow key={r.id} c={r} small />
                   ))}
@@ -174,7 +174,7 @@ export function CompareComments({
   return (
     <div className="flex h-full flex-col bg-surface">
       <div className="border-b p-3">
-        <div className="mb-2.5 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-bold text-ink">Comments</h2>
           <div className="flex items-center gap-0.5">
             <div className="relative">
@@ -191,7 +191,7 @@ export function CompareComments({
                       <button
                         key={s.key}
                         onClick={() => { setSort(s.key); setSortOpen(false); }}
-                        className="flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-sm text-ink transition-colors hover:bg-[color:var(--accent)]"
+                        className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm text-ink transition-colors hover:bg-[color:var(--accent)]"
                       >
                         {s.label}
                         {sort === s.key && (

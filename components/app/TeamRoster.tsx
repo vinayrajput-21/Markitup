@@ -35,7 +35,7 @@ function MemberRow({ m }: { m: TeamMember }) {
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold text-ink">
             {m.name}
-            {m.isYou && <span className="ml-1.5 font-normal text-faint">(you)</span>}
+            {m.isYou && <span className="ml-2 font-normal text-faint">(you)</span>}
           </div>
           <div className="truncate text-xs text-faint sm:hidden">{m.email}</div>
         </div>
@@ -96,7 +96,7 @@ export function TeamRoster({ data }: { data: TeamData }) {
       </div>
 
       {/* Column header */}
-      <div className="grid grid-cols-[1fr_auto] items-center gap-4 border-b bg-surface px-4 py-2.5 text-xs font-semibold tracking-wider text-faint uppercase sm:grid-cols-[1.4fr_1fr_auto]">
+      <div className="grid grid-cols-[1fr_auto] items-center gap-4 border-b bg-surface px-4 py-3 text-xs font-semibold tracking-wider text-faint uppercase sm:grid-cols-[1.4fr_1fr_auto]">
         <span>Name</span>
         <span className="hidden sm:block">Email</span>
         <span>Role</span>
