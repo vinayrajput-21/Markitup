@@ -7,6 +7,7 @@ import { PinMarker } from "./PinMarker";
 import { PinComposer } from "./PinComposer";
 import { CommentThread, type Member } from "./CommentThread";
 import { HTML_HEIGHT_MESSAGE, injectHeightReporter, stripHeightReporter } from "@/lib/html-embed";
+import { GuestComposer, GuestThread } from "./GuestFeedback";
 import type { PendingAttachment } from "./RichCommentInput";
 import { CommentFilter, type Filter } from "./CommentFilter";
 import { createPin, addComment } from "@/app/app/mockups/[mockupId]/actions";
@@ -130,6 +131,7 @@ export function MockupViewer({
   htmlUrl,
   titleSlot,
   actionsSlot,
+  guest,
 }: {
   mockupId: string;
   projectId: string;
@@ -149,6 +151,11 @@ export function MockupViewer({
   // actions (share, notifications, profile). Supplied by the page.
   titleSlot?: React.ReactNode;
   actionsSlot?: React.ReactNode;
+  // When set, the viewer runs in logged-out "guest" mode on a public share
+  // link: pins/comments are created via token-scoped guest actions (name only),
+  // and member-only affordances (replies-as-you, resolve, delete) are replaced
+  // by the lightweight guest composer/thread.
+  guest?: { token: string };
 }) {
   const isFigma = !!figmaEmbedUrl;
   const isHtml = !!htmlUrl;
@@ -423,7 +430,15 @@ export function MockupViewer({
           onClick={() => setActivePinId(p.id)}
         />
       ))}
-      {draft && (
+      {draft && (guest ? (
+        <GuestComposer
+          x={draft.x}
+          y={draft.y}
+          token={guest.token}
+          onCancel={() => { setDraft(null); setPinError(null); }}
+          onCreated={(pin) => { setPins((p) => [...p, pin]); setDraft(null); setActivePinId(pin.id); }}
+        />
+      ) : (
         <PinComposer
           xPct={draft.x * 100}
           yPct={draft.y * 100}
@@ -433,8 +448,15 @@ export function MockupViewer({
           onCancel={() => { setDraft(null); setPinError(null); }}
           onSubmit={saveDraft}
         />
-      )}
-      {!draft && activePin && (
+      ))}
+      {!draft && activePin && (guest ? (
+        <GuestThread
+          pin={activePin}
+          token={guest.token}
+          onClose={() => setActivePinId(null)}
+          onAdded={(pinId, comment) => setPins((ps) => ps.map((p) => (p.id === pinId ? { ...p, comments: [...p.comments, comment] } : p)))}
+        />
+      ) : (
         <div
           className="absolute z-50 w-80 -translate-x-1/2 overflow-hidden rounded-xl border bg-surface shadow-xl"
           style={{ left: `${activePin.x * 100}%`, top: `${activePin.y * 100}%`, marginTop: "14px" }}
@@ -451,7 +473,7 @@ export function MockupViewer({
             onDelete={() => { setPins((ps) => ps.filter((p) => p.id !== activePin.id)); setActivePinId(null); }}
           />
         </div>
-      )}
+      ))}
     </>
   );
 
