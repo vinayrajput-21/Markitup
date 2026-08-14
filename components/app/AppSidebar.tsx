@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 // Vivid, evenly-spaced hues — all readable with white text.
 const AVATAR_COLORS = [
@@ -118,50 +119,70 @@ const NAV = [
   },
 ];
 
+// Circular light/dark toggle, mirroring the mode logic in ThemeSettings.
+function ThemeToggle() {
+  const [dark, setDark] = useState(false);
+  useEffect(() => setDark(document.documentElement.classList.contains("dark")), []);
+  function toggle() {
+    const next = !dark;
+    document.documentElement.classList.toggle("dark", next);
+    try { localStorage.setItem("ui-mode", next ? "dark" : "light"); } catch {}
+    setDark(next);
+  }
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+      title={dark ? "Light mode" : "Dark mode"}
+      className="grid h-11 w-11 place-items-center rounded-full border text-muted transition-colors duration-150 hover:bg-[color:var(--accent)] hover:text-ink"
+    >
+      {dark ? (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.7" />
+          <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5 5l1.4 1.4M17.6 17.6 19 19M19 5l-1.4 1.4M6.4 17.6 5 19" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+        </svg>
+      ) : (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+        </svg>
+      )}
+    </button>
+  );
+}
+
 export function AppSidebar({ workspaceName }: { workspaceName: string }) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-r bg-sidebar">
-      {/* workspace */}
-      <div className="p-3">
-        <Link
-          href="/app"
-          className="flex items-center gap-3 rounded-lg border border-transparent p-2 transition-colors duration-150 hover:border-border hover:bg-canvas"
-        >
-          <LogoMark />
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-bold text-ink">
-              {workspaceName}
-            </span>
-            <span className="block text-[0.6875rem] font-medium tracking-wide text-faint uppercase">
-              Workspace
-            </span>
-          </span>
-        </Link>
-      </div>
+    <aside className="no-scrollbar flex w-[5.5rem] shrink-0 flex-col items-center gap-1 overflow-y-auto border-r bg-sidebar py-4">
+      {/* brand / home */}
+      <Link
+        href="/app"
+        title={workspaceName}
+        aria-label={`${workspaceName} — home`}
+        className="mb-2 transition-transform duration-150 hover:scale-105 active:scale-95"
+      >
+        <LogoMark />
+      </Link>
 
-      {/* nav */}
-      <nav className="flex-1 px-3">
-        <p className="px-3 pb-1.5 pt-2 text-[0.6875rem] font-semibold tracking-wider text-faint uppercase">
-          Workspace
-        </p>
-        <ul className="flex flex-col gap-0.5">
-          {NAV.map((item) => {
-            const active = item.match(pathname);
-            return (
-              <li key={item.href}>
-                <Link href={item.href} className={active ? "nav-item-active" : "nav-item"}>
-                  <span className={active ? "text-brand-ink" : "text-faint"}>{item.icon}</span>
-                  {item.label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+      {/* nav rail */}
+      <nav className="flex w-full flex-1 flex-col items-center gap-1">
+        {NAV.map((item) => {
+          const active = item.match(pathname);
+          return (
+            <Link key={item.href} href={item.href} className="rail-link group" aria-current={active ? "page" : undefined}>
+              <span className={active ? "rail-ind rail-ind-active" : "rail-ind"}>{item.icon}</span>
+              <span className={active ? "rail-label rail-label-active" : "rail-label"}>{item.label}</span>
+            </Link>
+          );
+        })}
       </nav>
 
-      <div className="p-3" />
+      {/* bottom controls */}
+      <div className="mt-2 flex flex-col items-center gap-2">
+        <ThemeToggle />
+      </div>
     </aside>
   );
 }
