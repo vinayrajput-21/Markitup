@@ -85,7 +85,7 @@ export function GuestComposer({
 
   return (
     <div
-      className="absolute z-50 w-72 -translate-x-1/2 rounded-xl border bg-surface p-3 shadow-xl"
+      className="pointer-events-auto absolute z-50 w-72 -translate-x-1/2 rounded-xl border bg-surface p-3 shadow-xl"
       style={{ left: `${x * 100}%`, top: `${y * 100}%`, marginTop: "14px" }}
       onClick={(e) => e.stopPropagation()}
       onKeyDown={(e) => { if (e.key === "Escape") onCancel(); }}
@@ -159,7 +159,7 @@ export function GuestThread({
 
   return (
     <div
-      className="absolute z-50 flex max-h-[70vh] w-80 -translate-x-1/2 flex-col overflow-hidden rounded-xl border bg-surface shadow-xl"
+      className="pointer-events-auto absolute z-50 flex max-h-[70vh] w-80 -translate-x-1/2 flex-col overflow-hidden rounded-xl border bg-surface shadow-xl"
       style={{ left: `${pin.x * 100}%`, top: `${pin.y * 100}%`, marginTop: "14px" }}
       onClick={(e) => e.stopPropagation()}
     >
