@@ -6,7 +6,7 @@ import { toNormalized } from "@/lib/coords";
 import { PinMarker } from "./PinMarker";
 import { PinComposer } from "./PinComposer";
 import { CommentThread, type Member } from "./CommentThread";
-import { HTML_HEIGHT_MESSAGE, injectHeightReporter, stripHeightReporter } from "@/lib/html-embed";
+import { HTML_HEIGHT_MESSAGE, HTML_WHEEL_MESSAGE, injectHeightReporter, stripHeightReporter } from "@/lib/html-embed";
 import { GuestComposer, GuestThread } from "./GuestFeedback";
 import type { PendingAttachment } from "./RichCommentInput";
 import { CommentFilter, type Filter } from "./CommentFilter";
@@ -257,17 +257,38 @@ export function MockupViewer({
       const d = e.data;
       if (d && d.type === HTML_HEIGHT_MESSAGE && typeof d.height === "number") {
         setHtmlHeight(Math.min(60000, Math.max(200, Math.ceil(d.height))));
+      } else if (d && d.type === HTML_WHEEL_MESSAGE) {
+        // Browse mode: the (cross-origin) iframe forwards wheel here so the
+        // outer canvas scrolls — otherwise the iframe swallows the wheel and
+        // only the scrollbar drag would work.
+        const el = scrollRef.current;
+        if (el) {
+          el.scrollTop += d.dy || 0;
+          el.scrollLeft += d.dx || 0;
+        }
       }
     }
     window.addEventListener("message", onMsg);
     return () => window.removeEventListener("message", onMsg);
   }, [isHtml]);
 
-  // Width of the HTML page: full canvas on desktop, phone width on mobile.
-  const htmlWidth = useMemo(() => {
+  // HTML renders at a real DESKTOP width (never the canvas width), so an
+  // uploaded page always shows its desktop layout — no responsive/mobile
+  // breakpoints — then the whole frame is scaled to honour the zoom control.
+  const HTML_DESKTOP_W = 1440;
+  const htmlDesignW = device === "mobile" ? 390 : HTML_DESKTOP_W;
+  const htmlScale = useMemo(() => {
+    if (!isHtml || !box.w) return 1;
     const availW = Math.max(0, box.w - 48);
-    return device === "mobile" ? Math.min(390, availW) : availW;
-  }, [box.w, device]);
+    const availH = Math.max(0, box.h - 96);
+    if (device === "mobile") return Math.min(1, availW / htmlDesignW);
+    if (zoom.mode === "percent") return zoom.pct / 100;
+    if (zoom.mode === "fit-width") return availW / htmlDesignW;
+    const contentH = htmlHeight || 900; // fit-window
+    return Math.min(availW / htmlDesignW, availH / contentH);
+  }, [isHtml, box.w, box.h, zoom, device, htmlDesignW, htmlHeight]);
+  const htmlBoxW = htmlDesignW * htmlScale;
+  const htmlBoxH = (htmlHeight || 800) * htmlScale;
 
   // displayed width of the image for the current zoom mode
   const displayW = useMemo(() => {
@@ -698,7 +719,7 @@ export function MockupViewer({
         )}
         <div ref={scrollRef} className="relative h-full overflow-auto">
           <div className={`flex min-h-full min-w-full items-center justify-center px-6 pb-6 ${isHtml ? "pt-16" : "pt-6"}`}>
-            <div ref={surfaceRef} className="relative shrink-0" style={{ width: isHtml ? htmlWidth || "100%" : displayW || "100%" }}>
+            <div ref={surfaceRef} className="relative shrink-0" style={isHtml ? { width: htmlBoxW || "100%", height: htmlBoxH || undefined } : { width: displayW || "100%" }}>
               {isFigma ? (
                 <>
                   {/* hidden probe: read the rendered frame's aspect ratio so the
@@ -733,11 +754,11 @@ export function MockupViewer({
                   {/* Untrusted uploaded HTML: sandboxed (no same-origin), so it
                       runs isolated in an opaque origin, cross-origin to the app. */}
                   {htmlError ? (
-                    <div className="grid h-96 w-full place-items-center rounded-lg bg-surface text-sm text-faint ring-1 ring-border">
+                    <div className="absolute inset-0 grid place-items-center rounded-lg bg-surface text-sm text-faint ring-1 ring-border">
                       Couldn&apos;t load this HTML page.
                     </div>
                   ) : htmlDoc === null ? (
-                    <div className="grid h-96 w-full place-items-center rounded-lg bg-surface text-sm text-faint ring-1 ring-border">
+                    <div className="absolute inset-0 grid place-items-center rounded-lg bg-surface text-sm text-faint ring-1 ring-border">
                       Loading page…
                     </div>
                   ) : (
@@ -747,8 +768,8 @@ export function MockupViewer({
                       title={imageName}
                       sandbox="allow-scripts allow-popups allow-forms allow-modals allow-popups-to-escape-sandbox allow-pointer-lock"
                       referrerPolicy="no-referrer"
-                      className="block w-full rounded-lg bg-white shadow-lg ring-1 ring-border"
-                      style={{ height: htmlHeight || 900, pointerEvents: htmlMode === "comment" ? "none" : "auto" }}
+                      className="absolute top-0 left-0 origin-top-left rounded-lg bg-white shadow-lg ring-1 ring-border"
+                      style={{ width: htmlDesignW, height: htmlHeight || 900, transform: `scale(${htmlScale})`, pointerEvents: htmlMode === "comment" ? "none" : "auto" }}
                     />
                   )}
                   {/* Comment mode: capture clicks to drop pins (page interaction off). */}

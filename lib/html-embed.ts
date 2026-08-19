@@ -7,11 +7,12 @@
 // whole page lays out (no inner scroll) and pin coordinates stay aligned.
 
 export const HTML_HEIGHT_MESSAGE = "markitup:height";
+export const HTML_WHEEL_MESSAGE = "markitup:wheel";
 
 // Height = the bottom of the lowest real content element, NOT body.scrollHeight.
 // A page whose <body> (or a wrapper) stretches to min-height:100vh reports blank
 // space below its last element; measuring the furthest child bottom trims that.
-const REPORTER = `<script>(function(){function h(){var b=document.body,e=document.documentElement,m=0;if(b){for(var c=b.children,i=0;i<c.length;i++){var el=c[i],t=el.tagName;if(t==="SCRIPT"||t==="STYLE"||t==="LINK")continue;var r=el.getBoundingClientRect(),bt=r.bottom+(window.scrollY||window.pageYOffset||0);if(bt>m)m=bt}}var f=Math.max(b?b.scrollHeight:0,e?e.scrollHeight:0);m=Math.ceil(m);return m>0?Math.min(m,f||m):f}function r(){try{parent.postMessage({type:"${HTML_HEIGHT_MESSAGE}",height:h()},"*")}catch(e){}}window.addEventListener("load",r);window.addEventListener("resize",r);if(window.ResizeObserver){try{new ResizeObserver(r).observe(document.documentElement)}catch(e){}}var n=0,t=setInterval(function(){r();if(++n>20)clearInterval(t)},500);r();})();</script>`;
+const REPORTER = `<script>(function(){function h(){var b=document.body,e=document.documentElement,m=0;if(b){for(var c=b.children,i=0;i<c.length;i++){var el=c[i],t=el.tagName;if(t==="SCRIPT"||t==="STYLE"||t==="LINK")continue;var r=el.getBoundingClientRect(),bt=r.bottom+(window.scrollY||window.pageYOffset||0);if(bt>m)m=bt}}var f=Math.max(b?b.scrollHeight:0,e?e.scrollHeight:0);m=Math.ceil(m);return m>0?Math.min(m,f||m):f}function r(){try{parent.postMessage({type:"${HTML_HEIGHT_MESSAGE}",height:h()},"*")}catch(e){}}window.addEventListener("load",r);window.addEventListener("resize",r);if(window.ResizeObserver){try{new ResizeObserver(r).observe(document.documentElement)}catch(e){}}window.addEventListener("wheel",function(e){try{parent.postMessage({type:"${HTML_WHEEL_MESSAGE}",dx:e.deltaX,dy:e.deltaY},"*");e.preventDefault()}catch(_){}}, {passive:false});var n=0,t=setInterval(function(){r();if(++n>20)clearInterval(t)},500);r();})();</script>`;
 
 // Append the reporter just before </body> (or at the end if there is none).
 export function injectHeightReporter(html: string): string {
